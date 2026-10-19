@@ -90,6 +90,32 @@ def clean_phone(phone_str):
         return digits[1:]
     return digits
 
+def sync_student_security(student_id, email, pin=None):
+    """Updates email and pin across all database copies so data remains in sync."""
+    paths = [
+        os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db")),
+        os.path.join(BASE_DIR, "data", "asdi.db"),
+        os.path.join(BASE_DIR, "asdi_student_portal", "data", "asdi.db")
+    ]
+    for p in paths:
+        if os.path.exists(p):
+            try:
+                c = sqlite3.connect(p)
+                cur = c.cursor()
+                cols = [col[1] for col in cur.execute("PRAGMA table_info(students)").fetchall()]
+                if "email" not in cols:
+                    cur.execute("ALTER TABLE students ADD COLUMN email TEXT")
+                if "pin" not in cols:
+                    cur.execute("ALTER TABLE students ADD COLUMN pin TEXT")
+                if pin is not None and str(pin).strip() != "":
+                    cur.execute("UPDATE students SET email = ?, pin = ? WHERE id = ?", (email, str(pin).strip(), student_id))
+                else:
+                    cur.execute("UPDATE students SET email = ? WHERE id = ?", (email, student_id))
+                c.commit()
+                c.close()
+            except Exception:
+                pass
+
 # Access Control Decorators
 def student_required(f):
     @wraps(f)
@@ -147,6 +173,7 @@ def login():
         return redirect(url_for("admin_dashboard"))
 
     active_tab = request.args.get("tab", "student")
+    form_roll = request.args.get("roll", "")
     error = None
 
     if request.method == "POST":
@@ -156,15 +183,21 @@ def login():
         settings = get_settings()
 
         # -------------------------------------------------------------
-        # 1. STUDENT LOGIN
+        # 1. STUDENT LOGIN (Strict 2-Factor: Roll No + Email/Mobile/PIN)
         # -------------------------------------------------------------
         if login_type == "student":
-            identifier = request.form.get("identifier", "").strip()
-            cleaned_id = identifier.replace(" ", "").upper()
-            cleaned_phone = clean_phone(identifier)
+            roll_or_adm = (request.form.get("roll_no") or request.form.get("identifier") or "").strip()
+            auth_val = (request.form.get("student_auth") or request.form.get("email") or "").strip()
+            form_roll = roll_or_adm
 
-            if not identifier:
-                error = "Barah-e-karam apna Admission No ya Phone number darj karein."
+            cleaned_id = roll_or_adm.replace(" ", "").upper()
+            cleaned_auth_phone = clean_phone(auth_val)
+            cleaned_auth_email = auth_val.lower().strip()
+
+            if not roll_or_adm:
+                error = "Barah-e-karam apna Roll No ya Admission No darj karein."
+            elif not auth_val:
+                error = "Security Check: Kisi dusre ka Roll No daal kar koi record nahi dekh sakta. Roll No ke sath apna Email ya Mobile Number zaroor darj karein."
             else:
                 students = conn.execute("SELECT * FROM students").fetchall()
                 matched_student = None
@@ -172,36 +205,63 @@ def login():
                 for s in students:
                     adm = str(s["admission_no"] or "").strip().upper()
                     roll = str(s["roll_no"] or "").strip().upper()
-                    s_phone = clean_phone(s["phone"])
-                    s_wa = clean_phone(s["whatsapp"])
-                    s_cnic = str(s["cnic"] or "").replace("-", "").strip()
 
-                    # Match Admission No
-                    if cleaned_id and (adm == cleaned_id or adm.endswith("-" + cleaned_id) or adm.endswith("/" + cleaned_id)):
-                        matched_student = s
-                        break
-                    # Match Roll No
-                    if cleaned_id and roll == cleaned_id:
-                        matched_student = s
-                        break
-                    # Match Phone / WhatsApp
-                    if cleaned_phone and (cleaned_phone == s_phone or cleaned_phone == s_wa):
-                        matched_student = s
-                        break
-                    # Match CNIC
-                    if cleaned_phone and cleaned_phone == s_cnic:
+                    # Match Admission No or Roll No
+                    if cleaned_id and (roll == cleaned_id or adm == cleaned_id or adm.endswith("-" + cleaned_id) or adm.endswith("/" + cleaned_id)):
                         matched_student = s
                         break
 
-                if matched_student:
-                    session.clear()
-                    session["role"] = "student"
-                    session["student_id"] = matched_student["id"]
-                    session["user_name"] = matched_student["name"]
-                    conn.close()
-                    return redirect(url_for("dashboard"))
+                if not matched_student:
+                    error = f"Roll No ya Admission No '{roll_or_adm}' ka koi student record nahi mila."
                 else:
-                    error = "Student record nahi mila. Barah-e-karam apna sahi Admission No ya Registered Phone number check karein."
+                    # VERIFY credentials strictly against THIS matched student
+                    s_email = str(matched_student["email"] or "").strip().lower()
+                    s_g_email = str(matched_student["g_email"] or "").strip().lower()
+                    s_phone = clean_phone(matched_student["phone"])
+                    s_wa = clean_phone(matched_student["whatsapp"])
+                    s_cnic = str(matched_student["cnic"] or "").replace("-", "").strip()
+                    s_pin = str(matched_student["pin"] or "").strip()
+
+                    auth_verified = False
+
+                    # Check 1: Email matching
+                    if "@" in cleaned_auth_email:
+                        if s_email and cleaned_auth_email == s_email:
+                            auth_verified = True
+                        elif s_g_email and cleaned_auth_email == s_g_email:
+                            auth_verified = True
+                        elif not s_email and not s_g_email:
+                            error = "Aap ka Email abhi register nahi hai. Pehli baar login ke liye apna Admission Form wala Mobile Number darj karein, ya neeche 'Register Email' se apna Email save karein."
+                        else:
+                            error = "Security Check Fail: Yeh Email is Roll Number ke registered record se match nahi karta."
+
+                    # Check 2: PIN matching
+                    elif s_pin and auth_val == s_pin:
+                        auth_verified = True
+
+                    # Check 3: Phone / WhatsApp / CNIC matching
+                    elif cleaned_auth_phone and (
+                        (s_phone and cleaned_auth_phone == s_phone) or
+                        (s_wa and cleaned_auth_phone == s_wa) or
+                        (s_cnic and cleaned_auth_phone == s_cnic)
+                    ):
+                        auth_verified = True
+                    else:
+                        if not error:
+                            error = "Security Check Fail: Darj shuda Email ya Mobile Number is Roll Number ke record se match nahi karta! Sirf verified student hi login kar sakta hai."
+
+                    if auth_verified:
+                        session.clear()
+                        session["role"] = "student"
+                        session["student_id"] = matched_student["id"]
+                        session["user_name"] = matched_student["name"]
+                        conn.close()
+
+                        # Advise student to set email if missing
+                        if not s_email:
+                            flash("Khush Aamdeed! Apne account ko mazeed mehfooz karne ke liye Profile tab mein ja kar apna Email zaroor save karein.", "info")
+
+                        return redirect(url_for("dashboard"))
 
         # -------------------------------------------------------------
         # 2. TEACHER / STAFF LOGIN
@@ -267,7 +327,68 @@ def login():
 
         conn.close()
 
-    return render_template("login.html", error=error, active_tab=active_tab)
+    return render_template("login.html", error=error, active_tab=active_tab, form_roll=form_roll)
+
+
+@app.route("/register_student_email", methods=["POST"])
+def register_student_email():
+    reg_roll = request.form.get("reg_roll_no", "").strip()
+    reg_phone = request.form.get("reg_phone", "").strip()
+    reg_email = request.form.get("reg_email", "").strip().lower()
+    reg_pin = request.form.get("reg_pin", "").strip()
+
+    cleaned_roll = reg_roll.replace(" ", "").upper()
+    cleaned_input_phone = clean_phone(reg_phone)
+
+    if not reg_roll or not reg_phone or not reg_email:
+        flash("Barah-e-karam Roll No, Mobile No aur Email tamam fields darj karein.", "danger")
+        return redirect(url_for("login", tab="student"))
+
+    if "@" not in reg_email or "." not in reg_email:
+        flash("Barah-e-karam durust Email address darj karein (e.g. name@gmail.com).", "danger")
+        return redirect(url_for("login", tab="student"))
+
+    conn = get_db_connection()
+    students = conn.execute("SELECT * FROM students").fetchall()
+    matched_student = None
+
+    for s in students:
+        adm = str(s["admission_no"] or "").strip().upper()
+        roll = str(s["roll_no"] or "").strip().upper()
+        if cleaned_roll and (roll == cleaned_roll or adm == cleaned_roll or adm.endswith("-" + cleaned_roll) or adm.endswith("/" + cleaned_roll)):
+            matched_student = s
+            break
+
+    if not matched_student:
+        conn.close()
+        flash(f"Roll No / Admission No '{reg_roll}' ka koi student record nahi mila.", "danger")
+        return redirect(url_for("login", tab="student"))
+
+    # Security verification: Phone must match student's admission record
+    s_phone = clean_phone(matched_student["phone"])
+    s_wa = clean_phone(matched_student["whatsapp"])
+    s_g_phone = clean_phone(matched_student["g_phone"])
+    s_cnic = str(matched_student["cnic"] or "").replace("-", "").strip()
+
+    phone_verified = False
+    if cleaned_input_phone and (
+        (s_phone and cleaned_input_phone == s_phone) or
+        (s_wa and cleaned_input_phone == s_wa) or
+        (s_g_phone and cleaned_input_phone == s_g_phone) or
+        (s_cnic and cleaned_input_phone == s_cnic)
+    ):
+        phone_verified = True
+
+    conn.close()
+
+    if not phone_verified:
+        flash("Security Check Fail: Darj shuda Mobile Number is Roll Number ke admission record se match nahi hua! Sirf wahi number darj karein jo admission ke waqt diya tha.", "danger")
+        return redirect(url_for("login", tab="student"))
+
+    # Verified! Save email and PIN
+    sync_student_security(matched_student["id"], reg_email, reg_pin)
+    flash(f"Shabash {matched_student['name']}! Aap ka Email ({reg_email}) kamyabi se link ho gaya hai. Ab aap apne Roll No aur Email se login karein.", "success")
+    return redirect(url_for("login", tab="student", roll=reg_roll))
 
 
 # ---------------------------------------------------------------------------
@@ -354,6 +475,22 @@ def dashboard():
         results=results,
         schedule=schedule_records
     )
+
+
+@app.route("/student/security_update", methods=["POST"])
+@student_required
+def student_security_update():
+    student_id = session["student_id"]
+    email = request.form.get("email", "").strip().lower()
+    pin = request.form.get("pin", "").strip()
+
+    if not email or "@" not in email or "." not in email:
+        flash("Barah-e-karam durust Email address darj karein.", "danger")
+        return redirect(url_for("dashboard"))
+
+    sync_student_security(student_id, email, pin)
+    flash("Aap ka Security Email aur PIN kamyabi se update ho gaya! Agli baar aap is Email se login kar saken gay.", "success")
+    return redirect(url_for("dashboard"))
 
 
 # ---------------------------------------------------------------------------

@@ -36,6 +36,17 @@
       </li>
     </ul>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+        <div class="alert alert-{{ 'danger' if category in ['error', 'danger'] else ('success' if category == 'success' else 'info') }} d-flex align-items-center gap-2 py-2 px-3 rounded-3 mb-3" style="font-size: 13px;" role="alert">
+          <i class="bi bi-{{ 'check-circle-fill' if category == 'success' else ('exclamation-triangle-fill' if category in ['error', 'danger'] else 'info-circle-fill') }} flex-shrink-0"></i>
+          <div>{{ msg }}</div>
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     {% if error %}
     <div class="alert alert-danger d-flex align-items-center gap-2 py-2 px-3 rounded-3 mb-3" style="font-size: 13px;" role="alert">
       <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
@@ -53,9 +64,10 @@
         <form method="POST" action="{{ url_for('login') }}">
           <input type="hidden" name="login_type" value="student">
           
+          <!-- Field 1: Roll No / Admission No -->
           <div class="mb-3">
-            <label for="identifier" class="form-label small fw-semibold text-secondary mb-1">
-              Admission No / Roll No / Mobile No
+            <label for="roll_no" class="form-label small fw-semibold text-secondary mb-1">
+              Admission No ya Roll No
             </label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
@@ -64,23 +76,51 @@
               <input 
                 type="text" 
                 class="form-control bg-light border-start-0 py-2" 
-                id="identifier" 
-                name="identifier" 
-                placeholder="e.g. ASDI-2026-0001 ya 03118386393" 
+                id="roll_no" 
+                name="roll_no" 
+                placeholder="e.g. 1 ya ASDI-2026-0001" 
+                value="{{ form_roll or '' }}"
                 required 
                 style="border-radius: 0 12px 12px 0; font-size: 14px;"
               >
             </div>
-            <div class="form-text" style="font-size: 11px;">
-              <i class="bi bi-lock me-1"></i>Student sirf apna zaati record dekh sakta hai.
+          </div>
+
+          <!-- Field 2: Personal Email or Registered Phone No / PIN -->
+          <div class="mb-3">
+            <label for="student_auth" class="form-label small fw-semibold text-secondary mb-1">
+              Apna Email ya Registered Mobile No
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-shield-lock-fill text-primary"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control bg-light border-start-0 py-2" 
+                id="student_auth" 
+                name="student_auth" 
+                placeholder="e.g. apna_email@gmail.com ya 03118386393" 
+                required 
+                style="border-radius: 0 12px 12px 0; font-size: 14px;"
+              >
+            </div>
+            <div class="form-text mt-2 text-secondary" style="font-size: 11px; line-height: 1.45;">
+              <i class="bi bi-shield-check text-success me-1"></i><strong>Security Check:</strong> Bina Email ya Phone ke koi kisi dusre ka Roll No daal kar record nahi dekh sakta.
             </div>
           </div>
 
           <button type="submit" class="btn btn-asdi w-100 py-2 d-flex align-items-center justify-content-center gap-2 shadow-sm">
-            <span>Student Login</span>
+            <span>Student Secure Login</span>
             <i class="bi bi-arrow-right"></i>
           </button>
         </form>
+
+        <div class="text-center mt-3 pt-2 border-top">
+          <a href="#" class="text-decoration-none small text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#emailRegisterModal">
+            <i class="bi bi-envelope-plus me-1"></i>Pehli baar login? Apna Email ya PIN register karein
+          </a>
+        </div>
       </div>
 
       <!-- 2. TEACHER / STAFF LOGIN FORM -->
@@ -174,6 +214,66 @@
   <div class="text-center mt-3">
     <div class="text-muted" style="font-size: 11px;">
       &copy; {{ now.year }} Asian Skill Development Institute
+    </div>
+  </div>
+</div>
+<!-- Modal for First Time Student Email Registration -->
+<div class="modal fade" id="emailRegisterModal" tabindex="-1" aria-labelledby="emailRegisterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
+        <h6 class="modal-title fw-bold" id="emailRegisterModalLabel">
+          <i class="bi bi-shield-lock me-2 text-warning"></i>Student Email / PIN Registration
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{{ url_for('register_student_email') }}">
+        <div class="modal-body p-4">
+          <div class="alert alert-info py-2 px-3 small rounded-3 mb-3" style="font-size: 12px;">
+            <i class="bi bi-info-circle me-1"></i>Apne account ko secure karne ke liye apna Roll No, admission wala registered Mobile No aur Email darj karein:
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-secondary mb-1">Roll No ya Admission No</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-person-badge"></i></span>
+              <input type="text" name="reg_roll_no" class="form-control" placeholder="e.g. 1 ya ASDI-2026-0001" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-secondary mb-1">Admission Form wala Registered Mobile No</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+              <input type="text" name="reg_phone" class="form-control" placeholder="e.g. 03118386393" required>
+            </div>
+            <div class="form-text" style="font-size: 11px;">Tasdeeq ke liye yeh number aap ke admission record se match hona zaroori hai.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-secondary mb-1">Apna Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="reg_email" class="form-control" placeholder="e.g. apna_email@gmail.com" required>
+            </div>
+            <div class="form-text" style="font-size: 11px;">Agli baar aap is Email se login kar saken gay.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-secondary mb-1">4-Digit Security PIN (Ikhtiyari)</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-key"></i></span>
+              <input type="password" maxlength="6" name="reg_pin" class="form-control" placeholder="e.g. 1234">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-asdi rounded-pill px-3">
+            <i class="bi bi-check-circle me-1"></i>Save & Link Email
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
