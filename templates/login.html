@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - ASDI Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4 px-3" style="max-width: 460px;">
+  <div class="text-center my-3">
+    <div class="d-inline-block p-3 rounded-circle bg-white shadow-sm mb-2" style="border: 2px solid #E2E6F2;">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="ASDI Logo" style="height: 60px; width: auto;">
+    </div>
+    <h3 class="fw-bold mb-0" style="color: var(--navy); letter-spacing: -0.5px;">ASDI Portal</h3>
+    <p class="text-muted small">Asian Skill Development Institute</p>
+  </div>
+
+  <div class="portal-card p-4">
+
+    <!-- Role Selection Tabs -->
+    <ul class="nav nav-pills nav-fill mb-3 p-1 rounded-3 bg-light border" id="roleTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link py-2 {% if active_tab == 'student' %}active fw-bold{% endif %}" 
+                id="student-tab" data-bs-toggle="pill" data-bs-target="#tab-student" type="button" role="tab" style="font-size: 13px;">
+          <i class="bi bi-mortarboard-fill me-1"></i>Student
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link py-2 {% if active_tab == 'staff' %}active fw-bold{% endif %}" 
+                id="staff-tab" data-bs-toggle="pill" data-bs-target="#tab-staff" type="button" role="tab" style="font-size: 13px;">
+          <i class="bi bi-person-workspace me-1"></i>Teacher
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link py-2 {% if active_tab == 'admin' %}active fw-bold{% endif %}" 
+                id="admin-tab" data-bs-toggle="pill" data-bs-target="#tab-admin" type="button" role="tab" style="font-size: 13px;">
+          <i class="bi bi-shield-lock-fill me-1"></i>Admin
+        </button>
+      </li>
+    </ul>
+
+    {% if error %}
+    <div class="alert alert-danger d-flex align-items-center gap-2 py-2 px-3 rounded-3 mb-3" style="font-size: 13px;" role="alert">
+      <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+      <div>{{ error }}</div>
+    </div>
+    {% endif %}
+
+    <div class="tab-content" id="roleTabContent">
+
+      <!-- 1. STUDENT LOGIN FORM -->
+      <div class="tab-pane fade {% if active_tab == 'student' %}show active{% endif %}" id="tab-student" role="tabpanel">
+        <div class="mb-3">
+          <span class="text-muted small d-block">Sirf apna student record, fees aur attendance dekhne ke liye:</span>
+        </div>
+        <form method="POST" action="{{ url_for('login') }}">
+          <input type="hidden" name="login_type" value="student">
+          
+          <div class="mb-3">
+            <label for="identifier" class="form-label small fw-semibold text-secondary mb-1">
+              Admission No / Roll No / Mobile No
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-person-badge"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control bg-light border-start-0 py-2" 
+                id="identifier" 
+                name="identifier" 
+                placeholder="e.g. ASDI-2026-0001 ya 03118386393" 
+                required 
+                style="border-radius: 0 12px 12px 0; font-size: 14px;"
+              >
+            </div>
+            <div class="form-text" style="font-size: 11px;">
+              <i class="bi bi-lock me-1"></i>Student sirf apna zaati record dekh sakta hai.
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-asdi w-100 py-2 d-flex align-items-center justify-content-center gap-2 shadow-sm">
+            <span>Student Login</span>
+            <i class="bi bi-arrow-right"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- 2. TEACHER / STAFF LOGIN FORM -->
+      <div class="tab-pane fade {% if active_tab == 'staff' %}show active{% endif %}" id="tab-staff" role="tabpanel">
+        <div class="mb-3">
+          <span class="text-muted small d-block">Apne students ki list aur unki jama shuda fees dekhne ke liye:</span>
+        </div>
+        <form method="POST" action="{{ url_for('login') }}">
+          <input type="hidden" name="login_type" value="staff">
+
+          <div class="mb-3">
+            <label for="staff_input" class="form-label small fw-semibold text-secondary mb-1">
+              Teacher Mobile Number ya Naam
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-telephone"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control bg-light border-start-0 py-2" 
+                id="staff_input" 
+                name="staff_input" 
+                placeholder="e.g. 03329854273 ya Mam Tayyba" 
+                required 
+                style="border-radius: 0 12px 12px 0; font-size: 14px;"
+              >
+            </div>
+            <div class="form-text" style="font-size: 11px;">
+              <i class="bi bi-person-check me-1"></i>Teacher sirf apne assigned students aur unki fees dekh sakte hain.
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-asdi w-100 py-2 d-flex align-items-center justify-content-center gap-2 shadow-sm">
+            <span>Teacher Login</span>
+            <i class="bi bi-arrow-right"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- 3. ADMIN LOGIN FORM -->
+      <div class="tab-pane fade {% if active_tab == 'admin' %}show active{% endif %}" id="tab-admin" role="tabpanel">
+        <div class="mb-3">
+          <span class="text-muted small d-block">Mukammal institute record (Tamam students, fees, kharchay) ke liye:</span>
+        </div>
+        <form method="POST" action="{{ url_for('login') }}">
+          <input type="hidden" name="login_type" value="admin">
+
+          <div class="mb-3">
+            <label for="admin_pin" class="form-label small fw-semibold text-secondary mb-1">
+              Admin Security PIN
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-key-fill"></i>
+              </span>
+              <input 
+                type="password" 
+                class="form-control bg-light border-start-0 py-2" 
+                id="admin_pin" 
+                name="admin_pin" 
+                placeholder="Enter 4-digit PIN (e.g. 1234)" 
+                required 
+                style="border-radius: 0 12px 12px 0; font-size: 14px;"
+              >
+            </div>
+            <div class="form-text" style="font-size: 11px;">
+              <i class="bi bi-shield-check me-1"></i>Admin ke paas pure institute ka full access hoga.
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-asdi w-100 py-2 d-flex align-items-center justify-content-center gap-2 shadow-sm">
+            <span>Admin Access</span>
+            <i class="bi bi-shield-lock"></i>
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+    <hr class="my-4" style="opacity: 0.1;">
+
+    <div class="bg-light p-3 rounded-3 text-center" style="font-size: 12px;">
+      <span class="text-muted d-block mb-1">Kisi madad ki zaroorat hai?</span>
+      <a href="https://wa.me/923118386393?text=Salam%2C%20mujhe%20ASDI%20Portal%20mein%20rehnumai%20chahiye." target="_blank" class="text-decoration-none fw-bold" style="color: var(--green);">
+        <i class="bi bi-whatsapp me-1"></i>Helpline se rabta karein
+      </a>
+    </div>
+  </div>
+
+  <div class="text-center mt-3">
+    <div class="text-muted" style="font-size: 11px;">
+      &copy; {{ now.year }} Asian Skill Development Institute
+    </div>
+  </div>
+</div>
+{% endblock %}

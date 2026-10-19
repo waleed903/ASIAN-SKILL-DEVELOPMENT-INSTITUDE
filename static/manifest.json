@@ -1,0 +1,21 @@
+{
+  "name": "ASDI Student Portal",
+  "short_name": "ASDI Portal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D186E",
+  "theme_color": "#0D186E",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
