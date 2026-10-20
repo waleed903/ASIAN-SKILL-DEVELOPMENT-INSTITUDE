@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Teacher Portal - {{ staff.name }} | ASDI{% endblock %}
 
@@ -117,9 +117,23 @@
           {% set s = item.student %}
           <div class="p-3 border rounded-3 bg-white student-item">
             <div class="d-flex justify-content-between align-items-start mb-1">
-              <div>
-                <span class="fw-bold text-dark fs-6 student-name">{{ s.name }}</span>
-                <span class="badge bg-light text-secondary border ms-1" style="font-size: 10px;">Roll #{{ s.roll_no or '--' }}</span>
+              <div class="d-flex align-items-center gap-2">
+                <!-- Student Photo (small) -->
+                {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
+                  <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
+                       alt="{{ s.name }}"
+                       class="rounded-circle flex-shrink-0"
+                       style="width:38px;height:38px;object-fit:cover;border:2px solid var(--navy);">
+                {% else %}
+                  <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                       style="width:38px;height:38px;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:15px;">
+                    {{ s.name[0] | upper }}
+                  </div>
+                {% endif %}
+                <div>
+                  <span class="fw-bold text-dark fs-6 student-name">{{ s.name }}</span>
+                  <span class="badge bg-light text-secondary border ms-1" style="font-size: 10px;">Roll #{{ s.roll_no or '--' }}</span>
+                </div>
               </div>
               {% if item.is_cleared %}
               <span class="badge badge-paid px-2 py-1 rounded-pill" style="font-size: 10px;">Fee Clear</span>
@@ -127,7 +141,6 @@
               <span class="badge badge-pending px-2 py-1 rounded-pill" style="font-size: 10px;">Due: Rs. {{ "{:,}".format(item.balance) }}</span>
               {% endif %}
             </div>
-
             <div class="text-muted small mb-2" style="font-size: 11px;">
               <span><i class="bi bi-book me-1"></i>{{ s.course }}</span>
               {% if s.batch %}<span class="ms-2"><i class="bi bi-clock me-1"></i>{{ s.batch }}</span>{% endif %}

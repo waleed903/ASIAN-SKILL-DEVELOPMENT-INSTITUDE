@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Master Administration Console - ASDI Academic Portal{% endblock %}
 
@@ -162,6 +162,7 @@
           <table class="table table-hover align-middle border rounded-3 overflow-hidden" style="font-size: 13px;">
             <thead class="table-light">
               <tr class="text-secondary fw-semibold">
+                <th>Photo</th>
                 <th>Admission ID / Roll #</th>
                 <th>Student Name & Father</th>
                 <th>Course / Batch</th>
@@ -178,6 +179,21 @@
               {% for item in students %}
               {% set s = item.student %}
               <tr class="admin-student-row">
+                <td>
+                  {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
+                    <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
+                         alt="{{ s.name }}"
+                         class="rounded-circle shadow-sm"
+                         style="width:42px;height:42px;object-fit:cover;border:2px solid var(--navy);"
+                         title="{{ s.name }}"
+                         data-bs-toggle="tooltip">
+                  {% else %}
+                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm mx-auto"
+                         style="width:42px;height:42px;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:16px;">
+                      {{ s.name[0] | upper }}
+                    </div>
+                  {% endif %}
+                </td>
                 <td class="font-monospace fw-bold text-dark">
                   <div>{{ s.admission_no }}</div>
                   <span class="badge bg-light text-secondary border" style="font-size: 10px;">Roll #{{ s.roll_no or '--' }}</span>
@@ -709,9 +725,22 @@
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-        <h6 class="modal-title fw-bold">
-          <i class="bi bi-pencil-square me-2 text-warning"></i>Edit Student: {{ s.name }} ({{ s.admission_no }})
-        </h6>
+        <div class="d-flex align-items-center gap-3">
+          {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
+            <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
+                 alt="{{ s.name }}"
+                 class="rounded-circle shadow"
+                 style="width:48px;height:48px;object-fit:cover;border:2px solid rgba(255,255,255,0.5);">
+          {% else %}
+            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                 style="width:48px;height:48px;background:rgba(255,255,255,0.15);color:white;font-size:20px;border:2px solid rgba(255,255,255,0.4);">
+              {{ s.name[0] | upper }}
+            </div>
+          {% endif %}
+          <h6 class="modal-title fw-bold mb-0">
+            <i class="bi bi-pencil-square me-2 text-warning"></i>Edit Student: {{ s.name }} ({{ s.admission_no }})
+          </h6>
+        </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="POST" action="{{ url_for('admin_edit_student', student_id=s.id) }}">
