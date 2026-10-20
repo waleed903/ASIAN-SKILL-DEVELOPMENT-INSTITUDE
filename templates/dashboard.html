@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Dashboard - {{ student.name }} | ASDI Portal{% endblock %}
 
@@ -33,15 +33,30 @@
   <!-- Student Profile Header Card -->
   <div class="portal-card p-3 mb-3" style="background: linear-gradient(135deg, #FFFFFF 60%, #F4F7FF 100%);">
     <div class="d-flex align-items-center gap-3">
-      <div class="position-relative">
-        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" 
-             style="width: 62px; height: 62px; background: linear-gradient(135deg, var(--navy-light), var(--navy)); color: white; font-size: 24px; border: 3px solid white;">
-          {{ student.name[0] | upper }}
-        </div>
-        <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle" title="Active Student">
-          <span class="visually-hidden">Active</span>
-        </span>
+      <div class="position-relative" style="flex-shrink:0;">
+        <!-- Profile Photo or Letter Avatar -->
+        {% if student.photo and student.photo != '' %}
+          <img src="{{ url_for('uploaded_profile', filename=student.photo) }}"
+               alt="{{ student.name }}"
+               class="rounded-circle shadow-sm"
+               style="width:68px;height:68px;object-fit:cover;border:3px solid white;">
+        {% else %}
+          <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm"
+               style="width:68px;height:68px;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:26px;border:3px solid white;">
+            {{ student.name[0] | upper }}
+          </div>
+        {% endif %}
+        <!-- Camera icon to trigger upload -->
+        <label for="photoUploadInput"
+               class="position-absolute bottom-0 end-0 bg-primary border border-white rounded-circle d-flex align-items-center justify-content-center"
+               style="width:24px;height:24px;cursor:pointer;" title="Apni Photo Upload Karein">
+          <i class="bi bi-camera-fill text-white" style="font-size:11px;"></i>
+        </label>
       </div>
+      <!-- Hidden photo upload form (auto-submits on file select) -->
+      <form id="photoUploadForm" method="POST" action="{{ url_for('student_upload_photo') }}" enctype="multipart/form-data" class="d-none">
+        <input type="file" id="photoUploadInput" name="photo" accept="image/png,image/jpeg,image/webp,image/gif" onchange="document.getElementById('photoUploadForm').submit();">
+      </form>
 
       <div class="flex-grow-1 overflow-hidden">
         <div class="d-flex align-items-center justify-content-between">
@@ -342,6 +357,35 @@
 
     <!-- 5. STUDENT PROFILE TAB -->
     <div class="tab-pane fade" id="tab-profile" role="tabpanel">
+
+      <!-- Profile Photo Upload Card -->
+      <div class="portal-card p-3 mb-3 text-center">
+        <h6 class="fw-bold mb-3" style="color: var(--navy); font-size: 13px;"><i class="bi bi-camera2 me-2 text-primary"></i>Profile Photo</h6>
+        <div class="d-flex flex-column align-items-center gap-3">
+          <!-- Large photo preview -->
+          {% if student.photo and student.photo != '' %}
+            <img src="{{ url_for('uploaded_profile', filename=student.photo) }}"
+                 alt="{{ student.name }}"
+                 class="rounded-circle shadow"
+                 style="width:100px;height:100px;object-fit:cover;border:4px solid var(--navy);">
+          {% else %}
+            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow"
+                 style="width:100px;height:100px;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:38px;border:4px solid var(--navy);">
+              {{ student.name[0] | upper }}
+            </div>
+          {% endif %}
+          <!-- Upload button -->
+          <form method="POST" action="{{ url_for('student_upload_photo') }}" enctype="multipart/form-data">
+            <label class="btn btn-sm btn-asdi px-3 py-2 rounded-3 fw-bold" style="cursor:pointer;">
+              <i class="bi bi-cloud-upload me-1"></i>
+              {% if student.photo and student.photo != '' %}Photo Change Karein{% else %}Photo Upload Karein{% endif %}
+              <input type="file" name="photo" accept="image/png,image/jpeg,image/webp,image/gif" class="d-none" onchange="this.form.submit()">
+            </label>
+          </form>
+          <p class="text-muted small mb-0" style="font-size:11px;">JPG, PNG, WEBP • Max 5MB</p>
+        </div>
+      </div>
+
       <div class="portal-card p-3 mb-3">
         <div class="d-flex align-items-center gap-2 mb-3">
           <i class="bi bi-person-lines-fill text-primary fs-5"></i>

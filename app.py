@@ -1,13 +1,22 @@
-import os
+﻿import os
 import sqlite3
 from datetime import datetime
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, abort
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, abort, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+# Profile photo upload config
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads", "profiles")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 app = Flask(
     __name__,
@@ -16,6 +25,8 @@ app = Flask(
 )
 
 app.secret_key = os.environ.get("SECRET_KEY", "asdi_portal_secret_key_2026_x92_multi_role")
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB max upload
 
 # Flexible Database Path Resolver
 def get_db_path():
@@ -751,6 +762,51 @@ def dashboard():
     )
 
 
+@app.route("/student/upload_photo", methods=["POST"])
+def student_upload_photo():
+    """Allows a logged-in student to upload/change their profile photo."""
+    if "student_id" not in session:
+        flash("Pehle login karein.", "danger")
+        return redirect(url_for("login"))
+
+    student_id = session["student_id"]
+
+    if "photo" not in request.files:
+        flash("Koi photo file select nahi ki gayi.", "warning")
+        return redirect(url_for("dashboard"))
+
+    file = request.files["photo"]
+    if file.filename == "":
+        flash("Photo file choose karein pehle.", "warning")
+        return redirect(url_for("dashboard"))
+
+    if file and allowed_file(file.filename):
+        ext = file.filename.rsplit(".", 1)[1].lower()
+        filename = f"student_{student_id}_{int(datetime.now().timestamp())}.{ext}"
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+
+        # Save filename to all DB copies
+        db_paths = [
+            os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db")),
+            os.path.join(BASE_DIR, "data", "asdi.db"),
+        ]
+        for p in db_paths:
+            if os.path.exists(p):
+                try:
+                    c = sqlite3.connect(p)
+                    c.execute("UPDATE students SET photo = ? WHERE id = ?", (filename, student_id))
+                    c.commit()
+                    c.close()
+                except Exception:
+                    pass
+
+        flash("Aap ki profile photo kamyabi se update ho gayi!", "success")
+    else:
+        flash("Invalid format. Sirf PNG, JPG, JPEG, WEBP allowed hain.", "danger")
+
+    return redirect(url_for("dashboard"))
+
 @app.route("/student/security_update", methods=["POST"])
 @student_required
 def student_security_update():
@@ -1423,6 +1479,11 @@ def receipt(receipt_id):
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+@app.route("/uploads/profiles/<filename>")
+def uploaded_profile(filename):
+    """Serves uploaded student profile photos."""
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 @app.route("/health")
 def health():
