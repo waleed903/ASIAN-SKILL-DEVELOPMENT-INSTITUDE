@@ -282,6 +282,42 @@
       });
     }
   </script>
+  
+  <!-- Global Profile Image Preview Lightbox / Modal -->
+  <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(8px); background: rgba(0,0,0,0.7);">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+      <div class="modal-content border-0 shadow-lg text-center" style="border-radius: 24px; overflow: hidden; background: #0b112c;">
+        <div class="modal-header border-0 pb-0 justify-content-end">
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));"></button>
+        </div>
+        <div class="modal-body p-4 pt-1">
+          <div class="d-inline-block position-relative mb-3">
+            <img id="previewModalImg" src="" alt="Profile Photo" class="img-fluid rounded-4 shadow-lg border border-3 border-white border-opacity-25" style="max-height: 380px; width: 100%; object-fit: contain; min-height: 220px; background: #060b24;">
+          </div>
+          <h5 id="previewModalTitle" class="fw-bold text-white mb-1">Student Profile</h5>
+          <p id="previewModalSubtitle" class="text-white-50 small mb-0"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function previewProfilePhoto(imgSrc, title, subtitle) {
+      if (!imgSrc) return;
+      const modalImg = document.getElementById('previewModalImg');
+      const modalTitle = document.getElementById('previewModalTitle');
+      const modalSub = document.getElementById('previewModalSubtitle');
+      
+      modalImg.src = imgSrc;
+      modalTitle.textContent = title || 'Student Profile';
+      modalSub.textContent = subtitle || '';
+      
+      const modalEl = document.getElementById('imagePreviewModal');
+      const bsModal = new bootstrap.Modal(modalEl);
+      bsModal.show();
+    }
+  </script>
+
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>
