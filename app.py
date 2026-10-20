@@ -50,7 +50,7 @@ def get_settings():
     except Exception:
         return {
             "inst_name": "Asian Skill Development Institute",
-            "phone": "0311-8386393",
+            "phone": "0344-4996072",
             "admin_pin": "1234",
             "principal_pin": "9999",
             "receptionist_pin": "1111",
@@ -64,7 +64,7 @@ def inject_globals():
     inst_name = settings.get("inst_name", "Asian Skill Development Institute")
     return {
         "inst_name": inst_name,
-        "inst_phone": settings.get("email_sender", "0311-8386393"),
+        "inst_phone": settings.get("phone", "0344-4996072"),
         "current_user_role": session.get("role"),
         "current_user_name": session.get("user_name"),
         "now": datetime.now()
