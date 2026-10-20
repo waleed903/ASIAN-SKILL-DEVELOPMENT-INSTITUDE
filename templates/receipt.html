@@ -1,135 +1,161 @@
-{% extends "base.html" %}
-
-{% block title %}Receipt #{{ payment.receipt_no or payment.id }} - ASDI{% endblock %}
-
-{% block extra_head %}
-<style>
-  @media print {
-    body {
-      background: white !important;
-      padding: 0 !important;
-    }
-    .no-print, header, .mobile-nav, #pwa-install-banner {
-      display: none !important;
-    }
-    .receipt-box {
-      box-shadow: none !important;
-      border: 1px solid #333 !important;
-      margin: 0 !important;
-      max-width: 100% !important;
-    }
-  }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="container py-3 px-3" style="max-width: 500px;">
-
-  <div class="d-flex justify-content-between align-items-center mb-3 no-print">
-    <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-      <i class="bi bi-arrow-left me-1"></i>Back
-    </a>
-    <button onclick="window.print()" class="btn btn-sm btn-primary rounded-pill px-3">
-      <i class="bi bi-printer me-1"></i>Print / Save
-    </button>
-  </div>
-
-  <div class="portal-card p-4 receipt-box bg-white">
-    <!-- Header -->
-    <div class="text-center pb-3 border-bottom mb-3">
-      <img src="{{ url_for('static', filename='logo.png') }}" alt="ASDI Logo" style="height: 50px;" class="mb-2">
-      <h6 class="fw-bold mb-0 text-uppercase" style="color: var(--navy); letter-spacing: 0.5px;">Asian Skill Development Institute</h6>
-      <div class="text-muted" style="font-size: 11px;">Official E-Fee Receipt / Payment Voucher</div>
-    </div>
-
-    <!-- Receipt Meta -->
-    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style="font-size: 12px;">
-      <div>
-        <span class="text-muted d-block">Receipt No:</span>
-        <span class="fw-bold text-dark">{{ payment.receipt_no or 'RC-' ~ payment.id }}</span>
-      </div>
-      <div class="text-end">
-        <span class="text-muted d-block">Payment Date:</span>
-        <span class="fw-bold text-dark">{{ payment.pay_date }}</span>
-      </div>
-    </div>
-
-    <!-- Student Details -->
-    <div class="mb-3">
-      <div class="small fw-bold text-secondary mb-2 text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Student Particulars</div>
-      <table class="table table-sm table-borderless mb-0" style="font-size: 12px;">
-        <tbody>
-          <tr>
-            <td class="text-muted py-1 ps-0" style="width: 38%;">Student Name:</td>
-            <td class="fw-bold text-dark py-1">{{ student.name }}</td>
-          </tr>
-          <tr>
-            <td class="text-muted py-1 ps-0">Father Name:</td>
-            <td class="text-dark py-1">{{ student.father_name }}</td>
-          </tr>
-          <tr>
-            <td class="text-muted py-1 ps-0">Admission No:</td>
-            <td class="fw-semibold text-primary py-1">{{ student.admission_no }}</td>
-          </tr>
-          <tr>
-            <td class="text-muted py-1 ps-0">Course / Batch:</td>
-            <td class="text-dark py-1">{{ student.course }} {% if student.batch %}({{ student.batch }}){% endif %}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Payment Amount Highlight -->
-    <div class="p-3 rounded-3 mb-3 text-center" style="background-color: #EBF8F2; border: 1px dashed #1F9D6B;">
-      <div class="text-success small fw-semibold text-uppercase" style="font-size: 11px;">Raqam Ada Shuda (Amount Paid)</div>
-      <div class="display-6 fw-bold text-success my-1" style="font-size: 28px;">
-        Rs. {{ "{:,}".format(payment.amount) }}
-      </div>
-      <div class="small text-muted" style="font-size: 11px;">
-        Method: <strong>{{ payment.method or 'Cash' }}</strong>
-      </div>
-    </div>
-
-    <!-- Fee Ledger Summary -->
-    <div class="p-3 rounded-3 bg-light border mb-3" style="font-size: 12px;">
-      <div class="d-flex justify-content-between py-1">
-        <span class="text-muted">Total Course Fee:</span>
-        <span class="fw-semibold">Rs. {{ "{:,}".format(student.total_fee or 0) }}</span>
-      </div>
-      {% if student.discount_amount > 0 %}
-      <div class="d-flex justify-content-between py-1 text-success">
-        <span>Discount:</span>
-        <span>- Rs. {{ "{:,}".format(student.discount_amount) }}</span>
-      </div>
-      {% endif %}
-      <div class="d-flex justify-content-between py-1 border-top">
-        <span class="text-muted">Total Paid Till Date:</span>
-        <span class="fw-semibold text-success">Rs. {{ "{:,}".format(cumulative_paid) }}</span>
-      </div>
-      <div class="d-flex justify-content-between py-1 border-top fw-bold" style="color: var(--navy);">
-        <span>Remaining Balance (Baqi):</span>
-        <span class="{% if remaining_balance > 0 %}text-danger{% else %}text-success{% endif %}">
-          Rs. {{ "{:,}".format(remaining_balance) }}
-        </span>
-      </div>
-    </div>
-
-    {% if payment.note %}
-    <div class="mb-3 small text-muted fst-italic" style="font-size: 11px;">
-      <strong>Note:</strong> {{ payment.note }}
-    </div>
-    {% endif %}
-
-    <!-- Verification Footer -->
-    <div class="text-center pt-2 border-top">
-      <div class="d-inline-flex align-items-center gap-1 text-success fw-semibold small mb-1" style="font-size: 11px;">
-        <i class="bi bi-patch-check-fill"></i> Digitally Verified by ASDI Accounts
-      </div>
-      <div class="text-muted" style="font-size: 10px;">
-        This is a computer-generated voucher issued by Asian Skill Development Institute.
-      </div>
-    </div>
-  </div>
-
-</div>
-{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Receipt #{{ payment.receipt_no or payment.id }} - ASDI{% endblock %}
+
+{% block extra_head %}
+<style>
+  @media print {
+    body {
+      background: white !important;
+      padding: 0 !important;
+    }
+    .no-print, header, .mobile-nav, #pwa-install-banner {
+      display: none !important;
+    }
+    .receipt-box {
+      box-shadow: none !important;
+      border: 1px solid #333 !important;
+      margin: 0 !important;
+      max-width: 100% !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-3 px-3" style="max-width: 500px;">
+
+  <div class="d-flex justify-content-between align-items-center mb-3 no-print flex-wrap gap-2">
+    <a href="{{ back_url or url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+    <div class="d-flex gap-2">
+      <!-- WhatsApp Share Button -->
+      {% set wa_clean_phone = (student.whatsapp or student.phone or '')|replace('-', '')|replace(' ', '') %}
+      {% if wa_clean_phone.startswith('0') %}
+        {% set wa_num = '92' ~ wa_clean_phone[1:] %}
+      {% else %}
+        {% set wa_num = wa_clean_phone %}
+      {% endif %}
+      {% set wa_msg = '?? *ASIAN SKILL DEVELOPMENT INSTITUTE*\n' ~
+                      '??????????????????????\n' ~
+                      '?? *OFFICIAL FEE RECEIPT*\n' ~
+                      '??????????????????????\n' ~
+                      '?? *Receipt No:* ' ~ (payment.receipt_no or ('REC-' ~ payment.id)) ~ '\n' ~
+                      '?? *Date:* ' ~ payment.pay_date ~ '\n' ~
+                      '?? *Student Name:* ' ~ student.name ~ '\n' ~
+                      '?? *Course:* ' ~ student.course ~ '\n' ~
+                      '?? *Payment Method:* ' ~ (payment.method or 'Cash') ~ '\n' ~
+                      '?? *Amount Paid:* Rs. ' ~ "{:,}".format(payment.amount) ~ '\n' ~
+                      '?? *Remaining Balance:* Rs. ' ~ "{:,}".format(remaining_balance) ~ '\n' ~
+                      '??????????????????????\n' ~
+                      '? *Digitally Verified Voucher*\n' ~
+                      'Helpline: 0344-4996072' %}
+      <a href="https://api.whatsapp.com/send?phone={{ wa_num }}&text={{ wa_msg | urlencode }}" target="_blank" class="btn btn-sm btn-success rounded-pill px-3 fw-bold">
+        <i class="bi bi-whatsapp me-1"></i>WhatsApp Slip
+      </a>
+      <button onclick="window.print()" class="btn btn-sm btn-primary rounded-pill px-3">
+        <i class="bi bi-printer me-1"></i>Print / Save
+      </button>
+    </div>
+  </div>
+
+  <div class="portal-card p-4 receipt-box bg-white">
+    <!-- Header -->
+    <div class="text-center pb-3 border-bottom mb-3">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="ASDI Logo" style="height: 50px;" class="mb-2">
+      <h6 class="fw-bold mb-0 text-uppercase" style="color: var(--navy); letter-spacing: 0.5px;">Asian Skill Development Institute</h6>
+      <div class="text-muted" style="font-size: 11px;">Official E-Fee Receipt / Payment Voucher</div>
+    </div>
+
+    <!-- Receipt Meta -->
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style="font-size: 12px;">
+      <div>
+        <span class="text-muted d-block">Receipt No:</span>
+        <span class="fw-bold text-dark">{{ payment.receipt_no or 'RC-' ~ payment.id }}</span>
+      </div>
+      <div class="text-end">
+        <span class="text-muted d-block">Payment Date:</span>
+        <span class="fw-bold text-dark">{{ payment.pay_date }}</span>
+      </div>
+    </div>
+
+    <!-- Student Details -->
+    <div class="mb-3">
+      <div class="small fw-bold text-secondary mb-2 text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Student Particulars</div>
+      <table class="table table-sm table-borderless mb-0" style="font-size: 12px;">
+        <tbody>
+          <tr>
+            <td class="text-muted py-1 ps-0" style="width: 38%;">Student Name:</td>
+            <td class="fw-bold text-dark py-1">{{ student.name }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted py-1 ps-0">Father Name:</td>
+            <td class="text-dark py-1">{{ student.father_name }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted py-1 ps-0">Admission No:</td>
+            <td class="fw-semibold text-primary py-1">{{ student.admission_no }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted py-1 ps-0">Course / Batch:</td>
+            <td class="text-dark py-1">{{ student.course }} {% if student.batch %}({{ student.batch }}){% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Payment Amount Highlight -->
+    <div class="p-3 rounded-3 mb-3 text-center" style="background-color: #EBF8F2; border: 1px dashed #1F9D6B;">
+      <div class="text-success small fw-semibold text-uppercase" style="font-size: 11px;">Raqam Ada Shuda (Amount Paid)</div>
+      <div class="display-6 fw-bold text-success my-1" style="font-size: 28px;">
+        Rs. {{ "{:,}".format(payment.amount) }}
+      </div>
+      <div class="small text-muted" style="font-size: 11px;">
+        Method: <strong>{{ payment.method or 'Cash' }}</strong>
+      </div>
+    </div>
+
+    <!-- Fee Ledger Summary -->
+    <div class="p-3 rounded-3 bg-light border mb-3" style="font-size: 12px;">
+      <div class="d-flex justify-content-between py-1">
+        <span class="text-muted">Total Course Fee:</span>
+        <span class="fw-semibold">Rs. {{ "{:,}".format(student.total_fee or 0) }}</span>
+      </div>
+      {% if student.discount_amount > 0 %}
+      <div class="d-flex justify-content-between py-1 text-success">
+        <span>Discount:</span>
+        <span>- Rs. {{ "{:,}".format(student.discount_amount) }}</span>
+      </div>
+      {% endif %}
+      <div class="d-flex justify-content-between py-1 border-top">
+        <span class="text-muted">Total Paid Till Date:</span>
+        <span class="fw-semibold text-success">Rs. {{ "{:,}".format(cumulative_paid) }}</span>
+      </div>
+      <div class="d-flex justify-content-between py-1 border-top fw-bold" style="color: var(--navy);">
+        <span>Remaining Balance (Baqi):</span>
+        <span class="{% if remaining_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+          Rs. {{ "{:,}".format(remaining_balance) }}
+        </span>
+      </div>
+    </div>
+
+    {% if payment.note %}
+    <div class="mb-3 small text-muted fst-italic" style="font-size: 11px;">
+      <strong>Note:</strong> {{ payment.note }}
+    </div>
+    {% endif %}
+
+    <!-- Verification Footer -->
+    <div class="text-center pt-2 border-top">
+      <div class="d-inline-flex align-items-center gap-1 text-success fw-semibold small mb-1" style="font-size: 11px;">
+        <i class="bi bi-patch-check-fill"></i> Digitally Verified by ASDI Accounts
+      </div>
+      <div class="text-muted" style="font-size: 10px;">
+        This is a computer-generated voucher issued by Asian Skill Development Institute.
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
