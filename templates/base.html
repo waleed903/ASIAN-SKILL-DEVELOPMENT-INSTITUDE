@@ -200,17 +200,31 @@
     </div>
     {% if current_user_role %}
     <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-white text-dark py-1 px-2 rounded-pill fw-semibold" style="font-size: 11px;">
+      {% if current_user_role == 'admin' %}
+      <a href="{{ url_for('online_admission') }}" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-1" style="font-size: 11px;">
+        <i class="bi bi-plus-circle me-1"></i>Admission Form
+      </a>
+      {% endif %}
+      <span class="badge bg-white text-dark py-1 px-2.5 rounded-pill fw-semibold shadow-sm" style="font-size: 11px;">
         {% if current_user_role == 'admin' %}
-          <i class="bi bi-shield-check text-primary me-1"></i>Admin
+          <i class="bi bi-shield-check text-primary me-1"></i>Administrator
         {% elif current_user_role == 'staff' %}
-          <i class="bi bi-person-workspace text-primary me-1"></i>{{ (current_user_name or 'Staff').split(' ')[0] }}
+          <i class="bi bi-person-workspace text-primary me-1"></i>{{ (current_user_name or 'Faculty').split(' ')[0] }}
         {% else %}
           <i class="bi bi-mortarboard-fill text-primary me-1"></i>{{ (current_user_name or 'Student').split(' ')[0] }}
         {% endif %}
       </span>
-      <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-light rounded-pill px-2 py-1" style="font-size: 11px;" title="Logout">
+      <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-light rounded-pill px-2 py-1" style="font-size: 11px;" title="Sign Out">
         <i class="bi bi-box-arrow-right"></i>
+      </a>
+    </div>
+    {% else %}
+    <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('online_admission') }}" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;">
+        <i class="bi bi-mortarboard me-1"></i>Online Admission
+      </a>
+      <a href="{{ url_for('login') }}" class="btn btn-sm btn-light text-navy rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px; color: var(--navy);">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
       </a>
     </div>
     {% endif %}

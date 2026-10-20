@@ -407,29 +407,41 @@
         </div>
 
         <p class="text-muted small mb-3" style="font-size: 11.5px; line-height: 1.4;">
-          Koi dusra aap ka Roll Number daal kar aap ka record ya mobile number na dekh sake, is ke liye apna Email aur PIN yahan se update karein:
+          Apne account ko mehfooz rakhne ke liye apna verified Email aur strong Security Password update karein:
         </p>
 
         <form method="POST" action="{{ url_for('student_security_update') }}">
           <div class="mb-3">
-            <label class="form-label small fw-semibold text-secondary mb-1">Apna Personal Email</label>
+            <label class="form-label small fw-semibold text-secondary mb-1">Registered Student Email</label>
             <div class="input-group input-group-sm">
               <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
-              <input type="email" name="email" class="form-control" value="{{ student.email or '' }}" placeholder="e.g. shafaq@gmail.com" required>
+              <input type="email" name="email" class="form-control" value="{{ student.email or '' }}" placeholder="e.g. shafaq@asdi.edu" required>
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label small fw-semibold text-secondary mb-1">4-Digit Security PIN (Ikhtiyari)</label>
+          {% if student.password_hash or student.pin %}
+          <div class="mb-2">
+            <label class="form-label small fw-semibold text-secondary mb-1">Current Password (if changing)</label>
             <div class="input-group input-group-sm">
-              <span class="input-group-text bg-light text-muted"><i class="bi bi-key"></i></span>
-              <input type="password" maxlength="6" name="pin" class="form-control" value="{{ student.pin or '' }}" placeholder="e.g. 1234">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-shield-lock"></i></span>
+              <input type="password" name="current_password" class="form-control" placeholder="Puraana password darj karein">
             </div>
-            <div class="form-text" style="font-size: 10.5px;">PIN set karne par aap Roll No aur is PIN se bhi login kar saken gay.</div>
+          </div>
+          {% endif %}
+
+          <div class="row g-2 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label small fw-semibold text-secondary mb-1">Naya Password</label>
+              <input type="password" minlength="6" name="new_password" class="form-control form-control-sm" placeholder="Naya password (min 6)">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-semibold text-secondary mb-1">Confirm Password</label>
+              <input type="password" minlength="6" name="confirm_password" class="form-control form-control-sm" placeholder="Dobara naya password">
+            </div>
           </div>
 
-          <button type="submit" class="btn btn-sm btn-asdi w-100 py-2 rounded-3 shadow-sm">
-            <i class="bi bi-shield-check me-1"></i>Save Security Settings
+          <button type="submit" class="btn btn-sm btn-asdi w-100 py-2 rounded-3 shadow-sm fw-bold">
+            <i class="bi bi-shield-check me-1"></i>Save Email & Password
           </button>
         </form>
       </div>
