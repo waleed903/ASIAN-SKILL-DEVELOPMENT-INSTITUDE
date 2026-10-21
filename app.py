@@ -1,4 +1,4 @@
-﻿import os
+import os
 
 import sqlite3
 
@@ -140,6 +140,8 @@ def inject_globals():
 
         "current_user_name": session.get("user_name"),
 
+        "admin_dp": settings.get("admin_dp", ""),
+
         "now": datetime.now()
 
     }
@@ -216,6 +218,43 @@ def init_required_tables():
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
+                # Staff chat messages (No limits, instant AJAX poll)
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS staff_chat_messages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        sender_id INTEGER NOT NULL,
+                        sender_name TEXT NOT NULL,
+                        sender_role TEXT,
+                        sender_photo TEXT,
+                        receiver_id INTEGER DEFAULT 0,
+                        message TEXT NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                # Staff attendance table
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS staff_attendance (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        staff_id INTEGER NOT NULL,
+                        att_date TEXT NOT NULL,
+                        status TEXT DEFAULT 'Present',
+                        check_in TEXT,
+                        check_out TEXT,
+                        note TEXT
+                    )
+                """)
+                # Ensure staff & staff_attendance columns exist
+                try:
+                    staff_cols = [col[1] for col in c.execute("PRAGMA table_info(staff)").fetchall()]
+                    if "photo" not in staff_cols:
+                        c.execute("ALTER TABLE staff ADD COLUMN photo TEXT")
+                    sa_cols = [col[1] for col in c.execute("PRAGMA table_info(staff_attendance)").fetchall()]
+                    if "note" not in sa_cols:
+                        c.execute("ALTER TABLE staff_attendance ADD COLUMN note TEXT")
+                    if "check_out" not in sa_cols:
+                        c.execute("ALTER TABLE staff_attendance ADD COLUMN check_out TEXT")
+                except Exception:
+                    pass
                 c.commit()
                 c.close()
             except Exception:
@@ -1637,20 +1676,32 @@ def staff_dashboard():
         })
 
     # Staff's own attendance
-
     staff_att = conn.execute(
-
         "SELECT * FROM staff_attendance WHERE staff_id = ? ORDER BY att_date DESC LIMIT 30",
-
         (staff_id,)
-
     ).fetchall()
+
+    # All staff chat messages (No limit)
+    chat_messages = conn.execute("""
+        SELECT * FROM staff_chat_messages 
+        ORDER BY id ASC 
+        LIMIT 100
+    """).fetchall()
+
+    # Staff list for direct or broadcast
+    all_colleagues = conn.execute("SELECT id, name, role, photo FROM staff WHERE id != ? ORDER BY name ASC", (staff_id,)).fetchall()
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    today_staff_att = conn.execute("SELECT * FROM staff_attendance WHERE staff_id = ? AND att_date = ?", (staff_id, today_str)).fetchone()
 
     conn.close()
 
     return render_template(
 
         "staff_dashboard.html",
+        chat_messages=chat_messages,
+        all_colleagues=all_colleagues,
+        today_staff_att=today_staff_att,
 
         staff=staff,
 
@@ -1872,6 +1923,22 @@ def admin_dashboard():
         ORDER BY er.id DESC
     """).fetchall()
 
+    # Staff / Teacher attendance records
+    staff_attendance_list = conn.execute("""
+        SELECT sa.*, st.name as staff_name, st.role as staff_role, st.photo as staff_photo
+        FROM staff_attendance sa
+        JOIN staff st ON st.id = sa.staff_id
+        ORDER BY sa.att_date DESC, sa.id DESC
+        LIMIT 100
+    """).fetchall()
+
+    # Today's marked staff attendance map
+    today_staff_att_map = {
+        r["staff_id"]: r["status"] for r in conn.execute(
+            "SELECT staff_id, status FROM staff_attendance WHERE att_date = ?", (today_str,)
+        ).fetchall()
+    }
+
     # Online payment requests (EasyPaisa)
     online_payment_requests = conn.execute("""
         SELECT opr.*, s.name as student_name, s.admission_no, s.roll_no, s.course, s.phone
@@ -1907,7 +1974,9 @@ def admin_dashboard():
         all_results=all_results,
         today_str=today_str,
         online_payment_requests=online_payment_requests,
-        pending_online_payments=pending_online_payments
+        pending_online_payments=pending_online_payments,
+        staff_attendance_list=staff_attendance_list,
+        today_staff_att_map=today_staff_att_map
     )
 
 # ---------------------------------------------------------------------------
@@ -3486,6 +3555,219 @@ def receipt_download(receipt_id):
 
     return redirect(url_for("receipt", receipt_id=receipt_id))
 
+
+# ---------------------------------------------------------------------------
+# STAFF CHAT & PHOTO ROUTES
+# ---------------------------------------------------------------------------
+
+@app.route("/staff/upload_photo", methods=["POST"])
+@staff_required
+def staff_upload_photo():
+    """Staff uploads/updates their profile photo."""
+    staff_id = session["staff_id"]
+    if "photo" not in request.files:
+        flash("Koi photo file select nahi ki gayi.", "warning")
+        return redirect(url_for("staff_dashboard"))
+    file = request.files["photo"]
+    if file.filename == "":
+        flash("Photo choose karein pehle.", "warning")
+        return redirect(url_for("staff_dashboard"))
+    if file and allowed_file(file.filename):
+        ext = file.filename.rsplit(".", 1)[1].lower()
+        filename = f"staff_{staff_id}_{int(datetime.now().timestamp())}.{ext}"
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+
+        # Update in all DB copies
+        paths = [
+            os.path.join(BASE_DIR, "data", "asdi.db"),
+            os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db"))
+        ]
+        for p in paths:
+            if os.path.exists(p):
+                try:
+                    c = sqlite3.connect(p)
+                    c.execute("UPDATE staff SET photo = ? WHERE id = ?", (filename, staff_id))
+                    c.commit()
+                    c.close()
+                except Exception:
+                    pass
+        flash("Faculty profile photo kamyabi se update ho gayi!", "success")
+    else:
+        flash("Invalid photo format. PNG, JPG, JPEG, WEBP allowed.", "danger")
+    return redirect(url_for("staff_dashboard"))
+
+
+@app.route("/staff/send_chat", methods=["POST"])
+@staff_required
+def staff_send_chat():
+    """Staff sends chat message to colleagues (No limit, instant delivery)."""
+    staff_id = session["staff_id"]
+    message = request.form.get("message", "").strip()
+    receiver_id = int(request.form.get("receiver_id", 0) or 0)
+    if not message:
+        return jsonify({"status": "error", "msg": "Khali message nahi bheja ja sakta."}), 400
+
+    conn = get_db_connection()
+    sender = conn.execute("SELECT name, role, photo FROM staff WHERE id = ?", (staff_id,)).fetchone()
+    sender_name = sender["name"] if sender else session.get("user_name", "Faculty")
+    sender_role = sender["role"] if sender else "Staff"
+    sender_photo = sender["photo"] if (sender and "photo" in sender.keys()) else ""
+
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO staff_chat_messages (sender_id, sender_name, sender_role, sender_photo, receiver_id, message)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (staff_id, sender_name, sender_role, sender_photo, receiver_id, message))
+    msg_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+
+    # Check if AJAX
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+        return jsonify({
+            "status": "success",
+            "message_id": msg_id,
+            "sender_name": sender_name,
+            "sender_photo": sender_photo,
+            "text": message,
+            "time": datetime.now().strftime("%I:%M %p")
+        })
+    flash("Message sent!", "success")
+    return redirect(url_for("staff_dashboard"))
+
+
+@app.route("/staff/get_chat_messages")
+@staff_required
+def staff_get_chat_messages():
+    """Live polling endpoint for staff chat messages."""
+    after_id = int(request.args.get("after_id", 0) or 0)
+    current_staff_id = session.get("staff_id", 0)
+    conn = get_db_connection()
+    rows = conn.execute("""
+        SELECT * FROM staff_chat_messages
+        WHERE id > ? AND (receiver_id = 0 OR receiver_id = ? OR sender_id = ?)
+        ORDER BY id ASC
+        LIMIT 50
+    """, (after_id, current_staff_id, current_staff_id)).fetchall()
+    conn.close()
+
+    messages = []
+    for r in rows:
+        created_dt = r["created_at"]
+        formatted_time = created_dt
+        try:
+            dt = datetime.strptime(str(created_dt)[:19], "%Y-%m-%d %H:%M:%S")
+            formatted_time = dt.strftime("%I:%M %p")
+        except Exception:
+            pass
+        messages.append({
+            "id": r["id"],
+            "sender_id": r["sender_id"],
+            "sender_name": r["sender_name"],
+            "sender_role": r["sender_role"] or "Staff",
+            "sender_photo": r["sender_photo"] or "",
+            "message": r["message"],
+            "is_me": (r["sender_id"] == current_staff_id),
+            "time": formatted_time
+        })
+    return jsonify({"status": "success", "messages": messages})
+
+
+# ---------------------------------------------------------------------------
+# ADMIN DP (PROFILE PICTURE) UPLOAD ROUTE
+# ---------------------------------------------------------------------------
+
+@app.route("/admin/upload_dp", methods=["POST"])
+@admin_required
+def admin_upload_dp():
+    """Admin uploads custom profile picture."""
+    if "admin_photo" not in request.files:
+        flash("Koi image file select nahi ki gayi.", "warning")
+        return redirect(url_for("admin_dashboard"))
+    file = request.files["admin_photo"]
+    if file.filename == "":
+        flash("DP photo file choose karein.", "warning")
+        return redirect(url_for("admin_dashboard"))
+    if file and allowed_file(file.filename):
+        ext = file.filename.rsplit(".", 1)[1].lower()
+        filename = f"admin_dp_{int(datetime.now().timestamp())}.{ext}"
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+
+        # Store in settings table in all DB paths
+        paths = [
+            os.path.join(BASE_DIR, "data", "asdi.db"),
+            os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db"))
+        ]
+        for p in paths:
+            if os.path.exists(p):
+                try:
+                    c = sqlite3.connect(p)
+                    c.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_dp', ?)", (filename,))
+                    c.commit()
+                    c.close()
+                except Exception:
+                    pass
+        flash("Admin Display Picture (DP) kamyabi se update ho gayi!", "success")
+    else:
+        flash("Invalid format. PNG, JPG, JPEG, WEBP allowed.", "danger")
+    return redirect(url_for("admin_dashboard"))
+
+
+# ---------------------------------------------------------------------------
+# STAFF / TEACHER ATTENDANCE (MARK & ADMIN OVERVIEW)
+# ---------------------------------------------------------------------------
+
+@app.route("/staff/mark_self_attendance", methods=["POST"])
+@staff_required
+def staff_mark_self_attendance():
+    """Teacher marks their daily check-in."""
+    staff_id = session["staff_id"]
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    now_time = datetime.now().strftime("%I:%M %p")
+    status = request.form.get("status", "Present").strip()
+    note = request.form.get("note", "").strip()
+
+    conn = get_db_connection()
+    existing = conn.execute("SELECT id FROM staff_attendance WHERE staff_id = ? AND att_date = ?", (staff_id, today_str)).fetchone()
+    if existing:
+        conn.execute("UPDATE staff_attendance SET status = ?, note = ? WHERE id = ?", (status, note, existing["id"]))
+        flash(f"Aap ki aaj ki attendance ({status}) update ho gayi!", "info")
+    else:
+        conn.execute("""
+            INSERT INTO staff_attendance (staff_id, att_date, status, check_in, note)
+            VALUES (?, ?, ?, ?, ?)
+        """, (staff_id, today_str, status, now_time, note))
+        flash(f"Aap ki attendance mark ho gayi! Check-in: {now_time}", "success")
+    conn.commit()
+    conn.close()
+    return redirect(url_for("staff_dashboard"))
+
+
+@app.route("/admin/staff_attendance/mark", methods=["POST"])
+@admin_required
+def admin_mark_staff_attendance():
+    """Admin marks or updates staff attendance."""
+    staff_id = int(request.form.get("staff_id"))
+    att_date = request.form.get("att_date", datetime.now().strftime("%Y-%m-%d")).strip()
+    status = request.form.get("status", "Present").strip()
+    check_in = request.form.get("check_in", datetime.now().strftime("%I:%M %p")).strip()
+    note = request.form.get("note", "").strip()
+
+    conn = get_db_connection()
+    existing = conn.execute("SELECT id FROM staff_attendance WHERE staff_id = ? AND att_date = ?", (staff_id, att_date)).fetchone()
+    if existing:
+        conn.execute("UPDATE staff_attendance SET status = ?, check_in = ?, note = ? WHERE id = ?", (status, check_in, note, existing["id"]))
+    else:
+        conn.execute("""
+            INSERT INTO staff_attendance (staff_id, att_date, status, check_in, note)
+            VALUES (?, ?, ?, ?, ?)
+        """, (staff_id, att_date, status, check_in, note))
+    conn.commit()
+    conn.close()
+    flash(f"Staff attendance ({status}) kamyabi se record ho gayi!", "success")
+    return redirect(url_for("admin_dashboard"))
 @app.route("/logout")
 
 def logout():

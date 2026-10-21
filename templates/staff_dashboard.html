@@ -1,305 +1,864 @@
-﻿{% extends "base.html" %}
-
-{% block title %}Teacher Portal - {{ staff.name }} | ASDI{% endblock %}
-
-{% block content %}
-<div class="container py-3 px-3" style="max-width: 650px;">
-
-  <!-- Teacher Profile Header Card -->
-  <div class="portal-card p-3 mb-3" style="background: linear-gradient(135deg, #FFFFFF 60%, #F4F7FF 100%);">
-    <div class="d-flex align-items-center gap-3">
-      <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" 
-           style="width: 58px; height: 58px; background: linear-gradient(135deg, #1B2A9A, #0D186E); color: white; font-size: 22px;">
-        {{ staff.name[0] | upper }}
-      </div>
-      <div class="flex-grow-1 overflow-hidden">
-        <div class="d-flex align-items-center justify-content-between">
-          <h5 class="fw-bold mb-0 text-truncate" style="color: var(--navy); font-size: 17px;">{{ staff.name }}</h5>
-          <span class="badge bg-primary text-white rounded-pill px-2 py-1" style="font-size: 10px;">
-            {{ staff.role }}
-          </span>
-        </div>
-        <div class="text-muted small" style="font-size: 12px;">
-          <i class="bi bi-book me-1"></i>{{ staff.subject or 'General Faculty' }}
-        </div>
-        <div class="d-flex flex-wrap gap-1 mt-1">
-          <span class="badge bg-light text-secondary border rounded-pill" style="font-size: 11px;">
-            <i class="bi bi-telephone me-1"></i>{{ staff.phone }}
-          </span>
-          {% if share_pct > 0 %}
-          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 11px;">
-            <i class="bi bi-pie-chart-fill me-1"></i>{{ share_pct }}% Share Basis
-          </span>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Summary Cards -->
-  <div class="row g-2 mb-3">
-    <!-- Total Students -->
-    <div class="col-6">
-      <div class="portal-card p-3">
-        <div class="text-muted small" style="font-size: 11px;">
-          <i class="bi bi-people-fill me-1 text-primary"></i>Mere Students
-        </div>
-        <div class="fw-bold fs-4 mt-1" style="color: var(--navy);">
-          {{ total_students }} <span class="fs-6 fw-normal text-muted">Students</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Total Fee Collected -->
-    <div class="col-6">
-      <div class="portal-card p-3">
-        <div class="text-muted small" style="font-size: 11px;">
-          <i class="bi bi-cash-stack me-1 text-success"></i>Students Fee Paid
-        </div>
-        <div class="fw-bold fs-5 mt-1 text-success">
-          Rs. {{ "{:,}".format(total_fee_collected) }}
-        </div>
-      </div>
-    </div>
-
-    {% if share_pct > 0 %}
-    <!-- Teacher Share / Earning -->
-    <div class="col-6">
-      <div class="portal-card p-3 bg-light border-success">
-        <div class="text-success small fw-bold" style="font-size: 11px;">
-          <i class="bi bi-award-fill me-1"></i>Mera Share ({{ share_pct }}%)
-        </div>
-        <div class="fw-bold fs-5 mt-1 text-success">
-          Rs. {{ "{:,}".format(share_earning | int) }}
-        </div>
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- Pending Balance -->
-    <div class="col-{% if share_pct > 0 %}6{% else %}12{% endif %}">
-      <div class="portal-card p-3">
-        <div class="text-muted small" style="font-size: 11px;">
-          <i class="bi bi-hourglass-split me-1 text-danger"></i>Baqi Fee (Pending)
-        </div>
-        <div class="fw-bold fs-5 mt-1 text-danger">
-          Rs. {{ "{:,}".format(total_pending_balance) }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB PANELS -->
-  <div class="tab-content" id="staffTabsContent">
-
-    <!-- TAB 1: MY STUDENTS -->
-    <div class="tab-pane fade show active" id="tab-my-students" role="tabpanel">
-      <div class="portal-card p-3 mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-person-lines-fill text-primary fs-5"></i>
-            <h6 class="fw-bold mb-0" style="color: var(--navy);">Mere Assigned Students</h6>
-          </div>
-          <span class="badge bg-light text-secondary border rounded-pill">{{ students | length }} Total</span>
-        </div>
-
-        <!-- Search Input -->
-        <div class="mb-3">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-            <input type="text" id="studentSearch" class="form-control bg-light border-start-0" placeholder="Student name ya roll no search karein...">
-          </div>
-        </div>
-
-        {% if students %}
-        <div class="d-flex flex-column gap-2" id="studentListContainer">
-          {% for item in students %}
-          {% set s = item.student %}
-          <div class="p-3 border rounded-3 bg-white student-item">
-            <div class="d-flex justify-content-between align-items-start mb-1">
-              <div class="d-flex align-items-center gap-2">
-                <!-- Student Photo (small) -->
-                {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
-                  <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
-                       alt="{{ s.name }}"
-                       class="rounded-circle flex-shrink-0"
-                       style="width:38px;height:38px;object-fit:cover;border:2px solid var(--navy);cursor:pointer;transition:transform 0.2s;"
-                       onmouseover="this.style.transform='scale(1.15)'"
-                       onmouseout="this.style.transform='scale(1)'"
-                       onclick="previewProfilePhoto(this.src, '{{ s.name }}', '{{ s.course }} (Roll #{{ s.roll_no or '--' }})')"
-                       title="Click to view full photo">
-                {% else %}
-                  <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                       style="width:38px;height:38px;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:15px;">
-                    {{ s.name[0] | upper }}
-                  </div>
-                {% endif %}
-                <div>
-                  <span class="fw-bold text-dark fs-6 student-name">{{ s.name }}</span>
-                  <span class="badge bg-light text-secondary border ms-1" style="font-size: 10px;">Roll #{{ s.roll_no or '--' }}</span>
-                </div>
-              </div>
-              {% if item.is_cleared %}
-              <span class="badge badge-paid px-2 py-1 rounded-pill" style="font-size: 10px;">Fee Clear</span>
-              {% else %}
-              <span class="badge badge-pending px-2 py-1 rounded-pill" style="font-size: 10px;">Due: Rs. {{ "{:,}".format(item.balance) }}</span>
-              {% endif %}
-            </div>
-            <div class="text-muted small mb-2" style="font-size: 11px;">
-              <span><i class="bi bi-book me-1"></i>{{ s.course }}</span>
-              {% if s.batch %}<span class="ms-2"><i class="bi bi-clock me-1"></i>{{ s.batch }}</span>{% endif %}
-              {% if s.phone %}<span class="ms-2"><i class="bi bi-telephone me-1"></i>{{ s.phone }}</span>{% endif %}
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="font-size: 11px;">
-              <span>Total Fee: <strong>Rs. {{ "{:,}".format(item.net_fee) }}</strong></span>
-              <span class="text-success">Paid: <strong>Rs. {{ "{:,}".format(item.paid) }}</strong></span>
-              <span class="{% if item.balance > 0 %}text-danger{% else %}text-muted{% endif %}">
-                Baqi: <strong>Rs. {{ "{:,}".format(item.balance) }}</strong>
-              </span>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="text-center py-4 text-muted">
-          <i class="bi bi-people display-6 opacity-25 d-block mb-2"></i>
-          <span class="small">Is waqt aapko koi student assign nahi hua.</span>
-        </div>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- TAB 2: PAYMENTS RECEIVED -->
-    <div class="tab-pane fade" id="tab-my-payments" role="tabpanel">
-      <div class="portal-card p-3 mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-receipt-cutoff text-success fs-5"></i>
-            <h6 class="fw-bold mb-0" style="color: var(--navy);">Students Ki Jama Shuda Raseedein</h6>
-          </div>
-          <span class="badge bg-light text-secondary border rounded-pill">{{ payments | length }} Raseedein</span>
-        </div>
-
-        {% if payments %}
-        <div class="d-flex flex-column gap-2">
-          {% for p in payments %}
-          <div class="p-2 border rounded-3 bg-light bg-opacity-50 d-flex justify-content-between align-items-center">
-            <div>
-              <div class="fw-bold text-dark" style="font-size: 13px;">{{ p.student_name }}</div>
-              <div class="text-muted" style="font-size: 11px;">
-                <span class="badge bg-white border text-secondary me-1">{{ p.receipt_no or 'RC-' ~ p.id }}</span>
-                <span>{{ p.pay_date }}</span> &bull; <span>{{ p.method or 'Cash' }}</span>
-              </div>
-            </div>
-            <div class="text-end">
-              <div class="fw-bold text-success" style="font-size: 14px;">Rs. {{ "{:,}".format(p.amount) }}</div>
-              <a href="{{ url_for('receipt', receipt_id=p.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size: 10px;">
-                <i class="bi bi-eye me-1"></i>View Slip
-              </a>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="text-center py-4 text-muted">
-          <i class="bi bi-wallet display-6 opacity-25 d-block mb-2"></i>
-          <span class="small">Aapke students ki koi payment record nahi mili.</span>
-        </div>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- TAB 3: ATTENDANCE & PROFILE -->
-    <div class="tab-pane fade" id="tab-my-profile" role="tabpanel">
-      <div class="portal-card p-3 mb-3">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <i class="bi bi-person-badge text-primary fs-5"></i>
-          <h6 class="fw-bold mb-0" style="color: var(--navy);">Staff Profile & Duties</h6>
-        </div>
-
-        <ul class="list-group list-group-flush small" style="font-size: 12px;">
-          <li class="list-group-item d-flex justify-content-between px-0 py-2">
-            <span class="text-muted">Staff Name:</span>
-            <span class="fw-bold text-dark">{{ staff.name }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between px-0 py-2">
-            <span class="text-muted">Role:</span>
-            <span class="badge bg-primary text-white">{{ staff.role }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between px-0 py-2">
-            <span class="text-muted">Subject / Department:</span>
-            <span class="fw-semibold text-dark">{{ staff.subject or 'General' }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between px-0 py-2">
-            <span class="text-muted">Mobile Number:</span>
-            <span class="text-dark">{{ staff.phone }}</span>
-          </li>
-          {% if share_pct > 0 %}
-          <li class="list-group-item d-flex justify-content-between px-0 py-2">
-            <span class="text-muted">Fee Share Percentage:</span>
-            <span class="fw-bold text-success">{{ share_pct }}% of fee collected</span>
-          </li>
-          {% endif %}
-        </ul>
-
-        <div class="mt-3 pt-2 border-top">
-          <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm w-100 rounded-3 py-2">
-            <i class="bi bi-box-arrow-right me-2"></i>Logout (Sign Out)
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-</div>
-{% endblock %}
-
-{% block bottom_nav %}
-<!-- Mobile Bottom Navigation Bar for Staff -->
-<nav class="mobile-nav">
-  <button type="button" class="nav-item-btn active" data-bs-target="#tab-my-students">
-    <i class="bi bi-people-fill"></i>
-    <span>Students</span>
-  </button>
-  <button type="button" class="nav-item-btn" data-bs-target="#tab-my-payments">
-    <i class="bi bi-receipt-cutoff"></i>
-    <span>Fees Paid</span>
-  </button>
-  <button type="button" class="nav-item-btn" data-bs-target="#tab-my-profile">
-    <i class="bi bi-person-badge"></i>
-    <span>Profile</span>
-  </button>
-</nav>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-  // Search students filter
-  const searchInput = document.getElementById('studentSearch');
-  if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      const term = this.value.toLowerCase();
-      document.querySelectorAll('.student-item').forEach(item => {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(term) ? 'block' : 'none';
-      });
-    });
-  }
-
-  // Bottom nav tab switching
-  document.querySelectorAll('.nav-item-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.nav-item-btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-
-      const targetId = this.getAttribute('data-bs-target');
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show', 'active'));
-      const targetPane = document.querySelector(targetId);
-      if (targetPane) targetPane.classList.add('show', 'active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  });
-</script>
-{% endblock %}
+﻿{% extends "base.html" %}
+
+
+
+{% block title %}Teacher Portal - {{ staff.name }} | ASDI
+<!-- Staff Photo Upload Modal -->
+<div class="modal fade" id="staffPhotoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h6 class="modal-title fw-bold" style="color: var(--navy);"><i class="bi bi-camera me-1.5 text-primary"></i>Faculty DP Photo</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('staff_upload_photo') }}" enctype="multipart/form-data">
+        <div class="modal-body py-3">
+          <p class="small text-muted mb-2">Apni profile photo select karein (PNG, JPG, WEBP):</p>
+          <input type="file" name="photo" class="form-control form-control-sm rounded-3 mb-2" accept="image/*" required>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">Upload DP</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container py-3 px-3" style="max-width: 650px;">
+
+
+
+  <!-- Teacher Profile Header Card -->
+
+  <div class="portal-card p-3 mb-3" style="background: linear-gradient(135deg, #FFFFFF 60%, #F4F7FF 100%);">
+
+    <div class="d-flex align-items-center gap-3">
+
+      <div class="position-relative">
+        {% if staff.photo %}
+          <img src="{{ url_for('uploaded_profile', filename=staff.photo) }}" 
+               alt="{{ staff.name }}" class="rounded-circle shadow-sm" 
+               style="width: 62px; height: 62px; object-fit: cover; border: 2.5px solid var(--navy); cursor: pointer;"
+               onclick="previewProfilePhoto(this.src, '{{ staff.name }}', '{{ staff.role }} - {{ staff.subject or "Faculty" }}')">
+        {% else %}
+          <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" 
+               style="width: 62px; height: 62px; background: linear-gradient(135deg, #1B2A9A, #0D186E); color: white; font-size: 24px;">
+            {{ staff.name[0] | upper }}
+          </div>
+        {% endif %}
+        <button type="button" class="btn btn-primary rounded-circle p-0 position-absolute bottom-0 end-0 shadow-sm border border-white"
+                style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 10px;"
+                title="Change Photo" data-bs-toggle="modal" data-bs-target="#staffPhotoModal">
+          <i class="bi bi-camera-fill"></i>
+        </button>
+      </div>
+
+      <div class="flex-grow-1 overflow-hidden">
+
+        <div class="d-flex align-items-center justify-content-between">
+
+          <h5 class="fw-bold mb-0 text-truncate" style="color: var(--navy); font-size: 17px;">{{ staff.name }}</h5>
+
+          <span class="badge bg-primary text-white rounded-pill px-2 py-1" style="font-size: 10px;">
+
+            {{ staff.role }}
+
+          </span>
+
+        </div>
+
+        <div class="text-muted small" style="font-size: 12px;">
+
+          <i class="bi bi-book me-1"></i>{{ staff.subject or 'General Faculty' }}
+
+        </div>
+
+        <div class="d-flex flex-wrap gap-1 mt-1">
+
+          <span class="badge bg-light text-secondary border rounded-pill" style="font-size: 11px;">
+
+            <i class="bi bi-telephone me-1"></i>{{ staff.phone }}
+
+          </span>
+
+          {% if share_pct > 0 %}
+
+          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 11px;">
+
+            <i class="bi bi-pie-chart-fill me-1"></i>{{ share_pct }}% Share Basis
+
+          </span>
+
+          {% endif %}
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- Summary Cards -->
+
+  <div class="row g-2 mb-3">
+
+    <!-- Total Students -->
+
+    <div class="col-6">
+
+      <div class="portal-card p-3">
+
+        <div class="text-muted small" style="font-size: 11px;">
+
+          <i class="bi bi-people-fill me-1 text-primary"></i>Mere Students
+
+        </div>
+
+        <div class="fw-bold fs-4 mt-1" style="color: var(--navy);">
+
+          {{ total_students }} <span class="fs-6 fw-normal text-muted">Students</span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Total Fee Collected -->
+
+    <div class="col-6">
+
+      <div class="portal-card p-3">
+
+        <div class="text-muted small" style="font-size: 11px;">
+
+          <i class="bi bi-cash-stack me-1 text-success"></i>Students Fee Paid
+
+        </div>
+
+        <div class="fw-bold fs-5 mt-1 text-success">
+
+          Rs. {{ "{:,}".format(total_fee_collected) }}
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    {% if share_pct > 0 %}
+
+    <!-- Teacher Share / Earning -->
+
+    <div class="col-6">
+
+      <div class="portal-card p-3 bg-light border-success">
+
+        <div class="text-success small fw-bold" style="font-size: 11px;">
+
+          <i class="bi bi-award-fill me-1"></i>Mera Share ({{ share_pct }}%)
+
+        </div>
+
+        <div class="fw-bold fs-5 mt-1 text-success">
+
+          Rs. {{ "{:,}".format(share_earning | int) }}
+
+        </div>
+
+      </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- Pending Balance -->
+
+    <div class="col-{% if share_pct > 0 %}6{% else %}12{% endif %}">
+
+      <div class="portal-card p-3">
+
+        <div class="text-muted small" style="font-size: 11px;">
+
+          <i class="bi bi-hourglass-split me-1 text-danger"></i>Baqi Fee (Pending)
+
+        </div>
+
+        <div class="fw-bold fs-5 mt-1 text-danger">
+
+          Rs. {{ "{:,}".format(total_pending_balance) }}
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- TAB PANELS -->
+
+  <div class="tab-content" id="staffTabsContent">
+
+
+
+    <!-- TAB 1: MY STUDENTS -->
+
+    <div class="tab-pane fade show active" id="tab-my-students" role="tabpanel">
+
+      <div class="portal-card p-3 mb-3">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+          <div class="d-flex align-items-center gap-2">
+
+            <i class="bi bi-person-lines-fill text-primary fs-5"></i>
+
+            <h6 class="fw-bold mb-0" style="color: var(--navy);">Mere Assigned Students</h6>
+
+          </div>
+
+          <span class="badge bg-light text-secondary border rounded-pill">{{ students | length }} Total</span>
+
+        </div>
+
+
+
+        <!-- Search Input -->
+
+        <div class="mb-3">
+
+          <div class="input-group input-group-sm">
+
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+
+            <input type="text" id="studentSearch" class="form-control bg-light border-start-0" placeholder="Student name ya roll no search karein...">
+
+          </div>
+
+        </div>
+
+
+
+        {% if students %}
+
+        <div class="d-flex flex-column gap-2" id="studentListContainer">
+
+          {% for item in students %}
+
+          {% set s = item.student %}
+
+          <div class="p-3 border rounded-3 bg-white student-item">
+
+            <div class="d-flex justify-content-between align-items-start mb-1">
+
+              <div class="d-flex align-items-center gap-2">
+
+                <!-- Student Photo (small) -->
+
+                {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
+
+                  <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
+
+                       alt="{{ s.name }}"
+
+                       class="rounded-circle flex-shrink-0"
+
+                       style="width:38px;height:38px;object-fit:cover;border:2px solid var(--navy);cursor:pointer;transition:transform 0.2s;"
+
+                       onmouseover="this.style.transform='scale(1.15)'"
+
+                       onmouseout="this.style.transform='scale(1)'"
+
+                       onclick="previewProfilePhoto(this.src, '{{ s.name }}', '{{ s.course }} (Roll #{{ s.roll_no or '--' }})')"
+
+                       title="Click to view full photo">
+
+                {% else %}
+
+                  <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+
+                       style="width:38px;height:38px;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:15px;">
+
+                    {{ s.name[0] | upper }}
+
+                  </div>
+
+                {% endif %}
+
+                <div>
+
+                  <span class="fw-bold text-dark fs-6 student-name">{{ s.name }}</span>
+
+                  <span class="badge bg-light text-secondary border ms-1" style="font-size: 10px;">Roll #{{ s.roll_no or '--' }}</span>
+
+                </div>
+
+              </div>
+
+              {% if item.is_cleared %}
+
+              <span class="badge badge-paid px-2 py-1 rounded-pill" style="font-size: 10px;">Fee Clear</span>
+
+              {% else %}
+
+              <span class="badge badge-pending px-2 py-1 rounded-pill" style="font-size: 10px;">Due: Rs. {{ "{:,}".format(item.balance) }}</span>
+
+              {% endif %}
+
+            </div>
+
+            <div class="text-muted small mb-2" style="font-size: 11px;">
+
+              <span><i class="bi bi-book me-1"></i>{{ s.course }}</span>
+
+              {% if s.batch %}<span class="ms-2"><i class="bi bi-clock me-1"></i>{{ s.batch }}</span>{% endif %}
+
+              {% if s.phone %}<span class="ms-2"><i class="bi bi-telephone me-1"></i>{{ s.phone }}</span>{% endif %}
+
+            </div>
+
+
+
+            <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="font-size: 11px;">
+
+              <span>Total Fee: <strong>Rs. {{ "{:,}".format(item.net_fee) }}</strong></span>
+
+              <span class="text-success">Paid: <strong>Rs. {{ "{:,}".format(item.paid) }}</strong></span>
+
+              <span class="{% if item.balance > 0 %}text-danger{% else %}text-muted{% endif %}">
+
+                Baqi: <strong>Rs. {{ "{:,}".format(item.balance) }}</strong>
+
+              </span>
+
+            </div>
+
+          </div>
+
+          {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="text-center py-4 text-muted">
+
+          <i class="bi bi-people display-6 opacity-25 d-block mb-2"></i>
+
+          <span class="small">Is waqt aapko koi student assign nahi hua.</span>
+
+        </div>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+
+
+    <!-- TAB 2: PAYMENTS RECEIVED -->
+
+    <div class="tab-pane fade" id="tab-my-payments" role="tabpanel">
+
+      <div class="portal-card p-3 mb-3">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+          <div class="d-flex align-items-center gap-2">
+
+            <i class="bi bi-receipt-cutoff text-success fs-5"></i>
+
+            <h6 class="fw-bold mb-0" style="color: var(--navy);">Students Ki Jama Shuda Raseedein</h6>
+
+          </div>
+
+          <span class="badge bg-light text-secondary border rounded-pill">{{ payments | length }} Raseedein</span>
+
+        </div>
+
+
+
+        {% if payments %}
+
+        <div class="d-flex flex-column gap-2">
+
+          {% for p in payments %}
+
+          <div class="p-2 border rounded-3 bg-light bg-opacity-50 d-flex justify-content-between align-items-center">
+
+            <div>
+
+              <div class="fw-bold text-dark" style="font-size: 13px;">{{ p.student_name }}</div>
+
+              <div class="text-muted" style="font-size: 11px;">
+
+                <span class="badge bg-white border text-secondary me-1">{{ p.receipt_no or 'RC-' ~ p.id }}</span>
+
+                <span>{{ p.pay_date }}</span> &bull; <span>{{ p.method or 'Cash' }}</span>
+
+              </div>
+
+            </div>
+
+            <div class="text-end">
+
+              <div class="fw-bold text-success" style="font-size: 14px;">Rs. {{ "{:,}".format(p.amount) }}</div>
+
+              <a href="{{ url_for('receipt', receipt_id=p.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size: 10px;">
+
+                <i class="bi bi-eye me-1"></i>View Slip
+
+              </a>
+
+            </div>
+
+          </div>
+
+          {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="text-center py-4 text-muted">
+
+          <i class="bi bi-wallet display-6 opacity-25 d-block mb-2"></i>
+
+          <span class="small">Aapke students ki koi payment record nahi mili.</span>
+
+        </div>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+
+
+    <!-- TAB 3: ATTENDANCE & PROFILE -->
+
+    <div class="tab-pane fade" id="tab-my-profile" role="tabpanel">
+
+      <div class="portal-card p-3 mb-3">
+
+        <div class="d-flex align-items-center gap-2 mb-3">
+
+          <i class="bi bi-person-badge text-primary fs-5"></i>
+
+          <h6 class="fw-bold mb-0" style="color: var(--navy);">Staff Profile & Duties</h6>
+
+        </div>
+
+
+
+        <ul class="list-group list-group-flush small" style="font-size: 12px;">
+
+          <li class="list-group-item d-flex justify-content-between px-0 py-2">
+
+            <span class="text-muted">Staff Name:</span>
+
+            <span class="fw-bold text-dark">{{ staff.name }}</span>
+
+          </li>
+
+          <li class="list-group-item d-flex justify-content-between px-0 py-2">
+
+            <span class="text-muted">Role:</span>
+
+            <span class="badge bg-primary text-white">{{ staff.role }}</span>
+
+          </li>
+
+          <li class="list-group-item d-flex justify-content-between px-0 py-2">
+
+            <span class="text-muted">Subject / Department:</span>
+
+            <span class="fw-semibold text-dark">{{ staff.subject or 'General' }}</span>
+
+          </li>
+
+          <li class="list-group-item d-flex justify-content-between px-0 py-2">
+
+            <span class="text-muted">Mobile Number:</span>
+
+            <span class="text-dark">{{ staff.phone }}</span>
+
+          </li>
+
+          {% if share_pct > 0 %}
+
+          <li class="list-group-item d-flex justify-content-between px-0 py-2">
+
+            <span class="text-muted">Fee Share Percentage:</span>
+
+            <span class="fw-bold text-success">{{ share_pct }}% of fee collected</span>
+
+          </li>
+
+          {% endif %}
+
+        </ul>
+
+
+
+        <!-- Attendance Check-in for Teacher -->
+        <div class="p-3 rounded-3 mb-3 border" style="background: #F8FAFC;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold" style="color: var(--navy); font-size: 13px;">
+              <i class="bi bi-clock-history text-primary me-1"></i>Aaj Ki Attendance
+            </span>
+            {% if today_staff_att %}
+              <span class="badge bg-success rounded-pill px-2.5 py-1">
+                <i class="bi bi-check-circle-fill me-1"></i>{{ today_staff_att.status }} ({{ today_staff_att.check_in }})
+              </span>
+            {% else %}
+              <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1">Not Marked Today</span>
+            {% endif %}
+          </div>
+          {% if not today_staff_att %}
+          <form method="POST" action="{{ url_for('staff_mark_self_attendance') }}" class="d-flex gap-2 mt-2">
+            <select name="status" class="form-select form-select-sm rounded-3" style="font-size: 12px; width: 120px;">
+              <option value="Present" selected>Present</option>
+              <option value="Late">Late</option>
+              <option value="Half Day">Half Day</option>
+              <option value="Leave">On Leave</option>
+            </select>
+            <input type="text" name="note" class="form-control form-control-sm rounded-3" placeholder="Optional note" style="font-size: 12px;">
+            <button type="submit" class="btn btn-sm btn-primary rounded-3 px-3 fw-bold flex-shrink-0" style="font-size: 12px;">
+              <i class="bi bi-check2-circle me-1"></i>Mark
+            </button>
+          </form>
+          {% endif %}
+        </div>
+
+        <!-- Notification Preferences Setting -->
+        <div class="p-3 rounded-3 mb-3 border bg-light">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold text-dark" style="font-size: 13px;">
+                <i class="bi bi-bell-fill text-warning me-1"></i>Browser Notifications
+              </div>
+              <div class="text-muted" style="font-size: 11px;">Fee alerts aur staff chat ke notifications</div>
+            </div>
+            <button type="button" onclick="asdiEnableNotif()" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold" style="font-size: 11px;">
+              Configure
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-2 border-top">
+          <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm w-100 rounded-3 py-2">
+            <i class="bi bi-box-arrow-right me-2"></i>Logout (Sign Out)
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: LIVE STAFF CHAT ROOM (UNLIMITED, REAL-TIME AUTO POLL) -->
+    <div class="tab-pane fade" id="tab-staff-chat" role="tabpanel">
+      <div class="portal-card p-3 mb-3 d-flex flex-column" style="min-height: 480px; max-height: 580px;">
+        <!-- Chat Header -->
+        <div class="d-flex justify-content-between align-items-center pb-2.5 mb-2 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle p-2 bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+              <i class="bi bi-chat-dots-fill fs-5"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0" style="color: var(--navy); font-size: 14px;">Staff & Faculty Chat Room</h6>
+              <div class="text-muted" style="font-size: 10px;">
+                <span class="text-success fw-bold">● Live Sync</span> • Koii message limit nahi
+              </div>
+            </div>
+          </div>
+          <div>
+            <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1" style="font-size: 10px;">
+              {{ all_colleagues | length }} Colleagues
+            </span>
+          </div>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div id="staffChatBox" class="flex-grow-1 overflow-auto p-2 d-flex flex-column gap-2 mb-2" style="max-height: 380px; background: #F8FAFD; border-radius: 14px;">
+          {% if chat_messages %}
+            {% for m in chat_messages %}
+              {% set is_me = (m.sender_id == staff.id) %}
+              <div class="d-flex gap-2 {% if is_me %}justify-content-end{% else %}justify-content-start{% endif %}" data-msg-id="{{ m.id }}">
+                {% if not is_me %}
+                  {% if m.sender_photo %}
+                    <img src="{{ url_for('uploaded_profile', filename=m.sender_photo) }}" class="rounded-circle flex-shrink-0" style="width: 28px; height: 28px; object-fit: cover;">
+                  {% else %}
+                    <div class="rounded-circle bg-secondary text-white small d-flex align-items-center justify-content-center flex-shrink-0" style="width: 28px; height: 28px; font-size: 11px;">
+                      {{ m.sender_name[0] | upper }}
+                    </div>
+                  {% endif %}
+                {% endif %}
+                <div style="max-width: 78%;">
+                  {% if not is_me %}
+                    <div class="text-muted small ps-1" style="font-size: 10px;">{{ m.sender_name }} ({{ m.sender_role or 'Staff' }})</div>
+                  {% endif %}
+                  <div class="p-2.5 rounded-3 shadow-sm" style="{% if is_me %}background: linear-gradient(135deg, var(--navy-light), var(--navy)); color: white; border-bottom-right-radius: 4px !important;{% else %}background: white; color: var(--text); border: 1px solid #E2E8F0; border-bottom-left-radius: 4px !important;{% endif %} font-size: 13px; line-height: 1.4;">
+                    {{ m.message }}
+                  </div>
+                  <div class="text-muted text-end pe-1 mt-0.5" style="font-size: 9px;">
+                    {{ m.created_at[11:16] if m.created_at else '' }}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div id="chatEmptyNotice" class="text-center py-5 text-muted">
+              <i class="bi bi-chat-square-text fs-2 d-block opacity-25 mb-1"></i>
+              <span class="small">Apas mein baat cheet shuru karein...</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Chat Input Form -->
+        <form id="staffChatForm" onsubmit="sendStaffChatMessage(event)" class="d-flex gap-2 pt-2 border-top">
+          <input type="text" id="staffChatInput" class="form-control rounded-pill px-3 bg-light border-0" 
+                 placeholder="Apna message type karein (No limit)..." autocomplete="off" required style="font-size: 13px;">
+          <button type="submit" id="staffChatSendBtn" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="width: 40px; height: 40px;">
+            <i class="bi bi-send-fill" style="font-size: 14px;"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+
+
+  </div>
+
+
+
+</div>
+
+{% endblock %}
+
+
+
+{% block bottom_nav %}
+
+<!-- Mobile Bottom Navigation Bar for Staff -->
+
+<nav class="mobile-nav">
+
+  <button type="button" class="nav-item-btn active" data-bs-target="#tab-my-students">
+
+    <i class="bi bi-people-fill"></i>
+
+    <span>Students</span>
+
+  </button>
+
+  <button type="button" class="nav-item-btn" data-bs-target="#tab-my-payments">
+
+    <i class="bi bi-receipt-cutoff"></i>
+
+    <span>Fees Paid</span>
+
+  </button>
+
+  <button type="button" class="nav-item-btn position-relative" data-bs-target="#tab-staff-chat">
+    <i class="bi bi-chat-dots-fill"></i>
+    <span>Staff Chat</span>
+    <span class="position-absolute top-1 start-50 translate-middle p-1 bg-success border border-light rounded-circle" style="display:none;" id="chatNavBadge"></span>
+  </button>
+  <button type="button" class="nav-item-btn" data-bs-target="#tab-my-profile">
+    <i class="bi bi-person-badge"></i>
+    <span>Profile</span>
+  </button>
+
+</nav>
+
+{% endblock %}
+
+
+
+{% block extra_scripts %}
+  // ==========================================
+  // LIVE STAFF CHAT (REAL-TIME AUTO POLL 2.5s)
+  // ==========================================
+  let lastStaffMsgId = 0;
+  const chatBox = document.getElementById('staffChatBox');
+  if (chatBox) {
+    const existingMsgs = chatBox.querySelectorAll('[data-msg-id]');
+    if (existingMsgs.length > 0) {
+      lastStaffMsgId = parseInt(existingMsgs[existingMsgs.length - 1].getAttribute('data-msg-id')) || 0;
+    }
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function appendStaffMessage(m) {
+    const emptyNotice = document.getElementById('chatEmptyNotice');
+    if (emptyNotice) emptyNotice.remove();
+    
+    // Avoid duplicate
+    if (document.querySelector(`[data-msg-id="${m.id}"]`)) return;
+
+    const row = document.createElement('div');
+    row.className = 'd-flex gap-2 ' + (m.is_me ? 'justify-content-end' : 'justify-content-start');
+    row.setAttribute('data-msg-id', m.id);
+
+    const avatarHtml = m.sender_photo ? 
+      `<img src="/uploads/profiles/${m.sender_photo}" class="rounded-circle flex-shrink-0" style="width:28px;height:28px;object-fit:cover;">` :
+      `<div class="rounded-circle bg-secondary text-white small d-flex align-items-center justify-content-center flex-shrink-0" style="width:28px;height:28px;font-size:11px;">${(m.sender_name||'S')[0].toUpperCase()}</div>`;
+
+    const bubbleStyle = m.is_me ?
+      'background: linear-gradient(135deg, var(--navy-light), var(--navy)); color: white; border-bottom-right-radius: 4px !important;' :
+      'background: white; color: var(--text); border: 1px solid #E2E8F0; border-bottom-left-radius: 4px !important;';
+
+    row.innerHTML = `
+      ${!m.is_me ? avatarHtml : ''}
+      <div style="max-width: 78%;">
+        ${!m.is_me ? `<div class="text-muted small ps-1" style="font-size: 10px;">${m.sender_name} (${m.sender_role})</div>` : ''}
+        <div class="p-2.5 rounded-3 shadow-sm" style="${bubbleStyle} font-size: 13px; line-height: 1.4;">
+          ${m.message}
+        </div>
+        <div class="text-muted text-end pe-1 mt-0.5" style="font-size: 9px;">${m.time || ''}</div>
+      </div>
+    `;
+
+    chatBox.appendChild(row);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    lastStaffMsgId = Math.max(lastStaffMsgId, m.id);
+
+    // Browser Notification for new message if not from me
+    if (!m.is_me && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      new Notification(`${m.sender_name} (Staff Chat)`, {
+        body: m.message,
+        icon: m.sender_photo ? `/uploads/profiles/${m.sender_photo}` : '/static/icon-192.png'
+      });
+    }
+  }
+
+  async function pollStaffChat() {
+    try {
+      const res = await fetch(`/staff/get_chat_messages?after_id=${lastStaffMsgId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'success' && data.messages && data.messages.length > 0) {
+          data.messages.forEach(appendStaffMessage);
+        }
+      }
+    } catch(err) {
+      console.log('Chat poll error:', err);
+    }
+  }
+
+  // Poll every 2.5 seconds automatically without refreshing page
+  setInterval(pollStaffChat, 2500);
+
+  async function sendStaffChatMessage(e) {
+    e.preventDefault();
+    const input = document.getElementById('staffChatInput');
+    const text = (input.value || '').trim();
+    if (!text) return;
+    input.value = '';
+
+    const formData = new FormData();
+    formData.append('message', text);
+
+    try {
+      const res = await fetch('/staff/send_chat', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'success') {
+          appendStaffMessage({
+            id: data.message_id,
+            sender_id: {{ staff.id }},
+            sender_name: '{{ staff.name }}',
+            sender_role: '{{ staff.role }}',
+            sender_photo: '{{ staff.photo or "" }}',
+            message: data.text,
+            is_me: true,
+            time: data.time
+          });
+        }
+      }
+    } catch(err) {
+      console.log('Error sending message:', err);
+    }
+  }
+
+
+<script>
+
+  // Search students filter
+
+  const searchInput = document.getElementById('studentSearch');
+
+  if (searchInput) {
+
+    searchInput.addEventListener('input', function() {
+
+      const term = this.value.toLowerCase();
+
+      document.querySelectorAll('.student-item').forEach(item => {
+
+        const text = item.textContent.toLowerCase();
+
+        item.style.display = text.includes(term) ? 'block' : 'none';
+
+      });
+
+    });
+
+  }
+
+
+
+  // Bottom nav tab switching
+
+  document.querySelectorAll('.nav-item-btn').forEach(btn => {
+
+    btn.addEventListener('click', function() {
+
+      document.querySelectorAll('.nav-item-btn').forEach(b => b.classList.remove('active'));
+
+      this.classList.add('active');
+
+
+
+      const targetId = this.getAttribute('data-bs-target');
+
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show', 'active'));
+
+      const targetPane = document.querySelector(targetId);
+
+      if (targetPane) targetPane.classList.add('show', 'active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    });
+
+  });
+
+</script>
+
+{% endblock %}
+

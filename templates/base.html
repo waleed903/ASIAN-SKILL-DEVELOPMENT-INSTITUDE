@@ -251,18 +251,22 @@
   </script>
 
 
-  <!-- PWA Install Popup Banner -->
-  <div id="pwa-install-banner" class="d-flex align-items-center justify-content-between">
-    <div class="d-flex align-items-center gap-3">
-      <img src="{{ url_for('static', filename='icon-192.png') }}" alt="Logo" width="40" height="40" class="rounded-3 shadow-sm">
-      <div>
-        <div class="fw-bold" style="font-size: 14px;">ASDI Student Portal</div>
-        <div style="font-size: 11px; opacity: 0.9;">Apne phone ki home screen par install karein</div>
+  <!-- PWA Install Popup Banner (Properly Closable & Hidden in Installed PWA) -->
+  <div id="pwa-install-banner" class="align-items-center justify-content-between shadow-lg" style="display: none;">
+    <div class="d-flex align-items-center gap-2.5 overflow-hidden">
+      <img src="{{ url_for('static', filename='icon-192.png') }}" alt="Logo" width="38" height="38" class="rounded-3 shadow-sm flex-shrink-0">
+      <div class="overflow-hidden">
+        <div class="fw-bold text-truncate" style="font-size: 13px;">ASDI Academy Portal</div>
+        <div class="text-white-50 text-truncate" style="font-size: 11px;">Home Screen par install karein</div>
       </div>
     </div>
-    <div class="d-flex gap-2">
-      <button id="pwa-install-btn" class="btn btn-sm btn-light text-navy fw-bold px-3 rounded-pill" style="color: var(--navy); font-size: 12px;">Install</button>
-      <button id="pwa-close-btn" class="btn btn-sm text-white p-0 ps-1" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+    <div class="d-flex align-items-center gap-1.5 flex-shrink-0 ms-2">
+      <button id="pwa-install-btn" class="btn btn-sm btn-light text-navy fw-bold px-2.5 py-1 rounded-pill" style="color: var(--navy); font-size: 11px;">
+        <i class="bi bi-download me-1"></i>Install
+      </button>
+      <button id="pwa-close-btn" type="button" class="btn btn-sm text-white p-1 rounded-circle" aria-label="Close" style="background: rgba(255,255,255,0.15); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+        <i class="bi bi-x-lg" style="font-size: 12px;"></i>
+      </button>
     </div>
   </div>
 
@@ -317,7 +321,7 @@
   <!-- Bootstrap 5 JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- PWA Service Worker & Install Handler -->
+  <!-- PWA Service Worker & Robust Install/Dismiss Handler -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -327,37 +331,65 @@
       });
     }
 
-    let deferredPrompt;
-    const banner = document.getElementById('pwa-install-banner');
-    const installBtn = document.getElementById('pwa-install-btn');
-    const closeBtn = document.getElementById('pwa-close-btn');
+    (function() {
+      // Check if running as standalone PWA app (Don't show install banner inside app)
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                           window.navigator.standalone === true || 
+                           document.referrer.includes('android-app://');
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      if (!localStorage.getItem('asdi_pwa_dismissed')) {
-        banner.style.display = 'flex';
+      let deferredPrompt;
+      const banner = document.getElementById('pwa-install-banner');
+      const installBtn = document.getElementById('pwa-install-btn');
+      const closeBtn = document.getElementById('pwa-close-btn');
+
+      if (isStandalone) {
+        if (banner) banner.remove();
+        return; // Installed mode - do not show banner
       }
-    });
 
-    if (installBtn) {
-      installBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          console.log(`User response to install: ${outcome}`);
-          deferredPrompt = null;
+      function dismissBanner() {
+        if (banner) {
           banner.style.display = 'none';
+          banner.classList.remove('d-flex');
         }
-      });
-    }
+        try {
+          localStorage.setItem('asdi_pwa_dismissed_v3', 'true');
+          sessionStorage.setItem('asdi_pwa_dismissed_v3', 'true');
+        } catch(e) {}
+      }
 
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        banner.style.display = 'none';
-        localStorage.setItem('asdi_pwa_dismissed', 'true');
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        try {
+          if (!localStorage.getItem('asdi_pwa_dismissed_v3') && !sessionStorage.getItem('asdi_pwa_dismissed_v3')) {
+            if (banner) {
+              banner.style.display = 'flex';
+              banner.classList.add('d-flex');
+            }
+          }
+        } catch(err) {}
       });
-    }
+
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+          }
+          dismissBanner();
+        });
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function(ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          dismissBanner();
+        });
+      }
+    })();
   </script>
   
   <!-- Global Profile Image Preview Lightbox / Modal -->

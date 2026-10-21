@@ -14,7 +14,82 @@
 
 
 
-{% block title %}Master Administration Console - ASDI Academic Portal{% endblock %}
+{% block title %}Master Administration Console - ASDI Academic Portal
+<!-- Admin DP Upload Modal -->
+<div class="modal fade" id="adminDpModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h6 class="modal-title fw-bold" style="color: var(--navy);"><i class="bi bi-camera me-1.5 text-warning"></i>Admin Display Picture (DP)</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin_upload_dp') }}" enctype="multipart/form-data">
+        <div class="modal-body py-3">
+          <p class="small text-muted mb-2">Administrator Profile Picture upload karein (PNG, JPG, WEBP):</p>
+          <input type="file" name="admin_photo" class="form-control form-control-sm rounded-3 mb-2" accept="image/*" required>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">Save DP</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Mark Staff Attendance Modal -->
+<div class="modal fade" id="markStaffAttModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h6 class="modal-title fw-bold" style="color: var(--navy);"><i class="bi bi-calendar-check me-1.5 text-primary"></i>Mark Faculty Attendance</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin_mark_staff_attendance') }}">
+        <div class="modal-body py-3">
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Select Teacher / Staff Member *</label>
+            <select name="staff_id" class="form-select form-select-sm rounded-3" required>
+              {% for st in all_staff %}
+                <option value="{{ st.id }}">{{ st.name }} ({{ st.role }} - {{ st.subject or 'General' }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Date *</label>
+              <input type="date" name="att_date" class="form-control form-control-sm rounded-3" value="{{ today_str }}" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Status *</label>
+              <select name="status" class="form-select form-select-sm rounded-3" required>
+                <option value="Present" selected>Present</option>
+                <option value="Late">Late</option>
+                <option value="Half Day">Half Day</option>
+                <option value="Leave">On Leave</option>
+                <option value="Absent">Absent</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Check-In Time</label>
+            <input type="text" name="check_in" class="form-control form-control-sm rounded-3" placeholder="e.g. 09:15 AM">
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Remarks / Note (Optional)</label>
+            <input type="text" name="note" class="form-control form-control-sm rounded-3" placeholder="e.g. Approved leave / late due to rain">
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">Record Attendance</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
 
 
 
@@ -86,22 +161,22 @@
 
 
 
-        <div class="rounded-4 p-2.5 bg-white bg-opacity-10 d-flex align-items-center justify-content-center border border-white border-opacity-15 shadow-sm" style="width: 54px; height: 54px;">
-
-
-
-
-
-
-
-          <i class="bi bi-shield-fill-check text-warning fs-2"></i>
-
-
-
-
-
-
-
+        <div class="position-relative">
+          {% if admin_dp %}
+            <img src="{{ url_for('uploaded_profile', filename=admin_dp) }}" 
+                 alt="Admin DP" class="rounded-4 shadow-sm" 
+                 style="width: 56px; height: 56px; object-fit: cover; border: 2.5px solid rgba(255,255,255,0.4); cursor: pointer;"
+                 onclick="previewProfilePhoto(this.src, 'Chief Administrator', 'ASDI Central Institute Authority')" title="Click to view full photo">
+          {% else %}
+            <div class="rounded-4 p-2.5 bg-white bg-opacity-10 d-flex align-items-center justify-content-center border border-white border-opacity-15 shadow-sm" style="width: 56px; height: 56px;">
+              <i class="bi bi-shield-fill-check text-warning fs-2"></i>
+            </div>
+          {% endif %}
+          <button type="button" class="btn btn-warning rounded-circle p-0 position-absolute bottom-0 end-0 shadow-sm border border-white"
+                  style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 10px;"
+                  title="Change Admin DP" data-bs-toggle="modal" data-bs-target="#adminDpModal">
+            <i class="bi bi-camera-fill text-dark"></i>
+          </button>
         </div>
 
 
@@ -2526,6 +2601,115 @@
 
 
       <div class="tab-pane fade" id="tab-content-staff" role="tabpanel">
+
+        <!-- ================================================================= -->
+        <!-- TEACHER & STAFF DAILY ATTENDANCE MANAGEMENT -->
+        <!-- ================================================================= -->
+        <div class="portal-card p-3 p-md-4 mb-4 border shadow-sm" style="border-left: 5px solid var(--navy) !important;">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <div class="p-2 rounded-3 text-white" style="background: var(--navy);">
+                <i class="bi bi-calendar-check-fill fs-5"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold mb-0 text-dark">Teacher & Staff Attendance Management</h6>
+                <div class="text-muted small" style="font-size: 11px;">Aaj ki tareekh: <strong>{{ today_str }}</strong></div>
+              </div>
+            </div>
+            <div>
+              <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold" data-bs-toggle="modal" data-bs-target="#markStaffAttModal">
+                <i class="bi bi-plus-circle me-1"></i>Mark / Update Staff Attendance
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Status Roster for Today -->
+          <div class="row g-2 mb-3">
+            {% for st in all_staff %}
+            {% set st_status = today_staff_att_map.get(st.id) %}
+            <div class="col-6 col-md-3">
+              <div class="p-2.5 rounded-3 border bg-light d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                  {% if st.photo %}
+                    <img src="{{ url_for('uploaded_profile', filename=st.photo) }}" class="rounded-circle flex-shrink-0" style="width: 28px; height: 28px; object-fit: cover;">
+                  {% else %}
+                    <div class="rounded-circle bg-secondary text-white small d-flex align-items-center justify-content-center flex-shrink-0" style="width: 28px; height: 28px; font-size: 11px;">
+                      {{ st.name[0] | upper }}
+                    </div>
+                  {% endif %}
+                  <div class="overflow-hidden">
+                    <div class="fw-bold text-dark text-truncate" style="font-size: 12px;">{{ st.name.split(' ')[0] }}</div>
+                    <div class="text-muted" style="font-size: 10px;">{{ st.role }}</div>
+                  </div>
+                </div>
+                <div>
+                  {% if st_status == 'Present' %}
+                    <span class="badge bg-success rounded-pill px-2 py-1" style="font-size: 9px;"><i class="bi bi-check-lg"></i> Present</span>
+                  {% elif st_status == 'Late' %}
+                    <span class="badge bg-warning text-dark rounded-pill px-2 py-1" style="font-size: 9px;">Late</span>
+                  {% elif st_status == 'Leave' %}
+                    <span class="badge bg-danger rounded-pill px-2 py-1" style="font-size: 9px;">Leave</span>
+                  {% else %}
+                    <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-1" style="font-size: 9px;">Unmarked</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Recent Attendance History Table -->
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0" style="font-size: 12px;">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Date</th>
+                  <th>Faculty Member</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Check-In Time</th>
+                  <th>Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if staff_attendance_list %}
+                  {% for sa in staff_attendance_list %}
+                  <tr>
+                    <td class="ps-3 fw-bold text-dark">{{ sa.att_date }}</td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        {% if sa.staff_photo %}
+                          <img src="{{ url_for('uploaded_profile', filename=sa.staff_photo) }}" class="rounded-circle" style="width: 24px; height: 24px; object-fit: cover;">
+                        {% endif %}
+                        <span class="fw-semibold">{{ sa.staff_name }}</span>
+                      </div>
+                    </td>
+                    <td class="text-muted">{{ sa.staff_role }}</td>
+                    <td>
+                      {% if sa.status == 'Present' %}
+                        <span class="badge bg-success rounded-pill px-2 py-0.5">Present</span>
+                      {% elif sa.status == 'Late' %}
+                        <span class="badge bg-warning text-dark rounded-pill px-2 py-0.5">Late</span>
+                      {% elif sa.status == 'Leave' %}
+                        <span class="badge bg-danger rounded-pill px-2 py-0.5">On Leave</span>
+                      {% else %}
+                        <span class="badge bg-info rounded-pill px-2 py-0.5">{{ sa.status }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-muted">{{ sa.check_in or 'N/A' }}</td>
+                    <td class="text-muted small fst-italic">{{ sa.note or '-' }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="6" class="text-center py-3 text-muted">Abhi tak staff attendance ka koi record nahi hai.</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
 
 
 
