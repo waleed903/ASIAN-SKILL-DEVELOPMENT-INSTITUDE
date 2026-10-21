@@ -746,21 +746,74 @@
 
 
 
-      </div>
+      </div><!-- end receipts card -->
 
 
+      <!-- ========================================
+           EASYPASA ONLINE PAYMENT CARD
+           ======================================== -->
+      <div class="portal-card p-3 mb-3" style="border:2px solid #00A651;border-radius:18px;">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div style="background:#00A651;border-radius:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi bi-phone-fill text-white" style="font-size:20px;"></i>
+          </div>
+          <div>
+            <div class="fw-bold" style="color:#00A651;font-size:14px;line-height:1.2;">EasyPaisa Online Payment</div>
+            <div class="text-muted" style="font-size:11px;">Ghar baithe apni fee ada karein</div>
+          </div>
+        </div>
 
+        <!-- EasyPaisa Account -->
+        <div class="p-3 rounded-3 mb-3 text-center" style="background:#F0FBF5;border:1px dashed #00A651;">
+          <div class="text-muted small mb-1" style="font-size:11px;">ASDI EasyPaisa Account Number</div>
+          <div class="fw-bold" style="color:#00A651;font-size:24px;letter-spacing:3px;">0315-5545014</div>
+          <button onclick="navigator.clipboard.writeText('03155545014');this.textContent='Copied!';this.style.background='#00A651';this.style.color='white';setTimeout(()=>{this.textContent='Copy Number';this.style.background='';this.style.color='';},2500)"
+            class="btn btn-sm btn-outline-success rounded-pill px-3 mt-2 fw-semibold" style="font-size:11px;">
+            Copy Number
+          </button>
+        </div>
 
+        <!-- Instructions -->
+        <div class="mb-3 p-2 rounded-3" style="background:#f8f9fa;font-size:11px;color:#444;line-height:1.8;">
+          <div class="fw-bold mb-1" style="color:#333;">Tareeqa / How to Pay:</div>
+          <div>1 - EasyPaisa app ya Mobile Banking kholen</div>
+          <div>2 - 03155545014 par apni fee transfer karein</div>
+          <div>3 - Transaction ID (TxnID) ya screenshot save karein</div>
+          <div>4 - Neeche form fill karein - Admin verify kare ga</div>
+          <div>5 - Verify hone ke baad fee auto update ho jaye gi</div>
+        </div>
 
+        <!-- Submission Form -->
+        <form method="POST" action="{{ url_for('student_easypasa_request') }}" enctype="multipart/form-data">
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label fw-semibold mb-1" style="font-size:11px;">Amount Bheja (Rs.) *</label>
+              <input type="number" name="amount" class="form-control form-control-sm rounded-3"
+                placeholder="e.g. 2500" value="{{ fee.balance if fee.balance > 0 else '' }}" min="100" step="1" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold mb-1" style="font-size:11px;">Payment Date *</label>
+              <input type="date" name="transaction_date" class="form-control form-control-sm rounded-3"
+                value="{{ now.strftime('%Y-%m-%d') }}" required>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label fw-semibold mb-1" style="font-size:11px;">EasyPaisa Transaction ID (TxnID) *</label>
+            <input type="text" name="transaction_id" class="form-control form-control-sm rounded-3"
+              placeholder="e.g. EP1234567890" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold mb-1" style="font-size:11px;">Payment Screenshot (Optional)</label>
+            <input type="file" name="screenshot" class="form-control form-control-sm rounded-3" accept="image/*">
+          </div>
+          <button type="submit" class="btn w-100 fw-bold rounded-3" style="background:#00A651;color:white;font-size:13px;padding:11px;">
+            <i class="bi bi-send-fill me-2"></i>Submit Payment Proof
+          </button>
+        </form>
+      </div><!-- end easypasa card -->
 
 
     </div>
-
-
-
-
-
-
 
     <!-- 2. ATTENDANCE (HAZRI) TAB -->
 

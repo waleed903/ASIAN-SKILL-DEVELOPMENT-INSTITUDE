@@ -395,6 +395,92 @@
     }
   </script>
 
+
+  <!-- =====================================================
+       MODERN BROWSER NOTIFICATION SYSTEM (ASDI)
+       ===================================================== -->
+  <style>
+    @keyframes asdiSlideUp {
+      from { transform: translateY(80px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    #asdi-notif-banner {
+      position: fixed;
+      bottom: 76px;
+      left: 12px;
+      right: 12px;
+      z-index: 9997;
+      background: linear-gradient(135deg, #070d2b, #0D186E);
+      color: white;
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: 0 12px 28px rgba(13,24,110,0.4);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: asdiSlideUp 0.45s ease;
+    }
+  </style>
+  <script>
+  (function() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') return;
+    if (Notification.permission === 'denied') return;
+    if (localStorage.getItem('asdi_notif_dismissed_v2')) return;
+    setTimeout(function() {
+      var nb = document.createElement('div');
+      nb.id = 'asdi-notif-banner';
+      nb.innerHTML = [
+        '<i class="bi bi-bell-fill" style="font-size:22px;color:#FFD700;flex-shrink:0;"></i>',
+        '<div style="flex:1">',
+          '<div style="font-weight:700;font-size:13px;line-height:1.3;">Notifications Enable Karein</div>',
+          '<div style="font-size:11px;opacity:0.82;margin-top:2px;">Fee updates, attendance aur messages ke liye</div>',
+        '</div>',
+        '<button onclick="asdiEnableNotif()" style="background:#FFD700;color:#0D186E;border:none;border-radius:10px;padding:7px 16px;font-weight:700;font-size:12px;cursor:pointer;flex-shrink:0;">Enable</button>',
+        '<button onclick="asdiDismissNotif()" style="background:transparent;border:none;color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;line-height:1;flex-shrink:0;padding:0 4px;">&times;</button>'
+      ].join('');
+      document.body.appendChild(nb);
+    }, 3500);
+  })();
+
+  function asdiEnableNotif() {
+    if (!('Notification' in window)) return;
+    Notification.requestPermission().then(function(perm) {
+      var nb = document.getElementById('asdi-notif-banner');
+      if (nb) { nb.style.opacity='0'; setTimeout(function(){if(nb&&nb.parentNode)nb.remove();},400); }
+      if (perm === 'granted') {
+        new Notification('ASDI Portal', {
+          body: 'Notifications enable ho gayin! Fee aur attendance updates milenge.',
+          icon: '/static/icon-192.png',
+          badge: '/static/icon-192.png'
+        });
+        localStorage.setItem('asdi_notif_enabled', '1');
+      }
+    });
+  }
+
+  function asdiDismissNotif() {
+    var nb = document.getElementById('asdi-notif-banner');
+    if (nb) { nb.style.opacity='0'; setTimeout(function(){if(nb&&nb.parentNode)nb.remove();},300); }
+    localStorage.setItem('asdi_notif_dismissed_v2', '1');
+  }
+
+  // Show browser notification for flash messages
+  window.addEventListener('load', function() {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      var alerts = document.querySelectorAll('.alert-success, .alert-danger, .alert-warning');
+      alerts.forEach(function(el) {
+        var txt = (el.innerText || '').replace(/\s+/g,' ').trim().substring(0, 90);
+        if (txt.length > 8) {
+          setTimeout(function() {
+            new Notification('ASDI Portal', { body: txt, icon: '/static/icon-192.png' });
+          }, 800);
+        }
+      });
+    }
+  });
+  </script>
+
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>

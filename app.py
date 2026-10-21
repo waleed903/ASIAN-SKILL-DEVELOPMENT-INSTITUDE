@@ -202,6 +202,20 @@ def init_required_tables():
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
+                c.execute("""
+                    CREATE TABLE IF NOT EXISTS online_payment_requests (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        student_id INTEGER NOT NULL,
+                        amount REAL NOT NULL,
+                        transaction_id TEXT,
+                        transaction_date TEXT,
+                        screenshot TEXT,
+                        method TEXT DEFAULT 'EasyPaisa',
+                        status TEXT DEFAULT 'Pending',
+                        admin_note TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
                 c.commit()
                 c.close()
             except Exception:
@@ -1858,6 +1872,15 @@ def admin_dashboard():
         ORDER BY er.id DESC
     """).fetchall()
 
+    # Online payment requests (EasyPaisa)
+    online_payment_requests = conn.execute("""
+        SELECT opr.*, s.name as student_name, s.admission_no, s.roll_no, s.course, s.phone
+        FROM online_payment_requests opr
+        JOIN students s ON s.id = opr.student_id
+        ORDER BY opr.id DESC
+    """).fetchall()
+    pending_online_payments = sum(1 for r in online_payment_requests if r["status"] == "Pending")
+
     conn.close()
 
     return render_template(
@@ -1882,7 +1905,9 @@ def admin_dashboard():
         all_student_msgs=all_student_msgs,
         unread_msg_count=unread_msg_count,
         all_results=all_results,
-        today_str=today_str
+        today_str=today_str,
+        online_payment_requests=online_payment_requests,
+        pending_online_payments=pending_online_payments
     )
 
 # ---------------------------------------------------------------------------
@@ -3123,6 +3148,343 @@ def receipt(receipt_id):
 # LOGOUT & HEALTH
 
 # ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# EASYPASA ONLINE PAYMENT - STUDENT SUBMISSION
+# ---------------------------------------------------------------------------
+
+@app.route("/student/easypasa_request", methods=["POST"])
+@student_required
+def student_easypasa_request():
+    """Student submits EasyPaisa payment proof for admin verification."""
+    student_id = session["student_id"]
+    try:
+        amount = float(request.form.get("amount", 0))
+    except ValueError:
+        amount = 0
+    transaction_id = request.form.get("transaction_id", "").strip()
+    transaction_date = request.form.get("transaction_date", datetime.now().strftime("%Y-%m-%d"))
+
+    if amount <= 0:
+        flash("Raqam (Amount) darj karna zaroori hai.", "danger")
+        return redirect(url_for("dashboard"))
+    if not transaction_id:
+        flash("EasyPaisa Transaction ID darj karna zaroori hai.", "danger")
+        return redirect(url_for("dashboard"))
+
+    # Handle screenshot upload
+    screenshot_file = None
+    if "screenshot" in request.files:
+        f = request.files["screenshot"]
+        if f and f.filename and allowed_file(f.filename):
+            ext = f.filename.rsplit(".", 1)[1].lower()
+            fname = f"ep_{student_id}_{int(datetime.now().timestamp())}.{ext}"
+            f.save(os.path.join(UPLOAD_FOLDER, fname))
+            screenshot_file = fname
+
+    conn = get_db_connection()
+    conn.execute("""
+        INSERT INTO online_payment_requests (student_id, amount, transaction_id, transaction_date, screenshot, method, status)
+        VALUES (?, ?, ?, ?, ?, 'EasyPaisa', 'Pending')
+    """, (student_id, amount, transaction_id, transaction_date, screenshot_file))
+    conn.commit()
+    conn.close()
+
+    flash(f"✅ Aap ka EasyPaisa payment request (Rs. {amount:,.0f}) submit ho gaya! Admin verification ke baad fee update ho jaye gi.", "success")
+    return redirect(url_for("dashboard"))
+
+
+# ---------------------------------------------------------------------------
+# ADMIN: APPROVE / REJECT ONLINE PAYMENTS
+# ---------------------------------------------------------------------------
+
+@app.route("/admin/approve_online_payment/<int:req_id>", methods=["POST"])
+@admin_required
+def admin_approve_online_payment(req_id):
+    """Admin approves an EasyPaisa payment - auto creates payment record."""
+    conn = get_db_connection()
+    req = conn.execute("SELECT * FROM online_payment_requests WHERE id = ?", (req_id,)).fetchone()
+    if not req or req["status"] != "Pending":
+        conn.close()
+        flash("Request nahi mili ya already processed hai.", "warning")
+        return redirect(url_for("admin_dashboard"))
+
+    # Create payment record - auto-updates student fee balance
+    max_rec = conn.execute("SELECT MAX(id) FROM payments").fetchone()[0] or 0
+    receipt_no = f"EP-{(max_rec + 1):04d}"
+    conn.execute("""
+        INSERT INTO payments (student_id, amount, pay_date, method, receipt_no, note)
+        VALUES (?, ?, ?, 'EasyPaisa', ?, ?)
+    """, (req["student_id"], req["amount"], req["transaction_date"], receipt_no, f"EasyPaisa TxnID: {req['transaction_id']}"))
+
+    # Mark request approved
+    conn.execute("UPDATE online_payment_requests SET status='Approved' WHERE id=?", (req_id,))
+    conn.commit()
+    conn.close()
+
+    flash(f"✅ EasyPaisa Payment Rs. {req['amount']:,.0f} approve! Receipt: {receipt_no}. Fee balance auto-update ho gaya.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/reject_online_payment/<int:req_id>", methods=["POST"])
+@admin_required
+def admin_reject_online_payment(req_id):
+    """Admin rejects an online payment request."""
+    note = request.form.get("note", "").strip()
+    conn = get_db_connection()
+    conn.execute("UPDATE online_payment_requests SET status='Rejected', admin_note=? WHERE id=?", (note, req_id))
+    conn.commit()
+    conn.close()
+    flash("Payment request reject kar di gayi.", "warning")
+    return redirect(url_for("admin_dashboard"))
+
+
+# ---------------------------------------------------------------------------
+# RECEIPT DOWNLOAD (PDF + PNG)
+# ---------------------------------------------------------------------------
+
+@app.route("/receipt/<int:receipt_id>/download")
+def receipt_download(receipt_id):
+    """Download receipt as PDF or PNG."""
+    from flask import send_file
+    fmt = request.args.get("fmt", "pdf").lower()
+    role = session.get("role")
+    if not role:
+        flash("Pehle login karein.", "warning")
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    payment = conn.execute("SELECT * FROM payments WHERE id = ?", (receipt_id,)).fetchone()
+    if not payment:
+        conn.close()
+        abort(404)
+    student = conn.execute("SELECT * FROM students WHERE id = ?", (payment["student_id"],)).fetchone()
+    if not student:
+        conn.close()
+        abort(404)
+
+    # Permission check
+    if role == "student" and payment["student_id"] != session.get("student_id"):
+        conn.close()
+        abort(403)
+    if role == "staff" and student["teacher_id"] != session.get("staff_id"):
+        conn.close()
+        abort(403)
+
+    # Fee calculations
+    all_p = conn.execute(
+        "SELECT * FROM payments WHERE student_id = ? ORDER BY pay_date ASC, id ASC",
+        (payment["student_id"],)
+    ).fetchall()
+    total_fee = student["total_fee"] or 0
+    discount = student["discount_amount"] or 0
+    net_fee = total_fee - discount
+    cumulative_paid = 0
+    for p in all_p:
+        cumulative_paid += (p["amount"] or 0)
+        if p["id"] == payment["id"]:
+            break
+    remaining_balance = max(0, net_fee - cumulative_paid)
+    conn.close()
+
+    receipt_no = payment["receipt_no"] or f"RC-{payment['id']}"
+    student_name = student["name"] or ""
+    student_adm = student["admission_no"] or ""
+    batch_val = student["batch"] if ("batch" in student.keys() and student["batch"]) else ""
+    student_course = (student["course"] or "") + (f" ({batch_val})" if batch_val else "")
+    father_name = student["father_name"] or ""
+
+    if fmt == "pdf":
+        try:
+            from reportlab.lib.pagesizes import A5
+            from reportlab.lib import colors
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.units import mm
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+            from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+            import io as _io
+
+            buf = _io.BytesIO()
+            doc = SimpleDocTemplate(buf, pagesize=A5, rightMargin=15*mm, leftMargin=15*mm, topMargin=10*mm, bottomMargin=10*mm)
+            styles = getSampleStyleSheet()
+            navy_c = colors.HexColor("#0D186E")
+            green_c = colors.HexColor("#1F9D6B")
+            red_c = colors.HexColor("#D64545")
+
+            title_s = ParagraphStyle("t", fontSize=13, textColor=navy_c, alignment=TA_CENTER, fontName="Helvetica-Bold", spaceAfter=2, leading=16)
+            sub_s = ParagraphStyle("s", fontSize=8, textColor=colors.grey, alignment=TA_CENTER, spaceAfter=4)
+            lbl_s = ParagraphStyle("l", fontSize=8, textColor=colors.grey)
+            val_s = ParagraphStyle("v", fontSize=9, fontName="Helvetica-Bold")
+            r_s = ParagraphStyle("r", fontSize=8, textColor=colors.grey, alignment=TA_RIGHT)
+
+            story = []
+            story.append(Paragraph("ASIAN SKILL DEVELOPMENT INSTITUTE", title_s))
+            story.append(Paragraph("Official E-Fee Receipt / Payment Voucher", sub_s))
+            story.append(HRFlowable(width="100%", thickness=1, color=navy_c, spaceAfter=6))
+
+            meta = [[Paragraph(f"Receipt No: <b>{receipt_no}</b>", lbl_s), Paragraph(f"Date: <b>{payment['pay_date']}</b>", r_s)]]
+            mt = Table(meta, colWidths=["50%","50%"])
+            mt.setStyle(TableStyle([('BOTTOMPADDING',(0,0),(-1,-1),4)]))
+            story.append(mt)
+            story.append(HRFlowable(width="100%", thickness=0.5, color=colors.lightgrey, spaceAfter=6))
+
+            story.append(Paragraph("STUDENT PARTICULARS", ParagraphStyle("sec", fontSize=7, textColor=colors.grey, fontName="Helvetica-Bold", spaceAfter=4)))
+            sdata = [
+                ["Student Name:", student_name],
+                ["Father Name:", father_name],
+                ["Admission No:", student_adm],
+                ["Course / Batch:", student_course],
+            ]
+            st = Table(sdata, colWidths=[40*mm, 70*mm])
+            st.setStyle(TableStyle([
+                ('FONTSIZE',(0,0),(-1,-1),8),
+                ('TEXTCOLOR',(0,0),(0,-1),colors.grey),
+                ('FONTNAME',(1,0),(1,-1),"Helvetica-Bold"),
+                ('TOPPADDING',(0,0),(-1,-1),2),
+                ('BOTTOMPADDING',(0,0),(-1,-1),2),
+            ]))
+            story.append(st)
+            story.append(Spacer(1, 4*mm))
+
+            story.append(Paragraph("AMOUNT PAID", ParagraphStyle("al", fontSize=8, textColor=green_c, alignment=TA_CENTER, fontName="Helvetica-Bold")))
+            story.append(Paragraph(f"Rs. {payment['amount']:,.0f}", ParagraphStyle("am", fontSize=24, textColor=green_c, alignment=TA_CENTER, fontName="Helvetica-Bold")))
+            pay_method = payment['method'] if ('method' in payment.keys() and payment['method']) else 'Cash'
+            story.append(Paragraph(f"Method: <b>{pay_method}</b>", ParagraphStyle("m", fontSize=8, textColor=colors.grey, alignment=TA_CENTER)))
+            story.append(Spacer(1, 4*mm))
+
+            fdata = [
+                ["Total Course Fee:", f"Rs. {total_fee:,.0f}"],
+                ["Total Paid Till Date:", f"Rs. {cumulative_paid:,.0f}"],
+                ["Remaining Balance:", f"Rs. {remaining_balance:,.0f}"],
+            ]
+            if discount > 0:
+                fdata.insert(1, ["Discount:", f"- Rs. {discount:,.0f}"])
+            ft = Table(fdata, colWidths=[60*mm, 50*mm])
+            ft.setStyle(TableStyle([
+                ('FONTSIZE',(0,0),(-1,-1),8),
+                ('TEXTCOLOR',(0,0),(0,-1),colors.grey),
+                ('FONTNAME',(1,-1),(1,-1),"Helvetica-Bold"),
+                ('TEXTCOLOR',(1,-1),(1,-1), red_c if remaining_balance > 0 else green_c),
+                ('TOPPADDING',(0,0),(-1,-1),2),
+                ('BOTTOMPADDING',(0,0),(-1,-1),2),
+                ('LINEABOVE',(0,-1),(-1,-1),0.5,colors.lightgrey),
+            ]))
+            story.append(ft)
+            story.append(Spacer(1, 5*mm))
+            story.append(HRFlowable(width="100%", thickness=0.5, color=navy_c, spaceBefore=2, spaceAfter=4))
+            story.append(Paragraph("Digitally Verified by ASDI Accounts", ParagraphStyle("ft", fontSize=7, textColor=green_c, alignment=TA_CENTER)))
+            story.append(Paragraph("This is a computer-generated voucher. Helpline: 0344-4996072", ParagraphStyle("ft2", fontSize=6, textColor=colors.grey, alignment=TA_CENTER)))
+
+            doc.build(story)
+            buf.seek(0)
+            return send_file(buf, as_attachment=True, download_name=f"ASDI_Receipt_{receipt_no}.pdf", mimetype="application/pdf")
+        except Exception as e:
+            flash(f"PDF generate karne mein masla: {e}", "danger")
+            return redirect(url_for("receipt", receipt_id=receipt_id))
+
+    elif fmt == "png":
+        try:
+            from PIL import Image, ImageDraw, ImageFont
+            import io as _io
+
+            W, H = 620, 950
+            img = Image.new("RGB", (W, H), "white")
+            draw = ImageDraw.Draw(img)
+
+            try:
+                font_bold = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 15)
+                font_title = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 17)
+                font_amount = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", 38)
+                font_small = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 12)
+            except Exception:
+                font_bold = ImageFont.load_default()
+                font_title = font_bold
+                font_amount = font_bold
+                font_small = font_bold
+
+            navy_rgb = (13, 24, 110)
+            green_rgb = (31, 157, 107)
+            red_rgb = (214, 69, 69)
+            grey_rgb = (107, 115, 148)
+            light_bg = (238, 241, 248)
+            ep_green = (0, 166, 81)
+
+            # Header bar
+            draw.rectangle([0, 0, W, 85], fill=navy_rgb)
+            draw.text((W//2, 28), "ASIAN SKILL DEVELOPMENT INSTITUTE", fill="white", font=font_title, anchor="mm")
+            draw.text((W//2, 58), "Official E-Fee Receipt / Payment Voucher", fill=(180, 195, 255), font=font_small, anchor="mm")
+
+            y = 108
+            draw.text((35, y), f"Receipt No: {receipt_no}", fill=navy_rgb, font=font_bold)
+            draw.text((W-35, y), f"Date: {payment['pay_date']}", fill=grey_rgb, font=font_small, anchor="ra")
+            y += 28
+            draw.line([(35, y), (W-35, y)], fill=light_bg, width=1)
+            y += 14
+
+            draw.text((35, y), "STUDENT PARTICULARS", fill=grey_rgb, font=font_small)
+            y += 22
+            rows = [
+                ("Student Name:", student_name),
+                ("Father Name:", father_name or "N/A"),
+                ("Admission No:", student_adm),
+                ("Course / Batch:", student_course),
+            ]
+            for label, val in rows:
+                draw.text((35, y), label, fill=grey_rgb, font=font_small)
+                draw.text((190, y), val, fill=(10, 10, 30), font=font_bold)
+                y += 24
+
+            y += 12
+            draw.line([(35, y), (W-35, y)], fill=light_bg, width=1)
+            y += 16
+
+            # Amount box
+            draw.rectangle([35, y, W-35, y+112], fill=(235, 248, 242), outline=green_rgb, width=2)
+            draw.text((W//2, y+20), "AMOUNT PAID", fill=green_rgb, font=font_small, anchor="mm")
+            draw.text((W//2, y+62), f"Rs. {payment['amount']:,.0f}", fill=green_rgb, font=font_amount, anchor="mm")
+            pay_method_png = payment['method'] if ('method' in payment.keys() and payment['method']) else 'Cash'
+            draw.text((W//2, y+95), f"Method: {pay_method_png}", fill=grey_rgb, font=font_small, anchor="mm")
+            y += 130
+
+            # Fee ledger
+            draw.rectangle([35, y, W-35, y+115], fill=light_bg)
+            summary = [
+                ("Total Course Fee:", f"Rs. {total_fee:,.0f}", False),
+                ("Total Paid Till Date:", f"Rs. {cumulative_paid:,.0f}", False),
+                ("Remaining Balance:", f"Rs. {remaining_balance:,.0f}", True),
+            ]
+            if discount > 0:
+                summary.insert(1, ("Discount:", f"- Rs. {discount:,.0f}", False))
+            sy = y + 14
+            for label, val, is_last in summary:
+                draw.text((50, sy), label, fill=grey_rgb, font=font_small)
+                col = (red_rgb if remaining_balance > 0 else green_rgb) if is_last else (10, 10, 30)
+                draw.text((W-50, sy), val, fill=col, font=font_bold, anchor="ra")
+                sy += 25
+            y = sy + 22
+
+            # EasyPaisa info strip
+            draw.rectangle([35, y, W-35, y+36], fill=(240, 255, 248), outline=ep_green, width=1)
+            draw.text((W//2, y+18), "Online Payment: EasyPaisa 0315-5545014", fill=ep_green, font=font_small, anchor="mm")
+            y += 52
+
+            # Footer
+            draw.line([(35, y), (W-35, y)], fill=navy_rgb, width=1)
+            y += 14
+            draw.text((W//2, y), "Digitally Verified by ASDI Accounts", fill=green_rgb, font=font_small, anchor="mm")
+            y += 22
+            draw.text((W//2, y), "Helpline: 0344-4996072  |  ASDI Student Portal", fill=grey_rgb, font=font_small, anchor="mm")
+
+            buf = _io.BytesIO()
+            img.save(buf, format="PNG")
+            buf.seek(0)
+            return send_file(buf, as_attachment=True, download_name=f"ASDI_Receipt_{receipt_no}.png", mimetype="image/png")
+        except Exception as e:
+            flash(f"PNG generate karne mein masla: {e}", "danger")
+            return redirect(url_for("receipt", receipt_id=receipt_id))
+
+    return redirect(url_for("receipt", receipt_id=receipt_id))
 
 @app.route("/logout")
 
