@@ -1,0 +1,650 @@
+{% extends "base.html" %}
+
+{% block title %}Secure Sign In - ASDI Student Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4 px-3" style="max-width: 480px;">
+  
+  <!-- Institute Header & Logo -->
+  <div class="text-center my-3">
+    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 bg-white shadow-sm mb-2 border" style="border-color: #E2E6F2; width: 84px; height: 84px;">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="ASDI Logo" style="max-height: 58px; max-width: 100%; object-fit: contain;">
+    </div>
+    <h3 class="fw-bold mb-0" style="color: var(--navy); letter-spacing: -0.5px;">ASDI ACADEMY</h3>
+    <p class="text-muted small mb-0">Asian Skill Development Institute &bull; Academic Portal</p>
+    <div class="mt-1">
+      <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 11px;">
+        <i class="bi bi-shield-check me-1"></i>256-Bit SSL Encrypted Login
+      </span>
+    </div>
+  </div>
+
+  <!-- Main Login Card -->
+  <div class="portal-card p-4 shadow-sm border rounded-4 bg-white">
+
+    <!-- Role Selection Tabs -->
+    <ul class="nav nav-pills nav-fill mb-4 p-1 rounded-3 bg-light border" id="roleTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link py-2.5 {% if active_tab == 'student' %}active fw-bold shadow-sm{% endif %}" 
+                id="student-tab" data-bs-toggle="pill" data-bs-target="#tab-student" type="button" role="tab" style="font-size: 13.5px;">
+          <i class="bi bi-mortarboard-fill me-1.5 text-warning"></i>Student
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link py-2.5 {% if active_tab == 'staff' %}active fw-bold shadow-sm{% endif %}" 
+                id="staff-tab" data-bs-toggle="pill" data-bs-target="#tab-staff" type="button" role="tab" style="font-size: 13.5px;">
+          <i class="bi bi-person-workspace me-1.5"></i>Teacher
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link py-2.5 {% if active_tab == 'admin' %}active fw-bold shadow-sm{% endif %}" 
+                id="admin-tab" data-bs-toggle="pill" data-bs-target="#tab-admin" type="button" role="tab" style="font-size: 13.5px;">
+          <i class="bi bi-shield-lock-fill me-1.5"></i>Admin
+        </button>
+      </li>
+    </ul>
+
+    <!-- Flash Notifications -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+        <div class="alert alert-{{ 'danger' if category in ['error', 'danger'] else ('success' if category == 'success' else ('warning' if category == 'warning' else 'info')) }} alert-dismissible fade show d-flex align-items-center gap-2 py-2.5 px-3 rounded-3 mb-3" style="font-size: 13px;" role="alert">
+          <i class="bi bi-{{ 'check-circle-fill' if category == 'success' else ('exclamation-triangle-fill' if category in ['error', 'danger'] else 'info-circle-fill') }} flex-shrink-0 fs-6"></i>
+          <div>{{ msg }}</div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="padding: 0.85rem;"></button>
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 py-2.5 px-3 rounded-3 mb-3" style="font-size: 13px;" role="alert">
+      <i class="bi bi-shield-exclamation flex-shrink-0 fs-6"></i>
+      <div>{{ error }}</div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="padding: 0.85rem;"></button>
+    </div>
+    {% endif %}
+
+    <div class="tab-content" id="roleTabContent">
+
+      <!-- ============================================================== -->
+      <!-- 1. STUDENT LOGIN FORM (Roll No + Email + Password)             -->
+      <!-- ============================================================== -->
+      <div class="tab-pane fade {% if active_tab == 'student' %}show active{% endif %}" id="tab-student" role="tabpanel">
+        
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <span class="small fw-bold text-dark"><i class="bi bi-person-check-fill text-primary me-1"></i>Student Portal Login</span>
+          <span class="badge bg-primary-subtle text-primary" style="font-size: 11px;">Strict 3-Way Auth</span>
+        </div>
+
+        <form method="POST" action="{{ url_for('login') }}" id="studentLoginForm">
+          <input type="hidden" name="login_type" value="student">
+          
+          <!-- FIELD 1: STUDENT ROLL NO / ADMISSION NO -->
+          <div class="mb-3">
+            <label for="roll_no" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
+              <span><i class="bi bi-person-vcard text-primary me-1"></i>Student Roll No / Admission ID</span>
+              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-id-card"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control bg-light border-start-0 py-2 font-monospace" 
+                id="roll_no" 
+                name="roll_no" 
+                placeholder="e.g. ASDI-2026-0001 or 1" 
+                value="{{ form_roll or '' }}"
+                required 
+                autocomplete="username"
+                style="border-radius: 0 12px 12px 0; font-size: 14px; font-weight: 500;"
+              >
+            </div>
+            <div class="form-text text-muted" style="font-size: 11px;">
+              Admission Number ya Roll Number darj karein.
+            </div>
+          </div>
+
+          <!-- FIELD 2: REGISTERED EMAIL -->
+          <div class="mb-3">
+            <label for="email" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
+              <span><i class="bi bi-envelope-at text-primary me-1"></i>Registered Email Address</span>
+              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-envelope"></i>
+              </span>
+              <input 
+                type="email" 
+                class="form-control bg-light border-start-0 py-2" 
+                id="email" 
+                name="email" 
+                placeholder="e.g. student@asdi.edu" 
+                value="{{ form_email or '' }}"
+                required 
+                autocomplete="email"
+                style="border-radius: 0 12px 12px 0; font-size: 14px;"
+              >
+            </div>
+            <div class="form-text text-muted" style="font-size: 11px;">
+              Aap ke account ke sath linked official Email.
+            </div>
+          </div>
+
+          <!-- FIELD 3: PASSWORD (WITH VISIBILITY TOGGLE) -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="password" class="form-label small fw-bold text-secondary mb-0">
+                <i class="bi bi-shield-lock text-primary me-1"></i>Student Password
+              </label>
+              <a href="#" class="text-decoration-none small text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" style="font-size: 11.5px;">
+                Forgot Password?
+              </a>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-key"></i>
+              </span>
+              <input 
+                type="password" 
+                class="form-control bg-light border-start-0 border-end-0 py-2 font-monospace" 
+                id="password" 
+                name="password" 
+                placeholder="Enter your security password" 
+                required 
+                autocomplete="current-password"
+                style="font-size: 14px;"
+              >
+              <button 
+                type="button" 
+                class="btn btn-light border border-start-0 text-muted" 
+                id="togglePasswordBtn" 
+                onclick="togglePasswordVisibility('password', 'passwordToggleIcon')"
+                style="border-radius: 0 12px 12px 0;" 
+                title="Show/Hide Password"
+              >
+                <i class="bi bi-eye" id="passwordToggleIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-asdi w-100 py-2.5 mt-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm rounded-3">
+            <i class="bi bi-box-arrow-in-right fs-6"></i>
+            <span>Sign In to Student Portal</span>
+          </button>
+        </form>
+
+        <!-- First-Time Student Activation Link -->
+        <div class="mt-4 pt-3 border-top text-center">
+          <p class="text-muted small mb-2">First time logging in or need to set your password?</p>
+          <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1.5 fw-semibold" data-bs-toggle="modal" data-bs-target="#activateModal" style="font-size: 12px;">
+            <i class="bi bi-shield-plus me-1"></i>First-Time Activation & Set Password
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- 2. TEACHER / STAFF LOGIN FORM (Strict 3-Way: ID/Phone + Email + Password) -->
+      <!-- ============================================================== -->
+      <div class="tab-pane fade {% if active_tab == 'staff' %}show active{% endif %}" id="tab-staff" role="tabpanel">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <span class="small fw-bold text-dark"><i class="bi bi-person-workspace text-primary me-1"></i>Faculty & Staff Login</span>
+          <span class="badge bg-primary-subtle text-primary" style="font-size: 11px;">Strict 3-Way Auth</span>
+        </div>
+        <form method="POST" action="{{ url_for('login') }}" id="staffLoginForm">
+          <input type="hidden" name="login_type" value="staff">
+
+          <!-- Teacher Identifier / Phone / Name -->
+          <div class="mb-3">
+            <label for="staff_input" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
+              <span><i class="bi bi-person-badge text-primary me-1"></i>Teacher ID, Mobile or Name</span>
+              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-telephone"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control bg-light border-start-0 py-2 font-monospace" 
+                id="staff_input" 
+                name="staff_input" 
+                placeholder="e.g. 0300-1234567 or Teacher Name" 
+                required 
+                style="border-radius: 0 12px 12px 0; font-size: 14px;"
+              >
+            </div>
+          </div>
+
+          <!-- Teacher Email -->
+          <div class="mb-3">
+            <label for="staff_email" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
+              <span><i class="bi bi-envelope-at text-primary me-1"></i>Registered Faculty Email</span>
+              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-envelope"></i>
+              </span>
+              <input 
+                type="email" 
+                class="form-control bg-light border-start-0 py-2" 
+                id="staff_email" 
+                name="staff_email" 
+                placeholder="e.g. teacher@gmail.com" 
+                required 
+                style="border-radius: 0 12px 12px 0; font-size: 14px;"
+              >
+            </div>
+          </div>
+
+          <!-- Teacher Password -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="staff_password" class="form-label small fw-bold text-secondary mb-0">
+                <i class="bi bi-shield-lock text-primary me-1"></i>Teacher Security Password
+              </label>
+              <a href="#" class="text-decoration-none small text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#forgotStaffModal" style="font-size: 11.5px;">
+                Forgot Password?
+              </a>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-key"></i>
+              </span>
+              <input 
+                type="password" 
+                class="form-control bg-light border-start-0 border-end-0 py-2 font-monospace" 
+                id="staff_password" 
+                name="staff_password" 
+                placeholder="Enter teacher password" 
+                required 
+                style="font-size: 14px;"
+              >
+              <button 
+                type="button" 
+                class="btn btn-light border border-start-0 text-muted" 
+                onclick="togglePasswordVisibility('staff_password', 'staffPasswordToggleIcon')"
+                style="border-radius: 0 12px 12px 0;" 
+                title="Show/Hide Password"
+              >
+                <i class="bi bi-eye" id="staffPasswordToggleIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-asdi w-100 py-2.5 mt-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm rounded-3">
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span>Teacher Portal Login</span>
+          </button>
+        </form>
+
+        <!-- First-Time Teacher Setup Link -->
+        <div class="mt-4 pt-3 border-top text-center">
+          <p class="text-muted small mb-2">New faculty member or need to set your password?</p>
+          <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1.5 fw-semibold" data-bs-toggle="modal" data-bs-target="#activateStaffModal" style="font-size: 12px;">
+            <i class="bi bi-person-plus me-1"></i>First-Time Teacher Activation & Set Password
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- 3. ADMIN LOGIN FORM (Strict 3-Way: Username + Email + Password) -->
+      <!-- ============================================================== -->
+      <div class="tab-pane fade {% if active_tab == 'admin' %}show active{% endif %}" id="tab-admin" role="tabpanel">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <span class="small fw-bold text-dark"><i class="bi bi-shield-lock-fill text-danger me-1"></i>Administrator Authority</span>
+          <span class="badge bg-danger-subtle text-danger" style="font-size: 11px;">Master 3-Way Auth</span>
+        </div>
+        <form method="POST" action="{{ url_for('login') }}" id="adminLoginForm">
+          <input type="hidden" name="login_type" value="admin">
+
+          <!-- Admin Username -->
+          <div class="mb-3">
+            <label for="admin_username" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
+              <span><i class="bi bi-person-fill-lock text-danger me-1"></i>Admin Username</span>
+              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-person-gear"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control bg-light border-start-0 py-2 font-monospace" 
+                id="admin_username" 
+                name="admin_username" 
+                placeholder="e.g. admin or principal" 
+                required 
+                style="border-radius: 0 12px 12px 0; font-size: 14px;"
+              >
+            </div>
+          </div>
+
+          <!-- Admin Email -->
+          <div class="mb-3">
+            <label for="admin_email" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
+              <span><i class="bi bi-envelope-at text-danger me-1"></i>Official Admin Email</span>
+              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-envelope"></i>
+              </span>
+              <input 
+                type="email" 
+                class="form-control bg-light border-start-0 py-2" 
+                id="admin_email" 
+                name="admin_email" 
+                placeholder="e.g. admin@gmail.com" 
+                required 
+                style="border-radius: 0 12px 12px 0; font-size: 14px;"
+              >
+            </div>
+          </div>
+
+          <!-- Admin Master Password -->
+          <div class="mb-3">
+            <label for="admin_password" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
+              <span><i class="bi bi-key-fill text-danger me-1"></i>Master Admin Password</span>
+              <span class="text-muted" style="font-size: 10.5px;">Root Security</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                <i class="bi bi-shield-lock-fill text-danger"></i>
+              </span>
+              <input 
+                type="password" 
+                class="form-control bg-light border-start-0 border-end-0 py-2 font-monospace" 
+                id="admin_password" 
+                name="admin_password" 
+                placeholder="Enter master admin password" 
+                required 
+                style="font-size: 14px;"
+              >
+              <button 
+                type="button" 
+                class="btn btn-light border border-start-0 text-muted" 
+                onclick="togglePasswordVisibility('admin_password', 'adminPasswordToggleIcon')"
+                style="border-radius: 0 12px 12px 0;" 
+                title="Show/Hide Password"
+              >
+                <i class="bi bi-eye" id="adminPasswordToggleIcon"></i>
+              </button>
+            </div>
+            <div class="form-text text-muted" style="font-size: 11px;">
+              <i class="bi bi-shield-check me-1"></i>Complete institute control, financials & student directories.
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-danger w-100 py-2.5 mt-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm rounded-3">
+            <i class="bi bi-shield-lock"></i>
+            <span>Access Administration Console</span>
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="text-center mt-3">
+    <div class="text-muted" style="font-size: 11px;">
+      &copy; {{ now.year }} Asian Skill Development Institute &bull; All Rights Reserved
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL 1: FIRST-TIME STUDENT ACCOUNT ACTIVATION & PASSWORD      -->
+<!-- ============================================================== -->
+<div class="modal fade" id="activateModal" tabindex="-1" aria-labelledby="activateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
+        <h6 class="modal-title fw-bold" id="activateModalLabel">
+          <i class="bi bi-shield-lock-fill me-2 text-warning"></i>Student Account Activation & Password Setup
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{{ url_for('activate_student_account') }}">
+        <div class="modal-body p-4">
+          <div class="alert alert-info py-2.5 px-3 small rounded-3 mb-3" style="font-size: 12.5px;">
+            <i class="bi bi-shield-check me-1.5 text-primary"></i><strong>Identity Verification:</strong> Enter your Roll No and the Mobile Number given on your Admission form to set your official Email and Password.
+          </div>
+
+          <!-- Roll No -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Student Roll No / Admission ID</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-person-vcard"></i></span>
+              <input type="text" name="act_roll_no" class="form-control" placeholder="e.g. ASDI-2026-0001 or 1" required>
+            </div>
+          </div>
+
+          <!-- Phone (Security Check) -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Registered Admission Mobile No (or CNIC)</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+              <input type="text" name="act_phone" class="form-control" placeholder="e.g. 03001234567" required>
+            </div>
+            <div class="form-text" style="font-size: 11px;">Admission record se match hona zaroori hai.</div>
+          </div>
+
+          <!-- Official Email -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Your Official Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope-at"></i></span>
+              <input type="email" name="act_email" class="form-control" placeholder="e.g. student@gmail.com" required>
+            </div>
+            <div class="form-text" style="font-size: 11px;">Login ke waqt yeh Email use hoga.</div>
+          </div>
+
+          <!-- Choose Password -->
+          <div class="row g-2 mb-2">
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Create Password</label>
+              <input type="password" name="act_password" id="act_password" minlength="6" class="form-control font-monospace" placeholder="Min 6 characters" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Confirm Password</label>
+              <input type="password" name="act_confirm_password" id="act_confirm_password" minlength="6" class="form-control font-monospace" placeholder="Re-enter password" required>
+            </div>
+          </div>
+          <div class="form-text" style="font-size: 11px;">Password kam az kam 6 characters ka hona chahiye.</div>
+
+        </div>
+        <div class="modal-footer bg-light py-2.5">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-asdi rounded-pill px-4 fw-bold shadow-sm">
+            <i class="bi bi-check2-circle me-1"></i>Activate Account & Save Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL 2: FORGOT / RESET PASSWORD                               -->
+<!-- ============================================================== -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
+        <h6 class="modal-title fw-bold" id="forgotPasswordModalLabel">
+          <i class="bi bi-arrow-counterclockwise me-2 text-warning"></i>Reset Student Password
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{{ url_for('reset_student_password') }}">
+        <div class="modal-body p-4">
+          <div class="alert alert-warning py-2.5 px-3 small rounded-3 mb-3" style="font-size: 12.5px;">
+            <i class="bi bi-shield-exclamation me-1.5"></i>Apna Roll No aur registered Mobile ya Email darj kar ke naya password banayein.
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Student Roll No</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-person-vcard"></i></span>
+              <input type="text" name="reset_roll_no" class="form-control" placeholder="e.g. ASDI-2026-0001 or 1" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Registered Mobile Number ya Email</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-shield-lock"></i></span>
+              <input type="text" name="reset_auth" class="form-control" placeholder="e.g. 03001234567 or email" required>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-2">
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Naya Password</label>
+              <input type="password" name="reset_password" minlength="6" class="form-control font-monospace" placeholder="Min 6 characters" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Confirm Password</label>
+              <input type="password" name="reset_confirm_password" minlength="6" class="form-control font-monospace" placeholder="Re-enter password" required>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer bg-light py-2.5">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm">
+            <i class="bi bi-shield-check me-1"></i>Reset Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL 3: TEACHER ACCOUNT ACTIVATION & SET PASSWORD             -->
+<!-- ============================================================== -->
+<div class="modal fade" id="activateStaffModal" tabindex="-1" aria-labelledby="activateStaffModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
+        <h6 class="modal-title fw-bold" id="activateStaffModalLabel">
+          <i class="bi bi-person-badge-fill me-2 text-warning"></i>Faculty Account Activation & Password Setup
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{{ url_for('activate_staff_account') }}">
+        <div class="modal-body p-4">
+          <div class="alert alert-info py-2.5 px-3 small rounded-3 mb-3" style="font-size: 12.5px;">
+            <i class="bi bi-shield-check me-1.5 text-primary"></i><strong>Faculty Verification:</strong> Enter your institution-registered Mobile Number to set your official Email and Password.
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Registered Faculty Mobile No</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+              <input type="text" name="act_phone" class="form-control" placeholder="e.g. 03001234567" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Official Faculty Email</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope-at"></i></span>
+              <input type="email" name="act_email" class="form-control" placeholder="e.g. teacher@gmail.com" required>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-2">
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Create Password</label>
+              <input type="password" name="act_password" minlength="6" class="form-control font-monospace" placeholder="Min 6 characters" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Confirm Password</label>
+              <input type="password" name="act_confirm_password" minlength="6" class="form-control font-monospace" placeholder="Re-enter password" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2.5">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-asdi rounded-pill px-4 fw-bold shadow-sm">
+            <i class="bi bi-check2-circle me-1"></i>Activate Faculty Account
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL 4: TEACHER FORGOT / RESET PASSWORD                       -->
+<!-- ============================================================== -->
+<div class="modal fade" id="forgotStaffModal" tabindex="-1" aria-labelledby="forgotStaffModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
+        <h6 class="modal-title fw-bold" id="forgotStaffModalLabel">
+          <i class="bi bi-arrow-counterclockwise me-2 text-warning"></i>Reset Teacher Password
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{{ url_for('reset_staff_password') }}">
+        <div class="modal-body p-4">
+          <div class="alert alert-warning py-2.5 px-3 small rounded-3 mb-3" style="font-size: 12.5px;">
+            <i class="bi bi-shield-exclamation me-1.5"></i>Apna registered Mobile Number ya Faculty Email darj kar ke naya password banayein.
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Registered Faculty Mobile ya Email</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+              <input type="text" name="reset_auth" class="form-control" placeholder="e.g. 03001234567 or email" required>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-2">
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Naya Password</label>
+              <input type="password" name="reset_password" minlength="6" class="form-control font-monospace" placeholder="Min 6 characters" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Confirm Password</label>
+              <input type="password" name="reset_confirm_password" minlength="6" class="form-control font-monospace" placeholder="Re-enter password" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2.5">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm">
+            <i class="bi bi-shield-check me-1"></i>Reset Teacher Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function togglePasswordVisibility(fieldId, iconId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(iconId);
+    if (!field || !icon) return;
+
+    if (field.type === "password") {
+      field.type = "text";
+      icon.className = "bi bi-eye-slash";
+    } else {
+      field.type = "password";
+      icon.className = "bi bi-eye";
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Online Admission - Asian Skill Development Institute{% endblock %}
+
+{% block content %}
+<div class="container py-4 px-3" style="max-width: 680px;">
+  <div class="text-center my-3">
+    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 bg-white shadow-sm mb-2 border" style="border-color: #E2E6F2; width: 78px; height: 78px;">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="ASDI Logo" style="max-height: 52px; max-width: 100%; object-fit: contain;">
+    </div>
+    <h3 class="fw-bold mb-0" style="color: var(--navy); letter-spacing: -0.5px;">Online Admission Application</h3>
+    <p class="text-muted small mb-0">Asian Skill Development Institute &bull; Academic Session 2026</p>
+  </div>
+
+  <div class="portal-card p-4 shadow-sm border rounded-4 bg-white">
+    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+      <span class="small fw-bold text-dark"><i class="bi bi-mortarboard-fill text-primary me-1.5"></i>Student Admission Form</span>
+      <span class="badge bg-primary-subtle text-primary" style="font-size: 11px;">Official Registration</span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+        <div class="alert alert-{{ 'danger' if category in ['error', 'danger'] else ('success' if category == 'success' else 'warning') }} alert-dismissible fade show py-2.5 px-3 rounded-3 mb-3" style="font-size: 13px;" role="alert">
+          <div>{{ msg }}</div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('online_admission') }}">
+      <!-- Personal Details -->
+      <h6 class="fw-bold text-secondary mb-3 mt-1" style="font-size: 13px;">1. Personal Information</h6>
+      
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <label class="form-label small fw-bold text-secondary mb-1">Full Legal Name *</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Student Full Name" required>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label small fw-bold text-secondary mb-1">Father's Name *</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted"><i class="bi bi-person-badge"></i></span>
+            <input type="text" name="father_name" class="form-control" placeholder="e.g. Father Name" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <label class="form-label small fw-bold text-secondary mb-1">Contact Phone (WhatsApp) *</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+            <input type="text" name="phone" class="form-control" placeholder="e.g. 0300-1234567" required>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label small fw-bold text-secondary mb-1">Email Address (Optional)</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+            <input type="email" name="email" class="form-control" placeholder="e.g. student@gmail.com">
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <label class="form-label small fw-bold text-secondary mb-1">Gender</label>
+          <select name="gender" class="form-select">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label small fw-bold text-secondary mb-1">Date of Birth</label>
+          <input type="date" name="dob" class="form-control">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-secondary mb-1">Residential Address</label>
+        <textarea name="address" rows="2" class="form-control" placeholder="e.g. House #, Street #, City"></textarea>
+      </div>
+
+      <!-- Academic Choice -->
+      <h6 class="fw-bold text-secondary mb-3 mt-4" style="font-size: 13px;">2. Course Selection</h6>
+      
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6">
+          <label class="form-label small fw-bold text-secondary mb-1">Desired Course *</label>
+          <select name="course" class="form-select" required>
+            <option value="DIT">DIT (Diploma in Information Technology - 1 Year)</option>
+            <option value="DIT2">DIT 2nd Semester</option>
+            <option value="Tuition">Tuition (Matric / FSc / ICS)</option>
+            <option value="English">Spoken English & Communication</option>
+          </select>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label small fw-bold text-secondary mb-1">Academic Category</label>
+          <select name="category" class="form-select">
+            <option value="DIT (Diploma in IT)">DIT (Diploma in IT)</option>
+            <option value="Tuition">Tuition</option>
+            <option value="Language">Language</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="p-3 bg-light rounded-3 mb-4 border">
+        <div class="small text-muted"><i class="bi bi-shield-check text-success me-1"></i>Upon submission, you will receive an automatic Student ID and immediate access to your personal Student Portal.</div>
+      </div>
+
+      <button type="submit" class="btn btn-asdi w-100 py-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm rounded-3">
+        <i class="bi bi-send-check fs-6"></i>
+        <span>Submit Admission Application</span>
+      </button>
+
+      <div class="text-center mt-3 pt-2">
+        <a href="{{ url_for('login') }}" class="text-decoration-none small text-primary fw-semibold">
+          <i class="bi bi-arrow-left me-1"></i>Already registered? Go to Login
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
