@@ -1371,7 +1371,7 @@ def dashboard():
     # Active announcements for students
     announcements = conn.execute("""
         SELECT * FROM announcements 
-        WHERE is_active = 1 AND (target_role = 'All' OR target_role = 'Students')
+        WHERE is_active = TRUE AND (target_role = 'All' OR target_role = 'Students')
         ORDER BY id DESC LIMIT 5
     """).fetchall()
 
@@ -1674,7 +1674,7 @@ def staff_dashboard():
     # Active announcements for staff/faculty
     announcements = conn.execute("""
         SELECT * FROM announcements 
-        WHERE is_active = 1 AND (target_role = 'All' OR target_role = 'Staff')
+        WHERE is_active = TRUE AND (target_role = 'All' OR target_role = 'Staff')
         ORDER BY id DESC LIMIT 5
     """).fetchall()
 

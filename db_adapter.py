@@ -39,6 +39,10 @@ def _convert_sql(sql):
     sql = re.sub(r"datetime\(\s*'now'\s*\)", "CURRENT_TIMESTAMP", sql, flags=re.IGNORECASE)
     sql = re.sub(r"substr\(\s*created_at\s*,\s*1\s*,\s*10\s*\)", "DATE(created_at)::text", sql, flags=re.IGNORECASE)
 
+    # Convert is_active = 1 / 0 to boolean TRUE / FALSE for PostgreSQL compatibility
+    sql = re.sub(r"\bis_active\s*=\s*1\b", "is_active = TRUE", sql, flags=re.IGNORECASE)
+    sql = re.sub(r"\bis_active\s*=\s*0\b", "is_active = FALSE", sql, flags=re.IGNORECASE)
+
     # Tokenize by SQL string literals to only replace ? outside of quotes
     tokens = re.split(r"('(?:''|[^'])*')", sql)
     for i in range(0, len(tokens), 2):
