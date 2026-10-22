@@ -74,7 +74,7 @@
         
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
           <span class="small fw-bold text-dark"><i class="bi bi-person-check-fill text-primary me-1"></i>Student Portal Login</span>
-          <span class="badge bg-primary-subtle text-primary" style="font-size: 11px;">Strict 3-Way Auth</span>
+          <span class="badge bg-primary-subtle text-primary" style="font-size: 11px;">Student Portal</span>
         </div>
 
         <form method="POST" action="{{ url_for('login') }}" id="studentLoginForm">
@@ -95,7 +95,7 @@
                 class="form-control bg-light border-start-0 py-2 font-monospace" 
                 id="roll_no" 
                 name="roll_no" 
-                placeholder="e.g. ASDI-2026-0001 or 1" 
+                placeholder="e.g. 1, ASDI-2026-0001 or Mobile" 
                 value="{{ form_roll or '' }}"
                 required 
                 autocomplete="username"
@@ -103,15 +103,15 @@
               >
             </div>
             <div class="form-text text-muted" style="font-size: 11px;">
-              Admission Number ya Roll Number darj karein.
+              Roll Number (e.g. 1, 2), Admission No ya Mobile Number darj karein.
             </div>
           </div>
 
-          <!-- FIELD 2: REGISTERED EMAIL -->
+          <!-- FIELD 2: REGISTERED EMAIL (OPTIONAL) -->
           <div class="mb-3">
             <label for="email" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
               <span><i class="bi bi-envelope-at text-primary me-1"></i>Registered Email Address</span>
-              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+              <span class="text-muted" style="font-size: 10.5px;">Optional</span>
             </label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
@@ -122,15 +122,14 @@
                 class="form-control bg-light border-start-0 py-2" 
                 id="email" 
                 name="email" 
-                placeholder="e.g. student@asdi.edu" 
+                placeholder="e.g. student@gmail.com (Optional)" 
                 value="{{ form_email or '' }}"
-                required 
                 autocomplete="email"
                 style="border-radius: 0 12px 12px 0; font-size: 14px;"
               >
             </div>
             <div class="form-text text-muted" style="font-size: 11px;">
-              Aap ke account ke sath linked official Email.
+              Optional: Agar email yaad na ho to sirf Roll No aur Password se login karein.
             </div>
           </div>
 
@@ -153,7 +152,7 @@
                 class="form-control bg-light border-start-0 border-end-0 py-2 font-monospace" 
                 id="password" 
                 name="password" 
-                placeholder="Enter your security password" 
+                placeholder="Enter your password (default: 1234)" 
                 required 
                 autocomplete="current-password"
                 style="font-size: 14px;"
@@ -193,7 +192,7 @@
       <div class="tab-pane fade {% if active_tab == 'staff' %}show active{% endif %}" id="tab-staff" role="tabpanel">
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
           <span class="small fw-bold text-dark"><i class="bi bi-person-workspace text-primary me-1"></i>Faculty & Staff Login</span>
-          <span class="badge bg-primary-subtle text-primary" style="font-size: 11px;">Strict 3-Way Auth</span>
+          <span class="badge bg-primary-subtle text-primary" style="font-size: 11px;">Faculty Portal</span>
         </div>
         <form method="POST" action="{{ url_for('login') }}" id="staffLoginForm">
           <input type="hidden" name="login_type" value="staff">
@@ -213,18 +212,21 @@
                 class="form-control bg-light border-start-0 py-2 font-monospace" 
                 id="staff_input" 
                 name="staff_input" 
-                placeholder="e.g. 0300-1234567 or Teacher Name" 
+                placeholder="e.g. Sir Kamran, 0300-1234567 or ID" 
                 required 
                 style="border-radius: 0 12px 12px 0; font-size: 14px;"
               >
             </div>
+            <div class="form-text text-muted" style="font-size: 11px;">
+              Teacher ID, Name ya Mobile Number darj karein.
+            </div>
           </div>
 
-          <!-- Teacher Email -->
+          <!-- Teacher Email (OPTIONAL) -->
           <div class="mb-3">
             <label for="staff_email" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
               <span><i class="bi bi-envelope-at text-primary me-1"></i>Registered Faculty Email</span>
-              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+              <span class="text-muted" style="font-size: 10.5px;">Optional</span>
             </label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
@@ -235,10 +237,12 @@
                 class="form-control bg-light border-start-0 py-2" 
                 id="staff_email" 
                 name="staff_email" 
-                placeholder="e.g. teacher@gmail.com" 
-                required 
+                placeholder="e.g. teacher@gmail.com (Optional)" 
                 style="border-radius: 0 12px 12px 0; font-size: 14px;"
               >
+            </div>
+            <div class="form-text text-muted" style="font-size: 11px;">
+              Optional: Agar email yaad na ho to sirf Name/ID aur Password se login karein.
             </div>
           </div>
 
@@ -261,7 +265,7 @@
                 class="form-control bg-light border-start-0 border-end-0 py-2 font-monospace" 
                 id="staff_password" 
                 name="staff_password" 
-                placeholder="Enter teacher password" 
+                placeholder="Enter teacher password (default: 1234)" 
                 required 
                 style="font-size: 14px;"
               >
