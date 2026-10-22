@@ -15,7 +15,18 @@ if DATABASE_URL.startswith("postgres://"):
 try:
     import psycopg2
     import psycopg2.extras
+    import psycopg2.extensions
     PSYCOPG2_AVAILABLE = True
+
+    # Crucial: Register float casting for PostgreSQL NUMERIC / DECIMAL types
+    # This prevents 'TypeError: unsupported operand type(s) for *: Decimal and float'
+    # 1700 is the PostgreSQL OID for NUMERIC/DECIMAL
+    DEC2FLOAT = psycopg2.extensions.new_type(
+        (1700,), "DEC2FLOAT",
+        lambda val, cur: float(val) if val is not None else None
+    )
+    psycopg2.extensions.register_type(DEC2FLOAT)
+
 except ImportError:
     PSYCOPG2_AVAILABLE = False
 
@@ -69,8 +80,6 @@ class PgCursorWrapper:
 
     @property
     def lastrowid(self):
-        # In PostgreSQL last inserted ID is best fetched via RETURNING id,
-        # but if queried through sequence:
         try:
             return self._cur.lastrowid
         except Exception:

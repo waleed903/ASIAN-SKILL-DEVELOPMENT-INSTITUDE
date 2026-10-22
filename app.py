@@ -1477,7 +1477,7 @@ def staff_dashboard():
 
     share_pct = staff["share_pct"] or 0
 
-    share_earning = round(total_fee_collected * (share_pct / 100.0), 2) if share_pct else 0
+    share_earning = round(float(total_fee_collected or 0) * (float(share_pct or 0) / 100.0), 2) if share_pct else 0
 
     # Attach individual paid/balance to each student for the teacher's student table
 
@@ -1625,7 +1625,7 @@ def admin_dashboard():
 
         st_share_pct = st["share_pct"] or 0
 
-        st_share_amt = round(st_paid * (st_share_pct / 100.0), 2) if st_share_pct else 0
+        st_share_amt = round(float(st_paid or 0) * (float(st_share_pct or 0) / 100.0), 2) if st_share_pct else 0
 
         staff_overview.append({
 
