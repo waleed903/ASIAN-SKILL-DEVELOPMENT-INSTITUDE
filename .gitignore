@@ -3,3 +3,10 @@ __pycache__/
 *.pyo
 *.pyd
 .env
+
+*.backup*
+app_sqlite_backup.py
+Ya
+run_portal.bat
+static/uploads/*
+!static/uploads/.gitkeep

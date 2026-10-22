@@ -1,6 +1,6 @@
 import os
 
-import sqlite3
+from db_adapter import get_db_connection, is_postgres
 
 from datetime import datetime
 
@@ -46,47 +46,12 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB max upload
 
-# Flexible Database Path Resolver
+# ─────────────────────────────────────────────────────────────────────────────
+# DATABASE PATH  –  startup par ek baar decide hota hai, phir NAHI badalta
+# ─────────────────────────────────────────────────────────────────────────────
 
 def get_db_path():
-
-    """Returns the most up-to-date database path available across environments."""
-
-    candidates = [
-
-        os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db")),
-
-        os.path.join(BASE_DIR, "data", "asdi.db"),
-
-        os.path.join(BASE_DIR, "asdi_student_portal", "data", "asdi.db"),
-
-        os.path.join(BASE_DIR, "asdi.db"),
-
-        os.path.join(BASE_DIR, "data", "asdi.sqlite"),
-
-        "data/asdi.db",
-
-        "asdi.db"
-
-    ]
-
-    for p in candidates:
-
-        if os.path.exists(p):
-
-            return p
-
-    return os.path.join(BASE_DIR, "data", "asdi.db")
-
-def get_db_connection():
-
-    db_path = get_db_path()
-
-    conn = sqlite3.connect(db_path)
-
-    conn.row_factory = sqlite3.Row
-
-    return conn
+    return "PostgreSQL (Render) / SQLite fallback"
 
 def get_settings():
 
@@ -174,91 +139,72 @@ def wa_phone_filter(phone_str):
     return digits
 
 def init_required_tables():
-    candidates = [
-        os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db")),
-        os.path.join(BASE_DIR, "data", "asdi.db"),
-        os.path.join(BASE_DIR, "asdi_student_portal", "data", "asdi.db"),
-    ]
-    for p in candidates:
-        if os.path.exists(p):
-            try:
-                c = sqlite3.connect(p)
-                c.execute("""
-                    CREATE TABLE IF NOT EXISTS student_attendance_requests (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        student_id INTEGER NOT NULL,
-                        req_date TEXT NOT NULL,
-                        status TEXT DEFAULT 'Pending',
-                        note TEXT,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
-                c.execute("""
-                    CREATE TABLE IF NOT EXISTS student_messages (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        student_id INTEGER NOT NULL,
-                        subject TEXT,
-                        message TEXT NOT NULL,
-                        reply TEXT,
-                        status TEXT DEFAULT 'Unread',
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
-                c.execute("""
-                    CREATE TABLE IF NOT EXISTS online_payment_requests (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        student_id INTEGER NOT NULL,
-                        amount REAL NOT NULL,
-                        transaction_id TEXT,
-                        transaction_date TEXT,
-                        screenshot TEXT,
-                        method TEXT DEFAULT 'EasyPaisa',
-                        status TEXT DEFAULT 'Pending',
-                        admin_note TEXT,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
-                # Staff chat messages (No limits, instant AJAX poll)
-                c.execute("""
-                    CREATE TABLE IF NOT EXISTS staff_chat_messages (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        sender_id INTEGER NOT NULL,
-                        sender_name TEXT NOT NULL,
-                        sender_role TEXT,
-                        sender_photo TEXT,
-                        receiver_id INTEGER DEFAULT 0,
-                        message TEXT NOT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
-                # Staff attendance table
-                c.execute("""
-                    CREATE TABLE IF NOT EXISTS staff_attendance (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        staff_id INTEGER NOT NULL,
-                        att_date TEXT NOT NULL,
-                        status TEXT DEFAULT 'Present',
-                        check_in TEXT,
-                        check_out TEXT,
-                        note TEXT
-                    )
-                """)
-                # Ensure staff & staff_attendance columns exist
-                try:
-                    staff_cols = [col[1] for col in c.execute("PRAGMA table_info(staff)").fetchall()]
-                    if "photo" not in staff_cols:
-                        c.execute("ALTER TABLE staff ADD COLUMN photo TEXT")
-                    sa_cols = [col[1] for col in c.execute("PRAGMA table_info(staff_attendance)").fetchall()]
-                    if "note" not in sa_cols:
-                        c.execute("ALTER TABLE staff_attendance ADD COLUMN note TEXT")
-                    if "check_out" not in sa_cols:
-                        c.execute("ALTER TABLE staff_attendance ADD COLUMN check_out TEXT")
-                except Exception:
-                    pass
-                c.commit()
-                c.close()
-            except Exception:
-                pass
+    """Ensures necessary auxiliary tables exist in the active database."""
+    try:
+        c = get_db_connection()
+        if not is_postgres():
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS student_attendance_requests (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    student_id INTEGER NOT NULL,
+                    req_date TEXT NOT NULL,
+                    status TEXT DEFAULT 'Pending',
+                    note TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS student_messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    student_id INTEGER NOT NULL,
+                    subject TEXT,
+                    message TEXT NOT NULL,
+                    reply TEXT,
+                    status TEXT DEFAULT 'Unread',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS online_payment_requests (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    student_id INTEGER NOT NULL,
+                    amount REAL NOT NULL,
+                    transaction_id TEXT,
+                    transaction_date TEXT,
+                    screenshot TEXT,
+                    method TEXT DEFAULT 'EasyPaisa',
+                    status TEXT DEFAULT 'Pending',
+                    admin_note TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS staff_chat_messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sender_id INTEGER NOT NULL,
+                    sender_name TEXT NOT NULL,
+                    sender_role TEXT,
+                    sender_photo TEXT,
+                    receiver_id INTEGER DEFAULT 0,
+                    message TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS staff_attendance (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    staff_id INTEGER NOT NULL,
+                    att_date TEXT NOT NULL,
+                    status TEXT DEFAULT 'Present',
+                    check_in TEXT,
+                    check_out TEXT,
+                    note TEXT
+                )
+            """)
+        c.commit()
+        c.close()
+    except Exception as e:
+        print("[init_required_tables info]", e)
 
 init_required_tables()
 
@@ -289,140 +235,44 @@ def verify_student_password(stored_val, raw_password):
     return stored_str == raw_str
 
 def sync_student_security(student_id, email, password=None):
-
-    """Updates email, pin and password_hash across all database copies so data remains in sync."""
-
-    paths = [
-
-        os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db")),
-
-        os.path.join(BASE_DIR, "data", "asdi.db"),
-
-        os.path.join(BASE_DIR, "asdi_student_portal", "data", "asdi.db")
-
-    ]
-
+    """Updates email, pin and password_hash in the active database."""
     hashed_pw = None
-
     if password is not None and str(password).strip() != "":
-
         pwd_raw = str(password).strip()
-
         if pwd_raw.startswith(('scrypt:', 'pbkdf2:', 'argon2:')):
-
             hashed_pw = pwd_raw
-
         else:
-
             hashed_pw = generate_password_hash(pwd_raw)
-
-    for p in paths:
-
-        if os.path.exists(p):
-
-            try:
-
-                c = sqlite3.connect(p)
-
-                cur = c.cursor()
-
-                cols = [col[1] for col in cur.execute("PRAGMA table_info(students)").fetchall()]
-
-                if "email" not in cols:
-
-                    cur.execute("ALTER TABLE students ADD COLUMN email TEXT")
-
-                if "pin" not in cols:
-
-                    cur.execute("ALTER TABLE students ADD COLUMN pin TEXT")
-
-                if "password_hash" not in cols:
-
-                    cur.execute("ALTER TABLE students ADD COLUMN password_hash TEXT")
-
-                if hashed_pw:
-
-                    cur.execute("UPDATE students SET email = ?, pin = ?, password_hash = ? WHERE id = ?", (email, hashed_pw, hashed_pw, student_id))
-
-                else:
-
-                    cur.execute("UPDATE students SET email = ? WHERE id = ?", (email, student_id))
-
-                c.commit()
-
-                c.close()
-
-            except Exception:
-
-                pass
+    try:
+        c = get_db_connection()
+        if hashed_pw:
+            c.execute("UPDATE students SET email = ?, pin = ?, password_hash = ? WHERE id = ?", (email, hashed_pw, hashed_pw, student_id))
+        else:
+            c.execute("UPDATE students SET email = ? WHERE id = ?", (email, student_id))
+        c.commit()
+        c.close()
+    except Exception as e:
+        print("[sync_student_security warning]", e)
 
 def sync_staff_security(staff_id, email, password=None):
-
-    """Updates email, pin and password_hash for staff across all database copies."""
-
-    paths = [
-
-        os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db")),
-
-        os.path.join(BASE_DIR, "data", "asdi.db"),
-
-        os.path.join(BASE_DIR, "asdi_student_portal", "data", "asdi.db")
-
-    ]
-
+    """Updates email, pin and password_hash for staff in the active database."""
     hashed_pw = None
-
     if password is not None and str(password).strip() != "":
-
         pwd_raw = str(password).strip()
-
         if pwd_raw.startswith(('scrypt:', 'pbkdf2:', 'argon2:')):
-
             hashed_pw = pwd_raw
-
         else:
-
             hashed_pw = generate_password_hash(pwd_raw)
-
-    for p in paths:
-
-        if os.path.exists(p):
-
-            try:
-
-                c = sqlite3.connect(p)
-
-                cur = c.cursor()
-
-                cols = [col[1] for col in cur.execute("PRAGMA table_info(staff)").fetchall()]
-
-                if "email" not in cols:
-
-                    cur.execute("ALTER TABLE staff ADD COLUMN email TEXT")
-
-                if "pin" not in cols:
-
-                    cur.execute("ALTER TABLE staff ADD COLUMN pin TEXT")
-
-                if "password_hash" not in cols:
-
-                    cur.execute("ALTER TABLE staff ADD COLUMN password_hash TEXT")
-
-                if hashed_pw:
-
-                    cur.execute("UPDATE staff SET email = ?, pin = ?, password_hash = ? WHERE id = ?", (email, hashed_pw, hashed_pw, staff_id))
-
-                else:
-
-                    cur.execute("UPDATE staff SET email = ? WHERE id = ?", (email, staff_id))
-
-                c.commit()
-
-                c.close()
-
-            except Exception:
-
-                pass
+    try:
+        c = get_db_connection()
+        if hashed_pw:
+            c.execute("UPDATE staff SET email = ?, pin = ?, password_hash = ? WHERE id = ?", (email, hashed_pw, hashed_pw, staff_id))
+        else:
+            c.execute("UPDATE staff SET email = ? WHERE id = ?", (email, staff_id))
+        c.commit()
+        c.close()
+    except Exception as e:
+        print("[sync_staff_security warning]", e)
 
 # Access Control Decorators
 
@@ -1463,33 +1313,13 @@ def student_upload_photo():
 
         file.save(filepath)
 
-        # Save filename to all DB copies
-
-        db_paths = [
-
-            os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db")),
-
-            os.path.join(BASE_DIR, "data", "asdi.db"),
-
-        ]
-
-        for p in db_paths:
-
-            if os.path.exists(p):
-
-                try:
-
-                    c = sqlite3.connect(p)
-
-                    c.execute("UPDATE students SET photo = ? WHERE id = ?", (filename, student_id))
-
-                    c.commit()
-
-                    c.close()
-
-                except Exception:
-
-                    pass
+        try:
+            c = get_db_connection()
+            c.execute("UPDATE students SET photo = ? WHERE id = ?", (filename, student_id))
+            c.commit()
+            c.close()
+        except Exception as e:
+            print("[student_upload_photo error]", e)
 
         flash("Aap ki profile photo kamyabi se update ho gayi!", "success")
 
@@ -2055,51 +1885,27 @@ def admin_update_security():
 
             return redirect(url_for("admin_dashboard"))
 
-    # Update in Database
+    try:
+        con = get_db_connection()
+        def _set_setting(k, v):
+            row = con.execute("SELECT key FROM settings WHERE key = ?", (k,)).fetchone()
+            if row:
+                con.execute("UPDATE settings SET value = ? WHERE key = ?", (v, k))
+            else:
+                con.execute("INSERT INTO settings (key, value) VALUES (?, ?)", (k, v))
 
-    paths = [
-
-        os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db")),
-
-        os.path.join(BASE_DIR, "data", "asdi.db"),
-
-        os.path.join(BASE_DIR, "asdi_student_portal", "data", "asdi.db")
-
-    ]
-
-    for p in paths:
-
-        if os.path.exists(p):
-
-            try:
-
-                con = sqlite3.connect(p)
-
-                cur = con.cursor()
-
-                if new_username:
-
-                    cur.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_username', ?)", (new_username,))
-
-                if new_email:
-
-                    cur.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_email', ?)", (new_email,))
-
-                if new_pw:
-
-                    h = generate_password_hash(new_pw)
-
-                    cur.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_password_hash', ?)", (h,))
-
-                    cur.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_pin', ?)", (new_pw,))
-
-                con.commit()
-
-                con.close()
-
-            except Exception:
-
-                pass
+        if new_username:
+            _set_setting('admin_username', new_username)
+        if new_email:
+            _set_setting('admin_email', new_email)
+        if new_pw:
+            h = generate_password_hash(new_pw)
+            _set_setting('admin_password_hash', h)
+            _set_setting('admin_pin', new_pw)
+        con.commit()
+        con.close()
+    except Exception as e:
+        print("[admin_update_security error]", e)
 
     flash("Administrator Security Credentials successfully updated!", "success")
 
@@ -2218,105 +2024,74 @@ def online_admission():
 @admin_required
 
 def admin_edit_student(student_id):
-
-    """Allows Administrator to edit full student academic and fee profile."""
-
+    """Allows Administrator to edit full student academic, admission number, and fee profile."""
+    admission_no = request.form.get("admission_no", "").strip().upper()
     name = request.form.get("name", "").strip().upper()
-
     father_name = request.form.get("father_name", "").strip().upper()
-
     roll_no = request.form.get("roll_no", "").strip()
-
     phone = request.form.get("phone", "").strip()
-
-    whatsapp = request.form.get("whatsapp", "").strip()
-
+    whatsapp = request.form.get("whatsapp", "").strip() or phone
     email = request.form.get("email", "").strip().lower()
-
     course = request.form.get("course", "").strip()
-
     batch = request.form.get("batch", "").strip()
-
     status = request.form.get("status", "Active").strip()
-
     teacher_id = request.form.get("teacher_id", "")
-
     teacher_id = int(teacher_id) if teacher_id and teacher_id.isdigit() else None
 
     try:
-
         total_fee = float(request.form.get("total_fee", 0))
-
     except ValueError:
-
         total_fee = 0.0
 
     try:
-
         discount = float(request.form.get("discount_amount", 0))
-
     except ValueError:
-
         discount = 0.0
 
     new_password = request.form.get("reset_student_password", "").strip()
 
     conn = get_db_connection()
-
     cur = conn.cursor()
 
+    if not admission_no:
+        row = cur.execute("SELECT admission_no FROM students WHERE id = ?", (student_id,)).fetchone()
+        admission_no = row["admission_no"] if row else ""
+
+    # Check for duplicate admission number
+    if admission_no:
+        dup = cur.execute("SELECT id, name FROM students WHERE admission_no = ? AND id != ?", (admission_no, student_id)).fetchone()
+        if dup:
+            conn.close()
+            flash(f"Error: Admission No '{admission_no}' pehle se student '{dup['name']}' ke pas mojood hai! Please unique Admission No darj karein.", "danger")
+            return redirect(url_for("admin_dashboard"))
+
     if new_password:
-
         h = generate_password_hash(new_password)
-
         cur.execute("""
-
             UPDATE students SET
-
-                name=?, father_name=?, roll_no=?, phone=?, whatsapp=?, email=?,
-
+                admission_no=?, name=?, father_name=?, roll_no=?, phone=?, whatsapp=?, email=?,
                 course=?, batch=?, status=?, teacher_id=?, total_fee=?, discount_amount=?,
-
                 password_hash=?, pin=?
-
             WHERE id=?
-
         """, (
-
-            name, father_name, roll_no, phone, whatsapp, email,
-
+            admission_no, name, father_name, roll_no, phone, whatsapp, email,
             course, batch, status, teacher_id, total_fee, discount,
-
             h, h, student_id
-
         ))
-
     else:
-
         cur.execute("""
-
             UPDATE students SET
-
-                name=?, father_name=?, roll_no=?, phone=?, whatsapp=?, email=?,
-
+                admission_no=?, name=?, father_name=?, roll_no=?, phone=?, whatsapp=?, email=?,
                 course=?, batch=?, status=?, teacher_id=?, total_fee=?, discount_amount=?
-
             WHERE id=?
-
         """, (
-
-            name, father_name, roll_no, phone, whatsapp, email,
-
+            admission_no, name, father_name, roll_no, phone, whatsapp, email,
             course, batch, status, teacher_id, total_fee, discount, student_id
-
         ))
 
     conn.commit()
-
     conn.close()
-
-    flash(f"Student '{name}' updated successfully!", "success")
-
+    flash(f"Student '{name}' (Adm No: {admission_no}) updated successfully!", "success")
     return redirect(url_for("admin_dashboard"))
 
 @app.route("/admin/student/delete/<int:student_id>", methods=["POST"])
@@ -3578,20 +3353,13 @@ def staff_upload_photo():
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # Update in all DB copies
-        paths = [
-            os.path.join(BASE_DIR, "data", "asdi.db"),
-            os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db"))
-        ]
-        for p in paths:
-            if os.path.exists(p):
-                try:
-                    c = sqlite3.connect(p)
-                    c.execute("UPDATE staff SET photo = ? WHERE id = ?", (filename, staff_id))
-                    c.commit()
-                    c.close()
-                except Exception:
-                    pass
+        try:
+            c = get_db_connection()
+            c.execute("UPDATE staff SET photo = ? WHERE id = ?", (filename, staff_id))
+            c.commit()
+            c.close()
+        except Exception as e:
+            print("[staff_upload_photo error]", e)
         flash("Faculty profile photo kamyabi se update ho gayi!", "success")
     else:
         flash("Invalid photo format. PNG, JPG, JPEG, WEBP allowed.", "danger")
@@ -3614,12 +3382,19 @@ def staff_send_chat():
     sender_role = sender["role"] if sender else "Staff"
     sender_photo = sender["photo"] if (sender and "photo" in sender.keys()) else ""
 
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO staff_chat_messages (sender_id, sender_name, sender_role, sender_photo, receiver_id, message)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (staff_id, sender_name, sender_role, sender_photo, receiver_id, message))
-    msg_id = cur.lastrowid
+    if is_postgres():
+        row = conn.execute("""
+            INSERT INTO staff_chat_messages (sender_id, sender_name, sender_role, sender_photo, receiver_id, message)
+            VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+        """, (staff_id, sender_name, sender_role, sender_photo, receiver_id, message)).fetchone()
+        msg_id = row["id"] if row else 0
+    else:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO staff_chat_messages (sender_id, sender_name, sender_role, sender_photo, receiver_id, message)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (staff_id, sender_name, sender_role, sender_photo, receiver_id, message))
+        msg_id = cur.lastrowid
     conn.commit()
     conn.close()
 
@@ -3695,20 +3470,17 @@ def admin_upload_dp():
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # Store in settings table in all DB paths
-        paths = [
-            os.path.join(BASE_DIR, "data", "asdi.db"),
-            os.path.abspath(os.path.join(BASE_DIR, "..", "ASDI_App_Full", "asdi", "data", "asdi.db"))
-        ]
-        for p in paths:
-            if os.path.exists(p):
-                try:
-                    c = sqlite3.connect(p)
-                    c.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_dp', ?)", (filename,))
-                    c.commit()
-                    c.close()
-                except Exception:
-                    pass
+        try:
+            c = get_db_connection()
+            row = c.execute("SELECT key FROM settings WHERE key = ?", ('admin_dp',)).fetchone()
+            if row:
+                c.execute("UPDATE settings SET value = ? WHERE key = ?", (filename, 'admin_dp'))
+            else:
+                c.execute("INSERT INTO settings (key, value) VALUES (?, ?)", ('admin_dp', filename))
+            c.commit()
+            c.close()
+        except Exception as e:
+            print("[admin_upload_dp error]", e)
         flash("Admin Display Picture (DP) kamyabi se update ho gayi!", "success")
     else:
         flash("Invalid format. PNG, JPG, JPEG, WEBP allowed.", "danger")
