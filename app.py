@@ -1250,17 +1250,16 @@ def dashboard():
         (student_id,)
     ).fetchall()
 
-    today_msg_count = conn.execute(
-        "SELECT COUNT(*) FROM student_messages WHERE student_id = ? AND (date(created_at) = date('now', 'localtime') OR substr(created_at, 1, 10) = ?)",
+    row_cnt = conn.execute(
+        "SELECT COUNT(*) as cnt FROM student_messages WHERE student_id = ? AND (DATE(created_at) = CURRENT_DATE OR DATE(created_at) = ?)",
         (student_id, today_str)
-    ).fetchone()[0]
+    ).fetchone()
+    today_msg_count = (row_cnt["cnt"] if isinstance(row_cnt, dict) else row_cnt[0]) if row_cnt else 0
 
     daily_msg_limit = 10
     remaining_msgs_today = max(0, daily_msg_limit - today_msg_count)
 
-    conn.close()
-
-        # Enrolled Student Groups
+    # Enrolled Student Groups
     my_groups = conn.execute("""
         SELECT sg.* 
         FROM student_groups sg
@@ -1282,6 +1281,7 @@ def dashboard():
         SELECT * FROM schedule WHERE student_id = ? ORDER BY id DESC
     """, (student_id,)).fetchall()
 
+    conn.close()
     return render_template(
         "dashboard.html",
         my_groups=my_groups,
@@ -2667,7 +2667,7 @@ def student_send_message():
 
     # Check limit: 10 messages per day
     current_count = conn.execute(
-        "SELECT COUNT(*) FROM student_messages WHERE student_id = ? AND (date(created_at) = date('now', 'localtime') OR substr(created_at, 1, 10) = ?)",
+        "SELECT COUNT(*) FROM student_messages WHERE student_id = ? AND (DATE(created_at) = CURRENT_DATE OR DATE(created_at) = ?)",
         (student_id, today_str)
     ).fetchone()[0]
 
@@ -2742,7 +2742,8 @@ def admin_add_payment():
 
     cur = conn.cursor()
 
-    max_rec = cur.execute("SELECT MAX(id) FROM payments").fetchone()[0] or 0
+    row_m = cur.execute("SELECT MAX(id) as mx FROM payments").fetchone()
+    max_rec = (row_m["mx"] if isinstance(row_m, dict) else row_m[0]) or 0 if row_m else 0
 
     receipt_no = f"REC-{(max_rec + 1):04d}"
 
@@ -3118,7 +3119,8 @@ def admin_approve_online_payment(req_id):
         return redirect(url_for("admin_dashboard"))
 
     # Create payment record - auto-updates student fee balance
-    max_rec = conn.execute("SELECT MAX(id) FROM payments").fetchone()[0] or 0
+    row_m = conn.execute("SELECT MAX(id) as mx FROM payments").fetchone()
+    max_rec = (row_m["mx"] if isinstance(row_m, dict) else row_m[0]) or 0 if row_m else 0
     receipt_no = f"EP-{(max_rec + 1):04d}"
     conn.execute("""
         INSERT INTO payments (student_id, amount, pay_date, method, receipt_no, note)

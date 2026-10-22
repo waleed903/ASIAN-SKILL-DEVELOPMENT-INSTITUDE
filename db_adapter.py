@@ -32,20 +32,12 @@ except ImportError:
 
 
 def _convert_sql(sql):
-    """
-    Translates SQLite syntax to PostgreSQL:
-    1. Replaces '?' parameter markers with '%s' (ignoring literals inside quotes).
-    2. Translates SQLite specific date functions:
-       - date('now', 'localtime') -> CURRENT_DATE
-       - date('now') -> CURRENT_DATE
-       - datetime('now', 'localtime') -> CURRENT_TIMESTAMP
-       - datetime('now') -> CURRENT_TIMESTAMP
-    """
     # Replace date functions
     sql = re.sub(r"date\(\s*'now'\s*,\s*'localtime'\s*\)", "CURRENT_DATE", sql, flags=re.IGNORECASE)
     sql = re.sub(r"date\(\s*'now'\s*\)", "CURRENT_DATE", sql, flags=re.IGNORECASE)
     sql = re.sub(r"datetime\(\s*'now'\s*,\s*'localtime'\s*\)", "CURRENT_TIMESTAMP", sql, flags=re.IGNORECASE)
     sql = re.sub(r"datetime\(\s*'now'\s*\)", "CURRENT_TIMESTAMP", sql, flags=re.IGNORECASE)
+    sql = re.sub(r"substr\(\s*created_at\s*,\s*1\s*,\s*10\s*\)", "DATE(created_at)::text", sql, flags=re.IGNORECASE)
 
     # Tokenize by SQL string literals to only replace ? outside of quotes
     tokens = re.split(r"('(?:''|[^'])*')", sql)
