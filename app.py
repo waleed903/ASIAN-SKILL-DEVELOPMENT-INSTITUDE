@@ -195,6 +195,73 @@ def init_required_tables():
                 )
             """)
             c.execute("""
+                CREATE TABLE IF NOT EXISTS courses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT UNIQUE NOT NULL,
+                    category TEXT,
+                    fee REAL DEFAULT 0,
+                    duration TEXT,
+                    description TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS student_groups (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    course TEXT,
+                    batch TEXT,
+                    description TEXT,
+                    is_locked INTEGER DEFAULT 0,
+                    created_by TEXT DEFAULT 'Admin',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS group_members (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    group_id INTEGER NOT NULL,
+                    student_id INTEGER NOT NULL,
+                    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(group_id, student_id)
+                )
+            """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS group_messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    group_id INTEGER NOT NULL,
+                    sender_id INTEGER NOT NULL,
+                    sender_type TEXT DEFAULT 'student',
+                    sender_name TEXT NOT NULL,
+                    sender_photo TEXT,
+                    message TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS course_content (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    course TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    description TEXT,
+                    file_path TEXT,
+                    drive_link TEXT,
+                    uploaded_by TEXT NOT NULL,
+                    uploader_role TEXT DEFAULT 'Admin',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS announcements (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    target_role TEXT DEFAULT 'All',
+                    is_active INTEGER DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
                 CREATE TABLE IF NOT EXISTS staff_attendance (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     staff_id INTEGER NOT NULL,
