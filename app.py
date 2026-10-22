@@ -272,6 +272,33 @@ def init_required_tables():
                     note TEXT
                 )
             """)
+
+            # Seed preset modern courses in English if courses table is empty
+            row_cnt = c.execute("SELECT COUNT(*) FROM courses").fetchone()
+            cnt = (row_cnt["count"] if isinstance(row_cnt, dict) else row_cnt[0]) if row_cnt else 0
+            if cnt == 0:
+                preset_courses = [
+                    ("Information Technology (DIT)", "Information Technology", 25000, "1 Year", "Comprehensive diploma covering office automation, programming, hardware, and networking."),
+                    ("Web Development (Full Stack)", "Software & Web Development", 35000, "6 Months", "Frontend (HTML, CSS, JS, Bootstrap) and Backend (Python/Node, Database, REST APIs)."),
+                    ("UI / UX Design", "Design & Creative", 25000, "3 Months", "Figma, user research, wireframing, UI kits, design systems, and mobile/web prototypes."),
+                    ("Python Programming", "Programming Languages", 25000, "3 Months", "Core Python, object-oriented programming, data structures, automation scripting, and projects."),
+                    ("AI & Automation", "Artificial Intelligence", 35000, "4 Months", "Generative AI tools, prompt engineering, agentic workflows, API automations, and LLM integration."),
+                    ("Graphic Designing", "Design & Creative", 20000, "3 Months", "Adobe Photoshop, Adobe Illustrator, brand identity design, social media posts, and print design."),
+                    ("Video Editing & Animation", "Multimedia & Animation", 25000, "3 Months", "Adobe Premiere Pro, After Effects, video color grading, transitions, audio mixing, and reels."),
+                    ("Shorthand & Office Automation", "Office & Secretarial", 18000, "6 Months", "Pitman shorthand speed development, advanced MS Office (Word, Excel, PowerPoint), and business typing."),
+                    ("Short Courses", "Certification", 12000, "1 to 2 Months", "Short intensive crash courses in specific technical and vocational skills."),
+                    ("English Language & Communication", "Languages & Soft Skills", 15000, "3 Months", "Spoken English fluency, grammar mastery, IELTS foundation, interview skills, and presentation."),
+                    ("Digital Marketing & SEO", "Marketing & E-Commerce", 25000, "3 Months", "Search engine optimization (SEO), Meta ads, Google ads, copywriting, and analytics."),
+                    ("Cyber Security Fundamentals", "Information Security", 30000, "4 Months", "Network security basics, ethical hacking concepts, web security, and vulnerability assessment.")
+                ]
+                for name, cat, fee, dur, desc in preset_courses:
+                    try:
+                        c.execute("""
+                            INSERT INTO courses (name, category, fee, duration, description)
+                            VALUES (?, ?, ?, ?, ?)
+                        """, (name, cat, fee, dur, desc))
+                    except Exception:
+                        pass
         c.commit()
         c.close()
     except Exception as e:
@@ -1348,9 +1375,17 @@ def dashboard():
         SELECT * FROM schedule WHERE student_id = ? ORDER BY id DESC
     """, (student_id,)).fetchall()
 
+    # Active announcements for students
+    announcements = conn.execute("""
+        SELECT * FROM announcements 
+        WHERE is_active = 1 AND (target_role = 'All' OR target_role = 'Students')
+        ORDER BY id DESC LIMIT 5
+    """).fetchall()
+
     conn.close()
     return render_template(
         "dashboard.html",
+        announcements=announcements,
         my_groups=my_groups,
         course_notes=course_notes,
         personal_schedules=personal_schedules,
@@ -1622,10 +1657,19 @@ def staff_dashboard():
 
     courses_list = conn.execute("SELECT * FROM courses ORDER BY name ASC").fetchall()
     my_content = conn.execute("SELECT * FROM course_content ORDER BY id DESC LIMIT 20").fetchall()
+
+    # Active announcements for staff/faculty
+    announcements = conn.execute("""
+        SELECT * FROM announcements 
+        WHERE is_active = 1 AND (target_role = 'All' OR target_role = 'Staff')
+        ORDER BY id DESC LIMIT 5
+    """).fetchall()
+
     conn.close()
 
     return render_template(
         "staff_dashboard.html",
+        announcements=announcements,
         courses_list=courses_list,
         my_content=my_content,
         chat_messages=chat_messages,
@@ -3725,6 +3769,38 @@ def admin_add_course():
         flash(f"Course '{name}' added successfully!", "success")
     except Exception as e:
         flash(f"Course creation failed: {e}", "danger")
+    finally:
+        conn.close()
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/courses/edit/<int:course_id>", methods=["POST"])
+@admin_required
+def admin_edit_course(course_id):
+    name = request.form.get("name", "").strip()
+    category = request.form.get("category", "General").strip()
+    try:
+        fee = float(request.form.get("fee", 0))
+    except ValueError:
+        fee = 0.0
+    duration = request.form.get("duration", "").strip()
+    description = request.form.get("description", "").strip()
+
+    if not name:
+        flash("Course title cannot be empty.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    try:
+        conn.execute("""
+            UPDATE courses 
+            SET name = ?, category = ?, fee = ?, duration = ?, description = ?
+            WHERE id = ?
+        """, (name, category, fee, duration, description, course_id))
+        conn.commit()
+        flash(f"Course '{name}' updated successfully!", "success")
+    except Exception as e:
+        flash(f"Error updating course: {e}", "danger")
     finally:
         conn.close()
     return redirect(url_for("admin_dashboard"))

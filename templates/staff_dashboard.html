@@ -23,7 +23,26 @@
     {% endif %}
   {% endwith %}
 
-
+  <!-- Broadcast Announcements for Teachers -->
+  {% if announcements %}
+  <div class="mb-3">
+    {% for a in announcements %}
+    <div class="alert alert-warning border-0 shadow-sm rounded-4 p-3 mb-2 d-flex align-items-start gap-3" style="background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border-left: 5px solid #F59E0B !important;">
+      <div class="rounded-circle bg-warning text-dark p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+        <i class="bi bi-megaphone-fill"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-1 mb-1">
+          <span class="badge bg-warning text-dark px-2 py-0.5 rounded-pill fw-bold" style="font-size: 10px;">Institute Notice</span>
+          <span class="text-muted small" style="font-size: 11px;"><i class="bi bi-clock me-1"></i>{{ a.created_at }}</span>
+        </div>
+        <h6 class="fw-bold text-dark mb-1" style="font-size: 14px;">{{ a.title }}</h6>
+        <p class="mb-0 text-secondary" style="font-size: 12.5px;">{{ a.message }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <!-- Teacher Profile Header Card -->
 
@@ -670,12 +689,81 @@
 
 
 
+      <!-- TAB 5: FACULTY COURSE CONTENT & LECTURE NOTES UPLOADER -->
+      <div class="tab-pane fade" id="tab-course-content" role="tabpanel">
+        <div class="portal-card p-3 mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                <i class="bi bi-cloud-arrow-up-fill fs-5"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold mb-0 text-dark">Course Notes & Learning Materials</h6>
+                <div class="text-muted small" style="font-size: 11px;">Upload handouts, assignments, slides or Google Drive links for your students</div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3.5 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadNotesModal">
+              <i class="bi bi-plus-circle me-1"></i>Upload New Handout
+            </button>
+          </div>
+
+          {% if my_content %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size: 13px;">
+              <thead class="table-light">
+                <tr>
+                  <th>Resource Title</th>
+                  <th>Target Course</th>
+                  <th>Uploaded By</th>
+                  <th>Upload Date</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in my_content %}
+                <tr>
+                  <td>
+                    <div class="fw-bold text-dark">{{ c.title }}</div>
+                    <div class="text-muted small" style="font-size: 11px;">{{ c.description or 'No extra description' }}</div>
+                  </td>
+                  <td><span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold">{{ c.course }}</span></td>
+                  <td><span class="small fw-semibold">{{ c.uploaded_by }}</span> <span class="badge bg-light text-muted border" style="font-size:10px;">{{ c.uploader_role }}</span></td>
+                  <td class="text-muted small">{{ c.created_at }}</td>
+                  <td class="text-end">
+                    <div class="d-flex justify-content-end gap-1.5">
+                      {% if c.file_path %}
+                      <a href="{{ url_for('download_course_content', content_id=c.id) }}" class="btn btn-sm btn-outline-primary py-1 px-2.5" title="Download File">
+                        <i class="bi bi-download"></i>
+                      </a>
+                      {% endif %}
+                      {% if c.drive_link %}
+                      <a href="{{ c.drive_link }}" target="_blank" class="btn btn-sm btn-outline-warning text-dark py-1 px-2.5" title="Google Drive Link">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                      </a>
+                      {% endif %}
+                      <form method="POST" action="{{ url_for('delete_course_content', content_id=c.id) }}" onsubmit="return confirm('Remove this material?');" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Delete">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-5 text-muted small bg-light rounded-3">
+            <i class="bi bi-folder-plus fs-2 d-block text-secondary opacity-50 mb-1"></i>
+            You have not published any learning materials yet. Click "Upload New Handout" to share handouts with students.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
   </div>
-
-
-
 </div>
-
 
   <!-- Staff Photo Upload Modal (Inside Content Block) -->
   <div class="modal fade" id="staffPhotoModal" tabindex="-1" aria-hidden="true">
@@ -700,78 +788,7 @@
   </div>
 
 
-<!-- FACULTY COURSE CONTENT & LECTURE NOTES UPLOADER -->
-      <div class="portal-card p-3 mb-3">
-        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-          <div class="d-flex align-items-center gap-2">
-            <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-              <i class="bi bi-cloud-arrow-up-fill fs-5"></i>
-            </div>
-            <div>
-              <h6 class="fw-bold mb-0 text-dark">Course Notes & Learning Materials</h6>
-              <div class="text-muted small" style="font-size: 11px;">Upload handouts, assignments, slides or Google Drive links for your students</div>
-            </div>
-          </div>
-          <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadNotesModal">
-            <i class="bi bi-plus-circle me-1"></i>Upload New Handout
-          </button>
-        </div>
-
-        {% if my_content %}
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0" style="font-size: 13px;">
-            <thead class="table-light">
-              <tr>
-                <th>Title</th>
-                <th>Course</th>
-                <th>Uploaded By</th>
-                <th>Date</th>
-                <th class="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for c in my_content %}
-              <tr>
-                <td>
-                  <div class="fw-bold text-dark">{{ c.title }}</div>
-                  <div class="text-muted small" style="font-size: 11px;">{{ c.description or 'No extra description' }}</div>
-                </td>
-                <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ c.course }}</span></td>
-                <td>{{ c.uploaded_by }} ({{ c.uploader_role }})</td>
-                <td class="text-muted small">{{ c.created_at }}</td>
-                <td class="text-end">
-                  <div class="d-flex justify-content-end gap-1.5">
-                    {% if c.file_path %}
-                    <a href="{{ url_for('download_course_content', content_id=c.id) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Download">
-                      <i class="bi bi-download"></i>
-                    </a>
-                    {% endif %}
-                    {% if c.drive_link %}
-                    <a href="{{ c.drive_link }}" target="_blank" class="btn btn-sm btn-outline-info py-1 px-2" title="Google Drive Link">
-                      <i class="bi bi-box-arrow-up-right"></i>
-                    </a>
-                    {% endif %}
-                    <form method="POST" action="{{ url_for('delete_course_content', content_id=c.id) }}" onsubmit="return confirm('Remove this material?');" class="d-inline">
-                      <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Delete">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <div class="text-center py-4 text-muted small">
-          <i class="bi bi-folder-plus fs-3 d-block text-secondary opacity-50 mb-1"></i>
-          You have not published any learning materials yet. Click "Upload New Handout" to share handouts with students.
-        </div>
-        {% endif %}
-      </div>
-
-      <!-- Upload Modal -->
+<!-- Upload Modal -->
       <div class="modal fade" id="uploadNotesModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content rounded-4 border-0 shadow">
@@ -849,6 +866,11 @@
     <span>Staff Chat</span>
     <span class="position-absolute top-1 start-50 translate-middle p-1 bg-success border border-light rounded-circle" style="display:none;" id="chatNavBadge"></span>
   </button>
+  <button type="button" class="nav-item-btn" data-bs-target="#tab-course-content" data-tab-name="content">
+    <i class="bi bi-journal-arrow-up"></i>
+    <span>Notes</span>
+  </button>
+
   <button type="button" class="nav-item-btn" data-bs-target="#tab-my-profile">
     <i class="bi bi-person-badge"></i>
     <span>Profile</span>
