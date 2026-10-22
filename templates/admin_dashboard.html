@@ -9293,6 +9293,592 @@
     </div>
   </div>
 </div>
+
+<!-- ============================================================== -->
+<!-- ADVANCED MANAGEMENT: GROUPS, ANNOUNCEMENTS, COURSES, TIMETABLE -->
+<!-- ============================================================== -->
+<div class="row g-4 mt-3">
+
+  <!-- 1. ANNOUNCEMENTS BROADCAST MANAGER -->
+  <div class="col-lg-6">
+    <div class="portal-card p-3 shadow-sm h-100">
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle bg-warning bg-opacity-10 text-dark p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="bi bi-megaphone-fill text-warning fs-5"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark">Broadcast Announcements</h6>
+            <div class="text-muted small" style="font-size: 11px;">Publish instant notice banner to student & teacher portals</div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold text-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#newAnnouncementModal">
+          <i class="bi bi-plus-circle me-1"></i>New Notice
+        </button>
+      </div>
+
+      {% if all_announcements %}
+      <div class="d-flex flex-column gap-2 overflow-auto" style="max-height: 280px;">
+        {% for a in all_announcements %}
+        <div class="p-2.5 rounded-3 bg-light border d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary text-white" style="font-size: 10px;">{{ a.target_role }}</span>
+              <span class="fw-bold text-dark" style="font-size: 13px;">{{ a.title }}</span>
+            </div>
+            <div class="small text-secondary mt-1">{{ a.message }}</div>
+            <div class="text-muted small mt-1" style="font-size: 10px;"><i class="bi bi-clock me-1"></i>{{ a.created_at }}</div>
+          </div>
+          <form method="POST" action="{{ url_for('admin_delete_announcement', ann_id=a.id) }}" onsubmit="return confirm('Delete announcement?');">
+            <button type="submit" class="btn btn-sm btn-outline-danger py-0.5 px-2" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-4 text-muted small">No active announcements.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 2. COURSES DYNAMIC MANAGEMENT -->
+  <div class="col-lg-6">
+    <div class="portal-card p-3 shadow-sm h-100">
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle bg-info bg-opacity-10 text-info p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="bi bi-mortarboard-fill fs-5"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark">Course Catalog Management</h6>
+            <div class="text-muted small" style="font-size: 11px;">Add & manage programs offered by Institute</div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-info text-white rounded-pill px-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#newCourseModal">
+          <i class="bi bi-plus-circle me-1"></i>Add Course
+        </button>
+      </div>
+
+      <div class="table-responsive overflow-auto" style="max-height: 280px;">
+        <table class="table table-hover align-middle mb-0" style="font-size: 12px;">
+          <thead class="table-light">
+            <tr>
+              <th>Course Name</th>
+              <th>Category</th>
+              <th>Fee</th>
+              <th>Duration</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cr in all_courses %}
+            <tr>
+              <td class="fw-bold text-dark">{{ cr.name }}</td>
+              <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ cr.category }}</span></td>
+              <td class="font-monospace">Rs. {{ "{:,.0f}".format(cr.fee or 0) }}</td>
+              <td>{{ cr.duration or '-' }}</td>
+              <td class="text-end">
+                <form method="POST" action="{{ url_for('admin_delete_course', course_id=cr.id) }}" onsubmit="return confirm('Delete this course?');" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-outline-danger py-0.5 px-2"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. STUDENT WHATSAPP-STYLE GROUPS & LIVE CHAT MONITOR -->
+  <div class="col-12">
+    <div class="portal-card p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="bi bi-whatsapp fs-5"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark">Student Discussion Groups & Supervision</h6>
+            <div class="text-muted small" style="font-size: 11px;">Create student groups, add/remove members, and monitor/mute live discussions</div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#assignMemberModal">
+            <i class="bi bi-person-plus-fill me-1"></i>Enroll Student to Group
+          </button>
+          <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#newGroupModal">
+            <i class="bi bi-plus-circle me-1"></i>Create New Group
+          </button>
+        </div>
+      </div>
+
+      {% if all_groups %}
+      <div class="row g-3">
+        {% for item in all_groups %}
+        {% set g = item.group %}
+        <div class="col-md-6 col-xl-4">
+          <div class="card h-100 border border-slate-200 rounded-3 shadow-sm hover-shadow transition">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2.5">
+              <div class="fw-bold text-dark text-truncate me-2" style="font-size: 13px;">
+                <i class="bi bi-people-fill text-success me-1"></i>{{ g.name }}
+              </div>
+              <span class="badge {{ 'bg-danger' if g.is_locked else 'bg-success' }} rounded-pill">
+                {{ 'Muted / Locked' if g.is_locked else 'Active' }}
+              </span>
+            </div>
+            <div class="card-body p-3">
+              <div class="small text-secondary mb-2">{{ g.description or 'Classroom discussion group' }}</div>
+              <div class="d-flex align-items-center justify-content-between mb-3 text-muted small" style="font-size: 11px;">
+                <span><i class="bi bi-book me-1"></i>{{ g.course or 'General' }}</span>
+                <span><i class="bi bi-person-check me-1"></i><b>{{ item.member_count }}</b> Members</span>
+              </div>
+
+              <!-- Enrolled Members Preview with DPs -->
+              <div class="mb-3 p-2 bg-light rounded-3 border">
+                <div class="text-muted fw-bold mb-1" style="font-size: 10px; text-transform: uppercase;">Members:</div>
+                <div class="d-flex flex-wrap gap-1 align-items-center">
+                  {% for m in item.members[:8] %}
+                  <div class="position-relative" title="{{ m.name }} ({{ m.admission_no }})">
+                    {% if m.photo %}
+                    <img src="/uploads/profiles/{{ m.photo }}" class="rounded-circle border border-white shadow-sm" style="width:26px;height:26px;object-fit:cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center small fw-bold" style="width:26px;height:26px;font-size:9px;">
+                      {{ m.name[0].upper() }}
+                    </div>
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                  {% if item.member_count > 8 %}
+                  <span class="badge bg-secondary rounded-circle p-1" style="font-size: 9px;">+{{ item.member_count - 8 }}</span>
+                  {% endif %}
+                  {% if item.member_count == 0 %}
+                  <span class="text-muted small" style="font-size: 11px;">No students enrolled yet.</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Admin Controls: Mute, Chat Monitor, Delete -->
+              <div class="d-flex justify-content-between gap-1.5 pt-2 border-top">
+                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 rounded-pill fw-bold" onclick="openAdminGroupLiveChat({{ g.id }}, '{{ g.name }}')">
+                  <i class="bi bi-chat-text me-1"></i>Monitor Chat
+                </button>
+                <div class="d-flex gap-1">
+                  <form method="POST" action="{{ url_for('admin_toggle_group_lock', group_id=g.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm {{ 'btn-outline-success' if g.is_locked else 'btn-outline-warning' }} py-1 px-2 rounded-pill" title="{{ 'Unmute' if g.is_locked else 'Mute Conversation' }}">
+                      <i class="bi {{ 'bi-unlock-fill' if g.is_locked else 'bi-lock-fill' }}"></i>
+                    </button>
+                  </form>
+                  <form method="POST" action="{{ url_for('admin_delete_group', group_id=g.id) }}" onsubmit="return confirm('Delete this group permanently?');" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 rounded-pill" title="Delete Group">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-4 text-muted small">No student groups created yet. Click "Create New Group" to get started.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 4. PER-STUDENT TIMETABLE ENTRY -->
+  <div class="col-12">
+    <div class="portal-card p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle bg-secondary bg-opacity-10 text-secondary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+            <i class="bi bi-calendar3 fs-5"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark">Individual Student Timetables / Schedules</h6>
+            <div class="text-muted small" style="font-size: 11px;">Assign customized class schedules directly to specific students</div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#newStudentScheduleModal">
+          <i class="bi bi-plus-circle me-1"></i>Add Schedule Entry
+        </button>
+      </div>
+
+      <div class="table-responsive overflow-auto" style="max-height: 280px;">
+        <table class="table table-hover align-middle mb-0" style="font-size: 12px;">
+          <thead class="table-light">
+            <tr>
+              <th>Student</th>
+              <th>Subject</th>
+              <th>Teacher</th>
+              <th>Days</th>
+              <th>Timing</th>
+              <th>Note</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sc in all_schedules %}
+            <tr>
+              <td class="fw-bold text-dark">{{ sc.student_name }} <span class="text-muted small">({{ sc.admission_no }})</span></td>
+              <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ sc.subject }}</span></td>
+              <td>{{ sc.teacher or '-' }}</td>
+              <td>{{ sc.days }}</td>
+              <td class="font-monospace text-success fw-bold">{{ sc.start_time }} - {{ sc.end_time }}</td>
+              <td class="text-muted small">{{ sc.note or '-' }}</td>
+              <td class="text-end">
+                <form method="POST" action="{{ url_for('admin_delete_student_timetable', schedule_id=sc.id) }}" onsubmit="return confirm('Remove schedule?');" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-outline-danger py-0.5 px-2"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: NEW ANNOUNCEMENT -->
+<div class="modal fade" id="newAnnouncementModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-bottom py-2.5">
+        <h6 class="modal-title fw-bold text-dark"><i class="bi bi-megaphone-fill me-1.5 text-warning"></i>Broadcast Announcement</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin_add_announcement') }}">
+        <div class="modal-body p-3">
+          <div class="mb-2.5">
+            <label class="form-label small fw-bold text-secondary mb-1">Target Audience</label>
+            <select name="target_role" class="form-select form-select-sm">
+              <option value="All">All (Students & Teachers)</option>
+              <option value="Students">Students Only</option>
+              <option value="Staff">Faculty / Teachers Only</option>
+            </select>
+          </div>
+          <div class="mb-2.5">
+            <label class="form-label small fw-bold text-secondary mb-1">Announcement Headline *</label>
+            <input type="text" name="title" class="form-control form-control-sm" placeholder="e.g. Mid-Term Examination Schedule Announced" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-secondary mb-1">Details / Message *</label>
+            <textarea name="message" rows="3" class="form-control form-control-sm" placeholder="Write full announcement details..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-warning text-dark rounded-pill px-4 fw-bold">Broadcast Now</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NEW COURSE -->
+<div class="modal fade" id="newCourseModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-bottom py-2.5">
+        <h6 class="modal-title fw-bold text-dark"><i class="bi bi-journal-plus me-1.5 text-info"></i>Add New Course Program</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin_add_course') }}">
+        <div class="modal-body p-3">
+          <div class="mb-2.5">
+            <label class="form-label small fw-bold text-secondary mb-1">Course Title *</label>
+            <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Full Stack Web Development" required>
+          </div>
+          <div class="row g-2 mb-2.5">
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Category</label>
+              <input type="text" name="category" class="form-control form-control-sm" placeholder="e.g. IT & Software">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Duration</label>
+              <input type="text" name="duration" class="form-control form-control-sm" placeholder="e.g. 6 Months">
+            </div>
+          </div>
+          <div class="mb-2.5">
+            <label class="form-label small fw-bold text-secondary mb-1">Course Fee (Rs.)</label>
+            <input type="number" name="fee" class="form-control form-control-sm font-monospace" placeholder="e.g. 25000">
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-secondary mb-1">Brief Description</label>
+            <textarea name="description" rows="2" class="form-control form-control-sm" placeholder="Course outline, syllabus highlights..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-info text-white rounded-pill px-4 fw-bold">Save Course</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CREATE STUDENT GROUP -->
+<div class="modal fade" id="newGroupModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-bottom py-2.5">
+        <h6 class="modal-title fw-bold text-dark"><i class="bi bi-people-fill me-1.5 text-success"></i>Create Discussion Group</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin_create_student_group') }}">
+        <div class="modal-body p-3">
+          <div class="mb-2.5">
+            <label class="form-label small fw-bold text-secondary mb-1">Group Name *</label>
+            <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. DIT 2026 Morning Batch" required>
+          </div>
+          <div class="row g-2 mb-2.5">
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Course Association</label>
+              <select name="course" class="form-select form-select-sm">
+                <option value="">General Group</option>
+                {% for cr in all_courses %}
+                <option value="{{ cr.name }}">{{ cr.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Batch / Timing</label>
+              <input type="text" name="batch" class="form-control form-control-sm" placeholder="e.g. 09:00 AM - 11:00 AM">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-secondary mb-1">Rules / Description</label>
+            <textarea name="description" rows="2" class="form-control form-control-sm" placeholder="Class guidelines, objectives..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-success rounded-pill px-4 fw-bold">Create Group</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ENROLL STUDENT TO GROUP -->
+<div class="modal fade" id="assignMemberModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-bottom py-2.5">
+        <h6 class="modal-title fw-bold text-dark"><i class="bi bi-person-plus-fill me-1.5 text-success"></i>Enroll Student into Group</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin_add_group_member') }}">
+        <div class="modal-body p-3">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Select Group *</label>
+            <select name="group_id" class="form-select form-select-sm" required>
+              <option value="">-- Choose Discussion Group --</option>
+              {% for item in all_groups %}
+              <option value="{{ item.group.id }}">{{ item.group.name }} ({{ item.member_count }} members)</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-secondary mb-1">Select Student *</label>
+            <select name="student_id" class="form-select form-select-sm" required>
+              <option value="">-- Choose Student to Add --</option>
+              {% for s in students %}
+              <option value="{{ s.student.id }}">{{ s.student.name }} ({{ s.student.admission_no }}) - {{ s.student.course }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-success rounded-pill px-4 fw-bold">Enroll Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NEW STUDENT INDIVIDUAL SCHEDULE -->
+<div class="modal fade" id="newStudentScheduleModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-bottom py-2.5">
+        <h6 class="modal-title fw-bold text-dark"><i class="bi bi-calendar-plus me-1.5 text-primary"></i>Assign Student Timetable Entry</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin_save_student_timetable') }}">
+        <div class="modal-body p-3">
+          <div class="mb-2.5">
+            <label class="form-label small fw-bold text-secondary mb-1">Target Student *</label>
+            <select name="student_id" class="form-select form-select-sm" required>
+              <option value="">-- Select Student --</option>
+              {% for s in students %}
+              <option value="{{ s.student.id }}">{{ s.student.name }} ({{ s.student.admission_no }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row g-2 mb-2.5">
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Subject / Class *</label>
+              <input type="text" name="subject" class="form-control form-control-sm" placeholder="e.g. Web Development Lab" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Instructor / Teacher</label>
+              <input type="text" name="teacher" class="form-control form-control-sm" placeholder="e.g. Sir Waleed">
+            </div>
+          </div>
+          <div class="row g-2 mb-2.5">
+            <div class="col-sm-4">
+              <label class="form-label small fw-bold text-secondary mb-1">Days</label>
+              <input type="text" name="days" class="form-control form-control-sm" value="Mon-Fri">
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label small fw-bold text-secondary mb-1">Start Time</label>
+              <input type="text" name="start_time" class="form-control form-control-sm" placeholder="10:00 AM">
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label small fw-bold text-secondary mb-1">End Time</label>
+              <input type="text" name="end_time" class="form-control form-control-sm" placeholder="12:00 PM">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-secondary mb-1">Room / Lab Note</label>
+            <input type="text" name="note" class="form-control form-control-sm" placeholder="e.g. Main Lab, Seat 14">
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">Save Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADMIN LIVE GROUP CHAT MONITOR -->
+<div class="modal fade" id="adminGroupChatModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-bottom py-2.5 bg-light">
+        <div>
+          <h6 class="modal-title fw-bold text-dark" id="adminGroupModalTitle"><i class="bi bi-shield-check text-success me-1"></i>Group Conversation</h6>
+          <div class="text-muted small" style="font-size: 11px;">Admin oversight: You can monitor all student messages or send administrative notes</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0 d-flex flex-column" style="height: 480px; background: #EFEAE2;">
+        <div id="adminGroupChatStream" class="flex-grow-1 p-3 overflow-auto d-flex flex-column gap-2">
+          <!-- Loaded dynamically -->
+        </div>
+        <div class="p-2.5 bg-white border-top">
+          <form onsubmit="adminSendGroupBroadcast(event)" class="d-flex gap-2">
+            <input type="text" id="adminGroupChatInput" class="form-control form-control-sm rounded-pill px-3" placeholder="Post official admin message into this student group..." required>
+            <button type="submit" class="btn btn-sm btn-success rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
+              <i class="bi bi-send-fill text-white"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let activeAdminGroupId = null;
+let adminChatPoll = null;
+
+function openAdminGroupLiveChat(groupId, groupName) {
+  activeAdminGroupId = groupId;
+  document.getElementById('adminGroupModalTitle').innerHTML = `<i class="bi bi-people-fill text-success me-1"></i> ${groupName} (Admin View)`;
+  document.getElementById('adminGroupChatStream').innerHTML = '<div class="text-center py-5 text-muted small">Loading live conversation...</div>';
+
+  const modal = new bootstrap.Modal(document.getElementById('adminGroupChatModal'));
+  modal.show();
+
+  fetchAdminGroupMessages();
+  if (adminChatPoll) clearInterval(adminChatPoll);
+  adminChatPoll = setInterval(fetchAdminGroupMessages, 2500);
+}
+
+async function fetchAdminGroupMessages() {
+  if (!activeAdminGroupId) return;
+  try {
+    const res = await fetch(`/chat/group/messages/${activeAdminGroupId}?after_id=0`);
+    if (res.ok) {
+      const data = await res.json();
+      const stream = document.getElementById('adminGroupChatStream');
+      stream.innerHTML = '';
+      if (data.messages && data.messages.length > 0) {
+        data.messages.forEach(m => {
+          const row = document.createElement('div');
+          row.className = 'd-flex justify-content-between align-items-start gap-2 p-2 bg-white rounded-3 shadow-sm border';
+          const avatar = m.sender_photo ?
+            `<img src="/uploads/profiles/${m.sender_photo}" class="rounded-circle" style="width:26px;height:26px;object-fit:cover;">` :
+            `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center small fw-bold" style="width:26px;height:26px;font-size:10px;">${(m.sender_name||'S')[0].toUpperCase()}</div>`;
+
+          row.innerHTML = `
+            <div class="d-flex align-items-start gap-2">
+              ${avatar}
+              <div>
+                <div class="fw-bold" style="font-size: 12px; color: ${m.sender_type === 'admin' ? '#D64545' : '#0D186E'};">
+                  ${m.sender_name} ${m.sender_type === 'admin' ? '<span class="badge bg-danger ms-1" style="font-size:9px;">ADMIN</span>' : ''}
+                </div>
+                <div style="font-size: 13px; color: #111;">${m.message}</div>
+                <div class="text-muted" style="font-size: 9px;">${m.time}</div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" title="Delete inappropriate message" onclick="deleteGroupMessage(${m.id})">
+              <i class="bi bi-trash"></i>
+            </button>
+          `;
+          stream.appendChild(row);
+        });
+        stream.scrollTop = stream.scrollHeight;
+      } else {
+        stream.innerHTML = '<div class="text-center py-5 text-muted small">No messages in this group yet.</div>';
+      }
+    }
+  } catch(e) {
+    console.log(e);
+  }
+}
+
+async function adminSendGroupBroadcast(e) {
+  e.preventDefault();
+  if (!activeAdminGroupId) return;
+  const input = document.getElementById('adminGroupChatInput');
+  const text = (input.value || '').trim();
+  if (!text) return;
+  input.value = '';
+
+  const fd = new FormData();
+  fd.append('group_id', activeAdminGroupId);
+  fd.append('message', text);
+
+  try {
+    const res = await fetch('/chat/group/send', { method: 'POST', body: fd });
+    if (res.ok) fetchAdminGroupMessages();
+  } catch(e) {
+    console.log(e);
+  }
+}
+
+async function deleteGroupMessage(msgId) {
+  if (!confirm('Permanently delete this message?')) return;
+  try {
+    const res = await fetch(`/admin/group/message/delete/${msgId}`, { method: 'POST' });
+    if (res.ok) fetchAdminGroupMessages();
+  } catch(e) {
+    console.log(e);
+  }
+}
+</script>
+
 {% endblock %}
 
 

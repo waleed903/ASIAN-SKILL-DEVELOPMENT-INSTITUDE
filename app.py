@@ -88,27 +88,31 @@ def get_settings():
         }
 
 @app.context_processor
-
 def inject_globals():
-
     settings = get_settings()
-
     inst_name = settings.get("inst_name", "Asian Skill Development Institute")
+    announcements_list = []
+    try:
+        c = get_db_connection()
+        role = session.get("role", "")
+        if role == "student":
+            announcements_list = c.execute("SELECT * FROM announcements WHERE is_active = TRUE AND target_role IN ('All', 'Students') ORDER BY id DESC LIMIT 5").fetchall()
+        elif role == "staff":
+            announcements_list = c.execute("SELECT * FROM announcements WHERE is_active = TRUE AND target_role IN ('All', 'Staff') ORDER BY id DESC LIMIT 5").fetchall()
+        elif role == "admin":
+            announcements_list = c.execute("SELECT * FROM announcements WHERE is_active = TRUE ORDER BY id DESC LIMIT 5").fetchall()
+        c.close()
+    except Exception:
+        pass
 
     return {
-
         "inst_name": inst_name,
-
         "inst_phone": settings.get("phone", "0344-4996072"),
-
         "current_user_role": session.get("role"),
-
         "current_user_name": session.get("user_name"),
-
         "admin_dp": settings.get("admin_dp", ""),
-
+        "active_announcements": announcements_list,
         "now": datetime.now()
-
     }
 
 def clean_phone(phone_str):
@@ -1256,8 +1260,33 @@ def dashboard():
 
     conn.close()
 
+        # Enrolled Student Groups
+    my_groups = conn.execute("""
+        SELECT sg.* 
+        FROM student_groups sg
+        JOIN group_members gm ON gm.group_id = sg.id
+        WHERE gm.student_id = ?
+        ORDER BY sg.name ASC
+    """, (student_id,)).fetchall()
+
+    # Course Content & Notes for this student's course
+    course_name = student["course"] or ""
+    course_notes = conn.execute("""
+        SELECT * FROM course_content 
+        WHERE course = ? OR course = 'All' OR course = ''
+        ORDER BY id DESC
+    """, (course_name,)).fetchall()
+
+    # All course schedules
+    personal_schedules = conn.execute("""
+        SELECT * FROM schedule WHERE student_id = ? ORDER BY id DESC
+    """, (student_id,)).fetchall()
+
     return render_template(
         "dashboard.html",
+        my_groups=my_groups,
+        course_notes=course_notes,
+        personal_schedules=personal_schedules,
         student=student,
         fee=fee_summary,
         payments=payments,
@@ -1524,11 +1553,14 @@ def staff_dashboard():
     today_str = datetime.now().strftime("%Y-%m-%d")
     today_staff_att = conn.execute("SELECT * FROM staff_attendance WHERE staff_id = ? AND att_date = ?", (staff_id, today_str)).fetchone()
 
+    courses_list = conn.execute("SELECT * FROM courses ORDER BY name ASC").fetchall()
+    my_content = conn.execute("SELECT * FROM course_content ORDER BY id DESC LIMIT 20").fetchall()
     conn.close()
 
     return render_template(
-
         "staff_dashboard.html",
+        courses_list=courses_list,
+        my_content=my_content,
         chat_messages=chat_messages,
         all_colleagues=all_colleagues,
         today_staff_att=today_staff_att,
@@ -1778,10 +1810,41 @@ def admin_dashboard():
     """).fetchall()
     pending_online_payments = sum(1 for r in online_payment_requests if r["status"] == "Pending")
 
-    conn.close()
+    all_courses = conn.execute("SELECT * FROM courses ORDER BY name ASC").fetchall()
+    all_groups = conn.execute("SELECT * FROM student_groups ORDER BY id DESC").fetchall()
+    
+    # Enrich groups with member count
+    group_list_enriched = []
+    for g in all_groups:
+        mems = conn.execute("""
+            SELECT s.id, s.name, s.admission_no, s.roll_no, s.photo
+            FROM group_members gm
+            JOIN students s ON s.id = gm.student_id
+            WHERE gm.group_id = ?
+        """, (g["id"],)).fetchall()
+        group_list_enriched.append({
+            "group": g,
+            "members": mems,
+            "member_count": len(mems)
+        })
 
+    all_content = conn.execute("SELECT * FROM course_content ORDER BY id DESC").fetchall()
+    all_announcements = conn.execute("SELECT * FROM announcements ORDER BY id DESC").fetchall()
+    all_schedules = conn.execute("""
+        SELECT sc.*, s.name as student_name, s.admission_no, s.roll_no
+        FROM schedule sc
+        JOIN students s ON s.id = sc.student_id
+        ORDER BY sc.id DESC LIMIT 50
+    """, ).fetchall()
+
+    conn.close()
     return render_template(
         "admin_dashboard.html",
+        all_courses=all_courses,
+        all_groups=group_list_enriched,
+        all_content=all_content,
+        all_announcements=all_announcements,
+        all_schedules=all_schedules,
         total_students=total_students,
         active_students=active_students,
         total_revenue=total_revenue,
@@ -3561,6 +3624,505 @@ def uploaded_profile(filename):
 def health():
 
     return jsonify({"status": "ok", "app": "ASDI Multi-Role Portal", "time": datetime.now().isoformat()})
+
+
+# ==============================================================
+# 6. COURSES MANAGEMENT (DYNAMIC + LISTING)
+# ==============================================================
+
+@app.route("/admin/courses/add", methods=["POST"])
+@admin_required
+def admin_add_course():
+    name = request.form.get("name", "").strip()
+    category = request.form.get("category", "General").strip()
+    try:
+        fee = float(request.form.get("fee", 0))
+    except ValueError:
+        fee = 0.0
+    duration = request.form.get("duration", "").strip()
+    description = request.form.get("description", "").strip()
+
+    if not name:
+        flash("Course title is mandatory.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    try:
+        conn.execute("""
+            INSERT INTO courses (name, category, fee, duration, description)
+            VALUES (?, ?, ?, ?, ?)
+        """, (name, category, fee, duration, description))
+        conn.commit()
+        flash(f"Course '{name}' added successfully!", "success")
+    except Exception as e:
+        flash(f"Course creation failed: {e}", "danger")
+    finally:
+        conn.close()
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/courses/delete/<int:course_id>", methods=["POST"])
+@admin_required
+def admin_delete_course(course_id):
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM courses WHERE id = ?", (course_id,))
+        conn.commit()
+        flash("Course removed successfully.", "info")
+    except Exception as e:
+        flash(f"Error removing course: {e}", "danger")
+    finally:
+        conn.close()
+    return redirect(url_for("admin_dashboard"))
+
+
+# ==============================================================
+# 7. ANNOUNCEMENTS / NOTICEBOARD (STUDENTS + TEACHERS)
+# ==============================================================
+
+@app.route("/admin/announcement/add", methods=["POST"])
+@admin_required
+def admin_add_announcement():
+    title = request.form.get("title", "").strip()
+    message = request.form.get("message", "").strip()
+    target_role = request.form.get("target_role", "All").strip()
+
+    if not title or not message:
+        flash("Title and message are required for announcement.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    try:
+        conn.execute("""
+            INSERT INTO announcements (title, message, target_role, is_active)
+            VALUES (?, ?, ?, TRUE)
+        """, (title, message, target_role))
+        conn.commit()
+        flash("Official Announcement broadcasted successfully!", "success")
+    except Exception as e:
+        flash(f"Error publishing announcement: {e}", "danger")
+    finally:
+        conn.close()
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/announcement/delete/<int:ann_id>", methods=["POST"])
+@admin_required
+def admin_delete_announcement(ann_id):
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM announcements WHERE id = ?", (ann_id,))
+        conn.commit()
+        flash("Announcement removed.", "info")
+    except Exception as e:
+        flash(f"Error: {e}", "danger")
+    finally:
+        conn.close()
+    return redirect(url_for("admin_dashboard"))
+
+
+# ==============================================================
+# 8. COURSE CONTENT & STUDY MATERIAL (UPLOAD & DOWNLOAD)
+# ==============================================================
+
+@app.route("/content/upload", methods=["POST"])
+def upload_course_content():
+    role = session.get("role")
+    if role not in ["admin", "staff"]:
+        abort(403)
+
+    course = request.form.get("course", "").strip()
+    title = request.form.get("title", "").strip()
+    description = request.form.get("description", "").strip()
+    drive_link = request.form.get("drive_link", "").strip()
+
+    if not course or not title:
+        flash("Course and Content Title are mandatory.", "danger")
+        return redirect(url_for("admin_dashboard" if role == "admin" else "staff_dashboard"))
+
+    uploaded_filename = None
+    if "content_file" in request.files:
+        f = request.files["content_file"]
+        if f and f.filename:
+            allowed = {"pdf", "doc", "docx", "ppt", "pptx", "zip", "rar", "png", "jpg", "jpeg", "txt"}
+            ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+            if ext in allowed:
+                fname = f"content_{int(datetime.now().timestamp())}_{secure_filename(f.filename)}"
+                save_dir = os.path.join(STATIC_DIR, "uploads", "content")
+                os.makedirs(save_dir, exist_ok=True)
+                f.save(os.path.join(save_dir, fname))
+                uploaded_filename = fname
+
+    uploader_name = session.get("user_name", "Staff/Admin")
+    uploader_role = "Admin" if role == "admin" else "Teacher"
+
+    conn = get_db_connection()
+    try:
+        conn.execute("""
+            INSERT INTO course_content (course, title, description, file_path, drive_link, uploaded_by, uploader_role)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (course, title, description, uploaded_filename, drive_link, uploader_name, uploader_role))
+        conn.commit()
+        flash(f"Course Material '{title}' published successfully for students!", "success")
+    except Exception as e:
+        flash(f"Error publishing notes: {e}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard" if role == "admin" else "staff_dashboard"))
+
+
+@app.route("/content/delete/<int:content_id>", methods=["POST"])
+def delete_course_content(content_id):
+    role = session.get("role")
+    if role not in ["admin", "staff"]:
+        abort(403)
+
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM course_content WHERE id = ?", (content_id,))
+        conn.commit()
+        flash("Material removed successfully.", "info")
+    except Exception as e:
+        flash(f"Error: {e}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard" if role == "admin" else "staff_dashboard"))
+
+
+@app.route("/content/download/<int:content_id>")
+def download_course_content(content_id):
+    if "role" not in session:
+        flash("Please log in first.", "warning")
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    item = conn.execute("SELECT * FROM course_content WHERE id = ?", (content_id,)).fetchone()
+    conn.close()
+
+    if not item:
+        abort(404)
+
+    if item["drive_link"] and not item["file_path"]:
+        return redirect(item["drive_link"])
+
+    if item["file_path"]:
+        content_dir = os.path.join(STATIC_DIR, "uploads", "content")
+        return send_from_directory(content_dir, item["file_path"], as_attachment=True)
+
+    flash("No downloadable file attached to this resource.", "warning")
+    return redirect(request.referrer or url_for("index"))
+
+
+# ==============================================================
+# 9. STUDENT WHATSAPP-STYLE GROUPS & SECURE CHAT
+# ==============================================================
+
+@app.route("/admin/group/create", methods=["POST"])
+@admin_required
+def admin_create_student_group():
+    name = request.form.get("name", "").strip()
+    course = request.form.get("course", "").strip()
+    batch = request.form.get("batch", "").strip()
+    description = request.form.get("description", "").strip()
+
+    if not name:
+        flash("Group Name is required.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    try:
+        conn.execute("""
+            INSERT INTO student_groups (name, course, batch, description, is_locked, created_by)
+            VALUES (?, ?, ?, ?, FALSE, 'Admin')
+        """, (name, course, batch, description))
+        conn.commit()
+        flash(f"Student Group '{name}' created successfully!", "success")
+    except Exception as e:
+        flash(f"Error creating group: {e}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/group/toggle_lock/<int:group_id>", methods=["POST"])
+@admin_required
+def admin_toggle_group_lock(group_id):
+    conn = get_db_connection()
+    try:
+        grp = conn.execute("SELECT is_locked, name FROM student_groups WHERE id = ?", (group_id,)).fetchone()
+        if grp:
+            new_state = not bool(grp["is_locked"])
+            conn.execute("UPDATE student_groups SET is_locked = ? WHERE id = ?", (new_state, group_id))
+            conn.commit()
+            action_str = "LOCKED / MUTED (Students cannot send messages)" if new_state else "UNLOCKED / ACTIVE"
+            flash(f"Group '{grp['name']}' is now {action_str}.", "info")
+    except Exception as e:
+        flash(f"Error updating lock: {e}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/group/delete/<int:group_id>", methods=["POST"])
+@admin_required
+def admin_delete_group(group_id):
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM student_groups WHERE id = ?", (group_id,))
+        conn.commit()
+        flash("Group and conversations permanently deleted.", "warning")
+    except Exception as e:
+        flash(f"Error: {e}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/group/add_member", methods=["POST"])
+@admin_required
+def admin_add_group_member():
+    group_id = int(request.form.get("group_id", 0))
+    student_id = int(request.form.get("student_id", 0))
+
+    if not group_id or not student_id:
+        flash("Select both group and student.", "warning")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    try:
+        conn.execute("""
+            INSERT INTO group_members (group_id, student_id)
+            VALUES (?, ?) ON CONFLICT DO NOTHING
+        """, (group_id, student_id))
+        conn.commit()
+        flash("Student enrolled into group!", "success")
+    except Exception as e:
+        flash(f"Error adding member: {e}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/group/remove_member", methods=["POST"])
+@admin_required
+def admin_remove_group_member():
+    group_id = int(request.form.get("group_id", 0))
+    student_id = int(request.form.get("student_id", 0))
+
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM group_members WHERE group_id = ? AND student_id = ?", (group_id, student_id))
+        conn.commit()
+        flash("Student removed from group.", "info")
+    except Exception as e:
+        flash(f"Error: {e}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/chat/group/send", methods=["POST"])
+def send_group_message():
+    role = session.get("role")
+    if role not in ["student", "admin"]:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 403
+
+    group_id = int(request.form.get("group_id", 0))
+    message = request.form.get("message", "").strip()
+
+    if not group_id or not message:
+        return jsonify({"status": "error", "message": "Empty message or group"}), 400
+
+    conn = get_db_connection()
+    try:
+        grp = conn.execute("SELECT * FROM student_groups WHERE id = ?", (group_id,)).fetchone()
+        if not grp:
+            conn.close()
+            return jsonify({"status": "error", "message": "Group not found"}), 404
+
+        # If student: check if group is locked or student is member
+        if role == "student":
+            if grp["is_locked"]:
+                conn.close()
+                return jsonify({"status": "error", "message": "This group is locked by Admin. Messages cannot be sent right now."}), 403
+
+            student_id = session.get("student_id")
+            is_mem = conn.execute("SELECT 1 FROM group_members WHERE group_id = ? AND student_id = ?", (group_id, student_id)).fetchone()
+            if not is_mem:
+                conn.close()
+                return jsonify({"status": "error", "message": "Access Denied: You are not a member of this group."}), 403
+
+            sender_id = student_id
+            sender_type = "student"
+            sender_name = session.get("user_name", "Student")
+            stu_row = conn.execute("SELECT photo FROM students WHERE id = ?", (student_id,)).fetchone()
+            sender_photo = stu_row["photo"] if stu_row and "photo" in stu_row.keys() else ""
+        else:
+            # Admin sending into group
+            sender_id = 0
+            sender_type = "admin"
+            sender_name = "Chief Administrator"
+            sender_photo = ""
+
+        conn.execute("""
+            INSERT INTO group_messages (group_id, sender_id, sender_type, sender_name, sender_photo, message)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (group_id, sender_id, sender_type, sender_name, sender_photo, message))
+        conn.commit()
+
+        return jsonify({
+            "status": "success",
+            "sender_name": sender_name,
+            "sender_photo": sender_photo,
+            "sender_type": sender_type,
+            "message": message,
+            "time": datetime.now().strftime("%I:%M %p")
+        })
+    finally:
+        conn.close()
+
+
+@app.route("/chat/group/messages/<int:group_id>")
+def get_group_messages(group_id):
+    role = session.get("role")
+    if not role:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    conn = get_db_connection()
+    try:
+        grp = conn.execute("SELECT * FROM student_groups WHERE id = ?", (group_id,)).fetchone()
+        if not grp:
+            return jsonify({"status": "error", "message": "Group not found"}), 404
+
+        if role == "student":
+            student_id = session.get("student_id")
+            is_mem = conn.execute("SELECT 1 FROM group_members WHERE group_id = ? AND student_id = ?", (group_id, student_id)).fetchone()
+            if not is_mem:
+                return jsonify({"status": "error", "message": "Not a member"}), 403
+
+        after_id = int(request.args.get("after_id", 0))
+        rows = conn.execute("""
+            SELECT * FROM group_messages 
+            WHERE group_id = ? AND id > ? 
+            ORDER BY id ASC 
+            LIMIT 50
+        """, (group_id, after_id)).fetchall()
+
+        # Members list (with photos)
+        members = conn.execute("""
+            SELECT s.id, s.name, s.roll_no, s.admission_no, s.photo
+            FROM group_members gm
+            JOIN students s ON s.id = gm.student_id
+            WHERE gm.group_id = ?
+            ORDER BY s.name ASC
+        """, (group_id,)).fetchall()
+
+        current_id = session.get("student_id") if role == "student" else -1
+
+        messages = []
+        for r in rows:
+            created_dt = r["created_at"]
+            time_str = ""
+            try:
+                dt = datetime.strptime(str(created_dt)[:19], "%Y-%m-%d %H:%M:%S")
+                time_str = dt.strftime("%I:%M %p")
+            except Exception:
+                time_str = str(created_dt)[11:16]
+
+            is_me = (role == "student" and r["sender_type"] == "student" and r["sender_id"] == current_id) or (role == "admin" and r["sender_type"] == "admin")
+            messages.append({
+                "id": r["id"],
+                "sender_id": r["sender_id"],
+                "sender_type": r["sender_type"],
+                "sender_name": r["sender_name"],
+                "sender_photo": r["sender_photo"] or "",
+                "message": r["message"],
+                "is_me": is_me,
+                "time": time_str
+            })
+
+        return jsonify({
+            "status": "success",
+            "group_name": grp["name"],
+            "is_locked": bool(grp["is_locked"]),
+            "messages": messages,
+            "members": [dict(m) for m in members]
+        })
+    finally:
+        conn.close()
+
+
+@app.route("/admin/group/message/delete/<int:msg_id>", methods=["POST"])
+@admin_required
+def admin_delete_group_message(msg_id):
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM group_messages WHERE id = ?", (msg_id,))
+        conn.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        conn.close()
+
+
+# ==============================================================
+# 10. EDITABLE STUDENT INDIVIDUAL TIMETABLE / SCHEDULE
+# ==============================================================
+
+@app.route("/admin/student/timetable/save", methods=["POST"])
+@admin_required
+def admin_save_student_timetable():
+    student_id = int(request.form.get("student_id", 0))
+    subject = request.form.get("subject", "").strip()
+    teacher = request.form.get("teacher", "").strip()
+    days = request.form.get("days", "Mon-Fri").strip()
+    start_time = request.form.get("start_time", "").strip()
+    end_time = request.form.get("end_time", "").strip()
+    note = request.form.get("note", "").strip()
+
+    if not student_id or not subject:
+        flash("Student and Subject are mandatory.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    try:
+        conn.execute("""
+            INSERT INTO schedule (student_id, days, start_time, end_time, subject, teacher, note)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (student_id, days, start_time, end_time, subject, teacher, note))
+        conn.commit()
+        flash("Personal timetable class entry added for student!", "success")
+    except Exception as e:
+        flash(f"Error adding schedule: {e}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/student/timetable/delete/<int:schedule_id>", methods=["POST"])
+@admin_required
+def admin_delete_student_timetable(schedule_id):
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM schedule WHERE id = ?", (schedule_id,))
+        conn.commit()
+        flash("Schedule entry removed.", "info")
+    except Exception as e:
+        flash(f"Error: {e}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
 
 if __name__ == "__main__":
 

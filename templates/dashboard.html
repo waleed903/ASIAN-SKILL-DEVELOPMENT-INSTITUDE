@@ -2410,6 +2410,188 @@
 
 
 
+
+    <!-- ========================================== -->
+    <!-- 6. COURSE NOTES & STUDY MATERIAL TAB -->
+    <!-- ========================================== -->
+    <div class="tab-pane fade" id="tab-notes" role="tabpanel">
+      <div class="portal-card p-3 mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+              <i class="bi bi-journal-bookmark-fill fs-5"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0 text-dark">Course Content & Study Materials</h6>
+              <div class="text-muted small" style="font-size: 11px;">Lectures, handouts, notes and resource links uploaded by Faculty</div>
+            </div>
+          </div>
+          <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2.5 py-1 fw-bold">{{ course_notes|length }} Resources</span>
+        </div>
+
+        {% if course_notes %}
+        <div class="row g-2.5">
+          {% for note in course_notes %}
+          <div class="col-12">
+            <div class="p-3 rounded-3 bg-light border border-slate-200 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 hover-shadow transition">
+              <div class="d-flex align-items-start gap-3">
+                <div class="rounded-3 bg-white shadow-sm p-2.5 text-primary border text-center flex-shrink-0" style="width: 44px; height: 44px;">
+                  {% if note.file_path and (note.file_path.endswith('.pdf') or note.file_path.endswith('.PDF')) %}
+                  <i class="bi bi-file-earmark-pdf-fill text-danger fs-4"></i>
+                  {% elif note.file_path and (note.file_path.endswith('.doc') or note.file_path.endswith('.docx')) %}
+                  <i class="bi bi-file-earmark-word-fill text-primary fs-4"></i>
+                  {% elif note.drive_link %}
+                  <i class="bi bi-google-play fs-4 text-warning"></i>
+                  {% else %}
+                  <i class="bi bi-file-earmark-text-fill text-info fs-4"></i>
+                  {% endif %}
+                </div>
+                <div>
+                  <div class="fw-bold text-dark mb-0.5">{{ note.title }}</div>
+                  <div class="small text-secondary mb-1">{{ note.description or 'Official course study notes and guide' }}</div>
+                  <div class="d-flex flex-wrap align-items-center gap-2 text-muted" style="font-size: 11px;">
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary"><i class="bi bi-book me-1"></i>{{ note.course }}</span>
+                    <span><i class="bi bi-person me-1"></i>{{ note.uploaded_by }} ({{ note.uploader_role }})</span>
+                    <span><i class="bi bi-calendar-event me-1"></i>{{ note.created_at }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-shrink-0 d-flex gap-2">
+                {% if note.file_path %}
+                <a href="{{ url_for('download_course_content', content_id=note.id) }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm d-flex align-items-center gap-1.5">
+                  <i class="bi bi-download"></i>Download
+                </a>
+                {% endif %}
+                {% if note.drive_link %}
+                <a href="{{ note.drive_link }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold d-flex align-items-center gap-1.5">
+                  <i class="bi bi-box-arrow-up-right"></i>Open Drive Link
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-folder-x fs-1 text-secondary opacity-50 mb-2"></i>
+          <p class="mb-0 fw-semibold">No study notes uploaded yet for your course.</p>
+          <div class="small">Faculty members will upload learning resources here soon.</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 7. SECURE STUDENT GROUPS (WHATSAPP-STYLE CHAT) -->
+    <!-- ========================================== -->
+    <div class="tab-pane fade" id="tab-groups" role="tabpanel">
+      <div class="portal-card p-3 mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+              <i class="bi bi-whatsapp fs-5"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0 text-dark">Classroom Discussion Groups</h6>
+              <div class="text-muted small" style="font-size: 11px;">Verified peer discussion groups authorized by Institute Admin</div>
+            </div>
+          </div>
+          <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1 fw-bold">{{ my_groups|length }} Active Groups</span>
+        </div>
+
+        {% if my_groups %}
+        <div class="row g-3">
+          <!-- Group Selection Column -->
+          <div class="col-md-4">
+            <div class="list-group rounded-3 border-0 shadow-sm">
+              {% for g in my_groups %}
+              <button type="button" class="list-group-item list-group-item-action p-3 d-flex align-items-center justify-content-between group-select-btn {% if loop.first %}active{% endif %}" onclick="loadStudentGroupChat({{ g.id }}, '{{ g.name }}', {{ 'true' if g.is_locked else 'false' }}, this)">
+                <div class="d-flex align-items-center gap-2.5">
+                  <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                    <i class="bi bi-people-fill"></i>
+                  </div>
+                  <div class="text-start">
+                    <div class="fw-bold group-title mb-0" style="font-size: 13px;">{{ g.name }}</div>
+                    <div class="small opacity-75" style="font-size: 11px;">{{ g.course or 'Official Batch' }}</div>
+                  </div>
+                </div>
+                {% if g.is_locked %}
+                <span class="badge bg-danger rounded-pill"><i class="bi bi-lock-fill"></i> Muted</span>
+                {% endif %}
+              </button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Live Chat Box Column -->
+          <div class="col-md-8">
+            <div class="card border border-slate-200 rounded-3 shadow-sm d-flex flex-column" style="height: 480px; background: #F8FAFC;">
+              <!-- Chat Header -->
+              <div class="p-2.5 bg-white border-bottom d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    <i class="bi bi-people-fill"></i>
+                  </div>
+                  <div>
+                    <div class="fw-bold text-dark" id="currentGroupChatTitle" style="font-size: 13px;">Select a group</div>
+                    <div class="text-muted" id="currentGroupStatus" style="font-size: 10px;">End-to-end authorized members only</div>
+                  </div>
+                </div>
+                <!-- Members trigger modal -->
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1" onclick="showGroupMembersModal()">
+                  <i class="bi bi-info-circle me-1"></i>Members & DPs
+                </button>
+              </div>
+
+              <!-- Message Stream -->
+              <div id="studentGroupChatStream" class="flex-grow-1 p-3 overflow-auto d-flex flex-column gap-2" style="background: #EFEAE2;">
+                <div class="text-center py-5 text-muted small">Loading messages...</div>
+              </div>
+
+              <!-- Chat Input Form -->
+              <div class="p-2 bg-white border-top">
+                <form id="studentGroupChatForm" onsubmit="sendStudentGroupMessage(event)" class="d-flex gap-2">
+                  <input type="text" id="studentGroupInput" class="form-control form-control-sm rounded-pill px-3" placeholder="Type a message to your classmates..." required>
+                  <button type="submit" id="studentGroupSendBtn" class="btn btn-sm btn-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; flex-shrink: 0;">
+                    <i class="bi bi-send-fill text-white"></i>
+                  </button>
+                </form>
+                <div id="groupMuteNotice" class="text-danger small text-center mt-1 d-none" style="font-size: 11px;">
+                  <i class="bi bi-lock-fill me-1"></i>Admin has paused conversation in this group. You can only read messages.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-chat-square-dots fs-1 text-secondary opacity-50 mb-2"></i>
+          <p class="mb-0 fw-semibold">You have not been assigned to any discussion groups yet.</p>
+          <div class="small">The Administrator will add you to your class discussion group upon request.</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Members Modal with DPs -->
+    <div class="modal fade" id="groupMembersModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-4 border-0 shadow">
+          <div class="modal-header border-bottom py-2.5">
+            <h6 class="modal-title fw-bold text-dark"><i class="bi bi-people me-1.5 text-success"></i>Group Classmates</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-3">
+            <div id="groupMembersContainer" class="d-flex flex-column gap-2 overflow-auto" style="max-height: 320px;">
+              <!-- Dynamic members injected via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
 {% block bottom_nav %}
 
 
@@ -2610,3 +2792,169 @@
 
 
 
+
+
+<script>
+let currentActiveGroupId = null;
+let currentGroupIsLocked = false;
+let currentGroupMembers = [];
+let lastGroupMsgId = 0;
+let groupPollInterval = null;
+
+function loadStudentGroupChat(groupId, groupName, isLocked, btnElement) {
+  currentActiveGroupId = groupId;
+  currentGroupIsLocked = isLocked;
+  lastGroupMsgId = 0;
+
+  document.querySelectorAll('.group-select-btn').forEach(b => b.classList.remove('active'));
+  if (btnElement) btnElement.classList.add('active');
+
+  document.getElementById('currentGroupChatTitle').textContent = groupName;
+  document.getElementById('studentGroupChatStream').innerHTML = '<div class="text-center py-5 text-muted small">Loading group conversation...</div>';
+
+  const sendBtn = document.getElementById('studentGroupSendBtn');
+  const inputField = document.getElementById('studentGroupInput');
+  const muteNotice = document.getElementById('groupMuteNotice');
+
+  if (isLocked) {
+    sendBtn.disabled = true;
+    inputField.disabled = true;
+    inputField.placeholder = "Group conversation is paused by Administrator.";
+    muteNotice.classList.remove('d-none');
+  } else {
+    sendBtn.disabled = false;
+    inputField.disabled = false;
+    inputField.placeholder = "Type a message to your classmates...";
+    muteNotice.classList.add('d-none');
+  }
+
+  fetchGroupMessages(true);
+
+  if (groupPollInterval) clearInterval(groupPollInterval);
+  groupPollInterval = setInterval(() => fetchGroupMessages(false), 3000);
+}
+
+async function fetchGroupMessages(scrollToBottom = false) {
+  if (!currentActiveGroupId) return;
+  try {
+    const res = await fetch(`/chat/group/messages/${currentActiveGroupId}?after_id=${lastGroupMsgId}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === 'success') {
+        currentGroupMembers = data.members || [];
+        const stream = document.getElementById('studentGroupChatStream');
+        if (lastGroupMsgId === 0) stream.innerHTML = '';
+
+        if (data.messages && data.messages.length > 0) {
+          data.messages.forEach(msg => {
+            appendStudentGroupMsg(msg);
+            lastGroupMsgId = Math.max(lastGroupMsgId, msg.id);
+          });
+          stream.scrollTop = stream.scrollHeight;
+        } else if (lastGroupMsgId === 0) {
+          stream.innerHTML = '<div class="text-center py-5 text-muted small"><i class="bi bi-chat-heart fs-3 d-block mb-1 text-success opacity-50"></i>No messages yet. Say hello to your group!</div>';
+        }
+      }
+    }
+  } catch(e) {
+    console.log('Group chat poll error:', e);
+  }
+}
+
+function appendStudentGroupMsg(msg) {
+  const stream = document.getElementById('studentGroupChatStream');
+  if (document.getElementById(`grp-msg-${msg.id}`)) return;
+
+  const row = document.createElement('div');
+  row.id = `grp-msg-${msg.id}`;
+  row.className = `d-flex gap-2 mb-2 ${msg.is_me ? 'justify-content-end' : 'justify-content-start'}`;
+
+  const avatar = msg.sender_photo ?
+    `<img src="/uploads/profiles/${msg.sender_photo}" class="rounded-circle flex-shrink-0" style="width:28px;height:28px;object-fit:cover;">` :
+    `<div class="rounded-circle bg-secondary text-white small d-flex align-items-center justify-content-center flex-shrink-0 fw-bold" style="width:28px;height:28px;font-size:10px;">${(msg.sender_name||'S')[0].toUpperCase()}</div>`;
+
+  const bubbleStyle = msg.is_me ?
+    'background: #D9FDD3; color: #111B21; border-bottom-right-radius: 4px !important;' :
+    'background: white; color: #111B21; border-bottom-left-radius: 4px !important;';
+
+  const badgeAdmin = msg.sender_type === 'admin' ? '<span class="badge bg-danger rounded-pill ms-1" style="font-size:9px;">ADMIN</span>' : '';
+
+  row.innerHTML = `
+    ${!msg.is_me ? avatar : ''}
+    <div style="max-width: 78%;">
+      ${!msg.is_me ? `<div class="text-muted small ps-1 fw-bold" style="font-size: 10px; color: #128C7E !important;">${msg.sender_name} ${badgeAdmin}</div>` : ''}
+      <div class="p-2.5 rounded-3 shadow-sm" style="${bubbleStyle} font-size: 13px; line-height: 1.4; border: 1px solid rgba(0,0,0,0.05);">
+        ${msg.message}
+      </div>
+      <div class="text-muted text-end pe-1 mt-0.5" style="font-size: 9px;">${msg.time || ''}</div>
+    </div>
+  `;
+
+  stream.appendChild(row);
+}
+
+async function sendStudentGroupMessage(e) {
+  e.preventDefault();
+  if (!currentActiveGroupId || currentGroupIsLocked) return;
+
+  const input = document.getElementById('studentGroupInput');
+  const text = (input.value || '').trim();
+  if (!text) return;
+
+  input.value = '';
+
+  const fd = new FormData();
+  fd.append('group_id', currentActiveGroupId);
+  fd.append('message', text);
+
+  try {
+    const res = await fetch('/chat/group/send', { method: 'POST', body: fd });
+    if (res.ok) {
+      fetchGroupMessages(true);
+    } else {
+      const err = await res.json();
+      alert(err.message || 'Could not send message');
+    }
+  } catch(e) {
+    console.log(e);
+  }
+}
+
+function showGroupMembersModal() {
+  const container = document.getElementById('groupMembersContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (!currentGroupMembers || currentGroupMembers.length === 0) {
+    container.innerHTML = '<div class="text-center py-3 text-muted small">No members loaded.</div>';
+  } else {
+    currentGroupMembers.forEach(m => {
+      const item = document.createElement('div');
+      item.className = 'd-flex align-items-center gap-2.5 p-2 rounded-3 bg-light';
+      const dp = m.photo ?
+        `<img src="/uploads/profiles/${m.photo}" class="rounded-circle shadow-sm" style="width:36px;height:36px;object-fit:cover;">` :
+        `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;font-size:12px;">${(m.name||'S')[0].toUpperCase()}</div>`;
+
+      item.innerHTML = `
+        ${dp}
+        <div>
+          <div class="fw-bold text-dark" style="font-size: 12px;">${m.name}</div>
+          <div class="text-muted font-monospace" style="font-size: 10px;">${m.admission_no || m.roll_no}</div>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  const modal = new bootstrap.Modal(document.getElementById('groupMembersModal'));
+  modal.show();
+}
+
+// Auto load first group if available
+document.addEventListener('DOMContentLoaded', () => {
+  const firstBtn = document.querySelector('.group-select-btn');
+  if (firstBtn) {
+    firstBtn.click();
+  }
+});
+</script>
