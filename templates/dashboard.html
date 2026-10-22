@@ -2250,6 +2250,37 @@
 
 
 
+        <!-- TEACHER MESSAGES (ONE-WAY, STUDENT CANNOT REPLY) -->
+        {% if teacher_msgs %}
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="small fw-bold text-dark"><i class="bi bi-chat-quote-fill text-warning me-1"></i>Teachers Ke Bheje Gaye Messages</span>
+            <span class="badge bg-warning text-dark rounded-pill" style="font-size: 10px;">{{ teacher_msgs|length }} Received</span>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            {% for tm in teacher_msgs %}
+            <div class="p-3 rounded-3 bg-white border shadow-sm" style="border-left: 4px solid #F59E0B !important;">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <div class="d-flex align-items-center gap-2">
+                  {% if tm.staff_photo %}
+                  <img src="/uploads/profiles/{{ tm.staff_photo }}" class="rounded-circle" style="width:24px;height:24px;object-fit:cover;">
+                  {% else %}
+                  <div class="rounded-circle bg-warning text-dark small fw-bold d-flex align-items-center justify-content-center" style="width:24px;height:24px;font-size:10px;">
+                    {{ tm.staff_name[0]|upper }}
+                  </div>
+                  {% endif %}
+                  <strong class="text-dark" style="font-size: 12.5px;">{{ tm.staff_name }} <span class="badge bg-secondary-subtle text-secondary fw-normal" style="font-size:9.5px;">{{ tm.staff_role or 'Teacher' }}</span></strong>
+                </div>
+                <span class="text-muted small" style="font-size: 10px;">{{ tm.created_at[:16] if tm.created_at else '' }}</span>
+              </div>
+              <div class="text-secondary small mt-1" style="font-size: 12px; line-height: 1.5;">{{ tm.message }}</div>
+              <div class="text-muted mt-1" style="font-size: 9.5px;"><i class="bi bi-info-circle me-1"></i>Yeh one-way teacher notice hai. Is par direct reply nahi kiya ja sakta.</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
         {% if student_messages %}
 
 

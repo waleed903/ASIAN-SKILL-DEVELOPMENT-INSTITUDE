@@ -676,13 +676,24 @@
           {% endif %}
         </div>
 
-        <!-- Chat Input Form -->
-        <form id="staffChatForm" onsubmit="sendStaffChatMessage(event)" class="d-flex gap-2 pt-2 border-top">
-          <input type="text" id="staffChatInput" class="form-control rounded-pill px-3 bg-light border-0" 
-                 placeholder="Apna message type karein (No limit)..." autocomplete="off" required style="font-size: 13px;">
-          <button type="submit" id="staffChatSendBtn" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="width: 40px; height: 40px;">
-            <i class="bi bi-send-fill" style="font-size: 14px;"></i>
-          </button>
+        <!-- Chat Input Form with Colleague Selector for Private / Broadcast Msg -->
+        <form id="staffChatForm" onsubmit="sendStaffChatMessage(event)" class="d-flex flex-column gap-2 pt-2 border-top">
+          <div class="d-flex align-items-center gap-2">
+            <span class="small fw-semibold text-secondary" style="font-size: 11px; white-space: nowrap;"><i class="bi bi-send-check me-1"></i>Bhejein:</span>
+            <select id="staffReceiverSelect" name="receiver_id" class="form-select form-select-sm rounded-pill py-0.5 px-2.5 text-dark bg-light border" style="font-size: 11px; max-width: 250px;">
+              <option value="0" selected>📢 Tamam Staff (General Broadcast)</option>
+              {% for c in all_colleagues %}
+              <option value="{{ c.id }}">🔒 Private: {{ c.name }} ({{ c.role }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="d-flex gap-2">
+            <input type="text" id="staffChatInput" class="form-control rounded-pill px-3 bg-light border-0" 
+                   placeholder="Apna message type karein (No limit)..." autocomplete="off" required style="font-size: 13px;">
+            <button type="submit" id="staffChatSendBtn" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="width: 40px; height: 40px;">
+              <i class="bi bi-send-fill" style="font-size: 14px;"></i>
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -759,6 +770,94 @@
             You have not published any learning materials yet. Click "Upload New Handout" to share handouts with students.
           </div>
           {% endif %}
+        </div>
+      </div>
+
+      <!-- TAB 6: TEACHER -> STUDENT PRIVATE MESSAGING (ONE-WAY, 3 MSGS/DAY) -->
+      <div class="tab-pane fade" id="tab-teacher-msgs" role="tabpanel">
+        <div class="portal-card p-3 mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="rounded-circle bg-warning bg-opacity-10 text-dark p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                <i class="bi bi-chat-quote-fill text-warning fs-5"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold mb-0 text-dark">Direct Teacher-to-Student Notices / Messages</h6>
+                <div class="text-muted small" style="font-size: 11px;">
+                  Send official messages directly to individual students (One-way: students read only). Limit: <strong>3 messages per day</strong>.
+                  <span id="teacherMsgCountBadge" class="badge bg-{% if teacher_today_count >= 3 %}danger{% elif teacher_today_count >= 2 %}warning text-dark{% else %}success{% endif %} ms-1">{{ teacher_today_count }}/3 used today</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compose Form -->
+          {% if teacher_today_count < 3 %}
+          <form method="POST" action="/staff/message/student" class="mb-4 p-3 rounded-3 bg-light border">
+            <div class="row g-2 mb-3">
+              <div class="col-12">
+                <label class="form-label small fw-bold text-secondary mb-1">Select Student *</label>
+                <select name="student_id" class="form-select form-select-sm" required>
+                  <option value="">-- Choose Student --</option>
+                  {% for item in students %}
+                  {% set s = item.student %}
+                  <option value="{{ s.id }}">{{ s.name }} (Roll: {{ s.roll_no or s.admission_no }}) — {{ s.course }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold text-secondary mb-1">Message Content *</label>
+                <textarea name="message" rows="3" class="form-control form-control-sm" placeholder="Write advice, fee reminder, test result note, or instructions for this student..." required maxlength="500"></textarea>
+                <div class="form-text" style="font-size: 11px;">Max 500 characters. Sent directly to the student portal.</div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-4">
+              <i class="bi bi-send-fill me-1"></i>Send to Student ({{ 3 - teacher_today_count }} remaining today)
+            </button>
+          </form>
+          {% else %}
+          <div class="alert alert-warning rounded-3 text-center p-3 mb-4" style="font-size: 13px;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Daily message limit reached (3/3 messages sent today).</strong><br>
+            <span class="small text-muted">Aap kal dobara messages bhej saktay hain.</span>
+          </div>
+          {% endif %}
+
+          <!-- Sent Messages Log -->
+          <div>
+            <div class="fw-bold text-secondary mb-2" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+              <i class="bi bi-clock-history me-1"></i>Sent Messages Log
+            </div>
+            {% if teacher_sent_msgs %}
+            <div class="d-flex flex-column gap-2">
+              {% for msg in teacher_sent_msgs %}
+              <div class="p-3 rounded-3 border bg-white d-flex justify-content-between align-items-start gap-3">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="fw-bold text-dark" style="font-size: 13px;">{{ msg.student_name }}</span>
+                    <span class="badge bg-light text-secondary border" style="font-size: 10px;">{{ msg.roll_no or msg.admission_no }}</span>
+                    <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 10px;">{{ msg.course }}</span>
+                    {% if msg.is_read %}
+                    <span class="badge bg-success-subtle text-success" style="font-size: 10px;"><i class="bi bi-check2-all me-1"></i>Seen</span>
+                    {% else %}
+                    <span class="badge bg-warning-subtle text-warning" style="font-size: 10px;"><i class="bi bi-clock me-1"></i>Delivered</span>
+                    {% endif %}
+                  </div>
+                  <div class="text-dark" style="font-size: 13px; line-height: 1.5;">{{ msg.message }}</div>
+                </div>
+                <div class="text-muted small flex-shrink-0" style="font-size: 11px; white-space: nowrap;">
+                  {{ msg.created_at[:16] if msg.created_at else '' }}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted bg-light rounded-3">
+              <i class="bi bi-envelope-open fs-2 d-block opacity-25 mb-1"></i>
+              <span class="small">No direct messages sent to students yet.</span>
+            </div>
+            {% endif %}
+          </div>
         </div>
       </div>
 
@@ -871,6 +970,11 @@
     <span>Notes</span>
   </button>
 
+  <button type="button" class="nav-item-btn" data-bs-target="#tab-teacher-msgs" data-tab-name="teacher-msgs">
+    <i class="bi bi-chat-left-quote"></i>
+    <span>Msg Stu</span>
+  </button>
+
   <button type="button" class="nav-item-btn" data-bs-target="#tab-my-profile">
     <i class="bi bi-person-badge"></i>
     <span>Profile</span>
@@ -966,8 +1070,12 @@
     if (!text) return;
     input.value = '';
 
+    const receiverEl = document.getElementById('staffReceiverSelect');
+    const receiverId = receiverEl ? receiverEl.value : '0';
+
     const formData = new FormData();
     formData.append('message', text);
+    formData.append('receiver_id', receiverId);
 
     try {
       const res = await fetch('/staff/send_chat', {

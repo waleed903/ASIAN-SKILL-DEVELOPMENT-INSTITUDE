@@ -262,6 +262,18 @@ def init_required_tables():
                 )
             """)
             c.execute("""
+                CREATE TABLE IF NOT EXISTS teacher_student_messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    staff_id INTEGER NOT NULL,
+                    staff_name TEXT NOT NULL,
+                    staff_photo TEXT,
+                    student_id INTEGER NOT NULL,
+                    message TEXT NOT NULL,
+                    is_read INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            c.execute("""
                 CREATE TABLE IF NOT EXISTS staff_attendance (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     staff_id INTEGER NOT NULL,
@@ -1382,10 +1394,30 @@ def dashboard():
         ORDER BY id DESC LIMIT 5
     """).fetchall()
 
+    # Messages received from teachers (one-way, student cannot reply)
+    teacher_msgs = conn.execute("""
+        SELECT tsm.*, s.name as staff_name, s.role as staff_role, s.photo as staff_photo
+        FROM teacher_student_messages tsm
+        JOIN staff s ON s.id = tsm.staff_id
+        WHERE tsm.student_id = ?
+        ORDER BY tsm.id DESC
+        LIMIT 30
+    """, (student_id,)).fetchall()
+
+    # Mark unread teacher messages as read
+    conn.execute("""
+        UPDATE teacher_student_messages SET is_read = 1
+        WHERE student_id = ? AND is_read = 0
+    """, (student_id,))
+    conn.commit()
+    unread_teacher_msgs = sum(1 for m in teacher_msgs if not m['is_read'])
+
     conn.close()
     return render_template(
         "dashboard.html",
         announcements=announcements,
+        teacher_msgs=teacher_msgs,
+        unread_teacher_msgs=unread_teacher_msgs,
         my_groups=my_groups,
         course_notes=course_notes,
         personal_schedules=personal_schedules,
@@ -1665,11 +1697,30 @@ def staff_dashboard():
         ORDER BY id DESC LIMIT 5
     """).fetchall()
 
+    # Teacher->Student messages sent by this teacher
+    teacher_sent_msgs = conn.execute("""
+        SELECT tsm.*, st.name as student_name, st.roll_no, st.admission_no, st.course
+        FROM teacher_student_messages tsm
+        JOIN students st ON st.id = tsm.student_id
+        WHERE tsm.staff_id = ?
+        ORDER BY tsm.id DESC
+        LIMIT 50
+    """, (staff_id,)).fetchall()
+
+    # Today's messages count (teacher limit: 3 msgs per student per day)
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    teacher_today_count = conn.execute("""
+        SELECT COUNT(*) FROM teacher_student_messages
+        WHERE staff_id = ? AND (DATE(created_at) = CURRENT_DATE OR DATE(created_at) = ?)
+    """, (staff_id, today_str)).fetchone()[0]
+
     conn.close()
 
     return render_template(
         "staff_dashboard.html",
         announcements=announcements,
+        teacher_sent_msgs=teacher_sent_msgs,
+        teacher_today_count=teacher_today_count,
         courses_list=courses_list,
         my_content=my_content,
         chat_messages=chat_messages,
@@ -3619,6 +3670,7 @@ def staff_get_chat_messages():
             "sender_role": r["sender_role"] or "Staff",
             "sender_photo": r["sender_photo"] or "",
             "message": r["message"],
+            "receiver_id": r["receiver_id"] or 0,
             "is_me": (r["sender_id"] == current_staff_id),
             "time": formatted_time
         })
@@ -3716,6 +3768,142 @@ def admin_mark_staff_attendance():
     conn.close()
     flash(f"Staff attendance ({status}) kamyabi se record ho gayi!", "success")
     return redirect(url_for("admin_dashboard"))
+# ==============================================================
+# TEACHER -> STUDENT PRIVATE MESSAGING (ONE-WAY, 3 msgs/day limit)
+# ==============================================================
+
+@app.route("/staff/message/student", methods=["POST"])
+@staff_required
+def staff_message_student():
+    """Teacher sends a private message to a specific student. Max 3 messages per day total."""
+    staff_id = session["staff_id"]
+    student_id = int(request.form.get("student_id", 0))
+    message = request.form.get("message", "").strip()
+
+    if not student_id or not message:
+        flash("Please select a student and write a message.", "warning")
+        return redirect(url_for("staff_dashboard"))
+
+    conn = get_db_connection()
+
+    # Check if student exists
+    stu = conn.execute("SELECT * FROM students WHERE id = ?", (student_id,)).fetchone()
+    if not stu:
+        conn.close()
+        flash("Student not found.", "danger")
+        return redirect(url_for("staff_dashboard"))
+
+    # Check daily limit: max 3 messages PER DAY (total across all students)
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    today_count = conn.execute("""
+        SELECT COUNT(*) FROM teacher_student_messages
+        WHERE staff_id = ? AND (DATE(created_at) = CURRENT_DATE OR DATE(created_at) = ?)
+    """, (staff_id, today_str)).fetchone()[0]
+
+    if today_count >= 3:
+        conn.close()
+        flash("Daily message limit reached (3 messages per day). You can send more messages tomorrow.", "warning")
+        return redirect(url_for("staff_dashboard"))
+
+    # Get teacher info
+    teacher = conn.execute("SELECT name, photo FROM staff WHERE id = ?", (staff_id,)).fetchone()
+    staff_name = teacher["name"] if teacher else session.get("user_name", "Teacher")
+    staff_photo = teacher["photo"] if (teacher and teacher["photo"]) else ""
+
+    conn.execute("""
+        INSERT INTO teacher_student_messages (staff_id, staff_name, staff_photo, student_id, message)
+        VALUES (?, ?, ?, ?, ?)
+    """, (staff_id, staff_name, staff_photo, student_id, message))
+    conn.commit()
+    conn.close()
+
+    remaining = 2 - today_count  # after this message
+    flash(f"Message sent to {stu['name']} successfully! (Daily messages remaining: {max(0, remaining)})", "success")
+    return redirect(url_for("staff_dashboard"))
+
+
+@app.route("/staff/messages/get")
+@staff_required
+def staff_get_sent_messages():
+    """AJAX endpoint: Get teacher's sent messages list."""
+    staff_id = session["staff_id"]
+    conn = get_db_connection()
+    rows = conn.execute("""
+        SELECT tsm.*, st.name as student_name, st.roll_no, st.course
+        FROM teacher_student_messages tsm
+        JOIN students st ON st.id = tsm.student_id
+        WHERE tsm.staff_id = ?
+        ORDER BY tsm.id DESC
+        LIMIT 50
+    """, (staff_id,)).fetchall()
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    today_count = conn.execute("""
+        SELECT COUNT(*) FROM teacher_student_messages
+        WHERE staff_id = ? AND (DATE(created_at) = CURRENT_DATE OR DATE(created_at) = ?)
+    """, (staff_id, today_str)).fetchone()[0]
+    conn.close()
+
+    messages = []
+    for r in rows:
+        try:
+            dt = datetime.strptime(str(r["created_at"])[:19], "%Y-%m-%d %H:%M:%S")
+            t = dt.strftime("%b %d, %I:%M %p")
+        except Exception:
+            t = str(r["created_at"])[:16]
+        messages.append({
+            "id": r["id"],
+            "student_name": r["student_name"],
+            "roll_no": r["roll_no"] or "",
+            "course": r["course"] or "",
+            "message": r["message"],
+            "is_read": bool(r["is_read"]),
+            "time": t
+        })
+    return jsonify({"status": "success", "messages": messages, "today_count": today_count, "daily_limit": 3})
+
+
+@app.route("/student/teacher_messages/get")
+@student_required
+def student_get_teacher_messages():
+    """AJAX: Student gets messages received from teachers."""
+    student_id = session["student_id"]
+    after_id = int(request.args.get("after_id", 0))
+    conn = get_db_connection()
+    rows = conn.execute("""
+        SELECT tsm.*, s.name as teacher_name, s.role as teacher_role, s.photo as teacher_photo
+        FROM teacher_student_messages tsm
+        JOIN staff s ON s.id = tsm.staff_id
+        WHERE tsm.student_id = ? AND tsm.id > ?
+        ORDER BY tsm.id DESC
+        LIMIT 20
+    """, (student_id, after_id)).fetchall()
+
+    # Mark as read
+    conn.execute("""
+        UPDATE teacher_student_messages SET is_read = 1
+        WHERE student_id = ? AND is_read = 0
+    """, (student_id,))
+    conn.commit()
+    conn.close()
+
+    messages = []
+    for r in rows:
+        try:
+            dt = datetime.strptime(str(r["created_at"])[:19], "%Y-%m-%d %H:%M:%S")
+            t = dt.strftime("%b %d, %I:%M %p")
+        except Exception:
+            t = str(r["created_at"])[:16]
+        messages.append({
+            "id": r["id"],
+            "teacher_name": r["teacher_name"],
+            "teacher_role": r["teacher_role"] or "Teacher",
+            "teacher_photo": r["teacher_photo"] or "",
+            "message": r["message"],
+            "time": t
+        })
+    return jsonify({"status": "success", "messages": messages})
+
+
 @app.route("/logout")
 
 def logout():
