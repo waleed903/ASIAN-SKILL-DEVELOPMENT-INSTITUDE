@@ -4,24 +4,153 @@
 
 {% block content %}
 
+<style>
+  /* ASDI Admin Modern Dashboard Redesign Styles */
+  .admin-header-card {
+    background: linear-gradient(135deg, #09122C 0%, #101E42 50%, #172A5C 100%);
+    border-radius: 18px;
+    box-shadow: 0 10px 25px -5px rgba(10, 20, 50, 0.25);
+  }
+  .admin-kpi-card {
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 18px;
+    padding: 18px 20px;
+    transition: all 0.25s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .admin-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -4px rgba(0,0,0,0.08);
+    border-color: #CBD5E1;
+  }
+  .admin-nav-card {
+    background: #ffffff;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .admin-nav-card:hover {
+    border-color: #93C5FD;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px -2px rgba(0,0,0,0.06);
+  }
+  .admin-nav-card.active {
+    border-color: #2563EB !important;
+    background: #EFF6FF !important;
+    box-shadow: 0 0 0 1px #2563EB, 0 4px 10px -2px rgba(37,99,235,0.15) !important;
+  }
+  .admin-nav-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 17px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  }
+  .admin-nav-info {
+    flex-grow: 1;
+    min-width: 0;
+  }
+  .admin-nav-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+  .admin-nav-sub {
+    font-size: 10px;
+    color: #64748B;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+  .admin-nav-arrow {
+    color: #94A3B8;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .quick-action-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background: #ffffff;
+    border: 1px solid #F1F5F9;
+  }
+  .quick-action-item:hover {
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+    transform: translateX(3px);
+  }
+  .quick-action-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .quick-action-info {
+    flex-grow: 1;
+    min-width: 0;
+  }
+  .quick-action-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1E293B;
+    line-height: 1.2;
+  }
+  .quick-action-sub {
+    font-size: 10px;
+    color: #64748B;
+    margin-top: 1px;
+  }
+  .quick-action-arrow {
+    font-size: 11px;
+    color: #94A3B8;
+    flex-shrink: 0;
+  }
+</style>
+
+
 <div class="container-fluid py-3 px-3 px-md-4" style="max-width: 1400px;">
 
   <!-- Admin Header Bar -->
-
-  <div class="portal-card p-3 p-md-4 mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #060B28 0%, #0A1145 50%, #0D186E 100%); color: white;">
-
+  <div class="admin-header-card p-3 p-md-4 mb-4 border-0 text-white">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-
       <div class="d-flex align-items-center gap-3">
-
         <div class="position-relative">
           {% if admin_dp %}
             <img src="{{ url_for('uploaded_profile', filename=admin_dp) }}" 
                  alt="Admin DP" class="rounded-4 shadow-sm" 
-                 style="width: 56px; height: 56px; object-fit: cover; border: 2.5px solid rgba(255,255,255,0.4); cursor: pointer;"
+                 style="width: 54px; height: 54px; object-fit: cover; border: 2.5px solid rgba(255,255,255,0.3); cursor: pointer;"
                  onclick="previewProfilePhoto(this.src, 'Chief Administrator', 'ASDI Central Institute Authority')" title="Click to view full photo">
           {% else %}
-            <div class="rounded-4 p-2.5 bg-white bg-opacity-10 d-flex align-items-center justify-content-center border border-white border-opacity-15 shadow-sm" style="width: 56px; height: 56px;">
+            <div class="rounded-4 p-2.5 d-flex align-items-center justify-content-center shadow-sm" style="width: 54px; height: 54px; background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.18);">
               <i class="bi bi-shield-fill-check text-warning fs-2"></i>
             </div>
           {% endif %}
@@ -31,49 +160,28 @@
             <i class="bi bi-camera-fill text-dark"></i>
           </button>
         </div>
-
         <div>
-
           <div class="d-flex align-items-center gap-2">
-
-            <h4 class="fw-bold mb-0 text-white tracking-tight">ASDI Institute Administration</h4>
-
-            <span class="badge bg-danger rounded-pill px-2.5 py-1" style="font-size: 10px;">Root Access</span>
-
+            <h4 class="fw-bold mb-0 text-white tracking-tight" style="font-size: 20px;">ASDI Institute Administration</h4>
+            <span class="badge rounded-pill px-2.5 py-1 fw-bold" style="background: #EF4444; color: white; font-size: 11px;">Root Access</span>
           </div>
-
           <p class="text-white-50 small mb-0 mt-0.5">Central Management, Live Financial Ledger, Student Admissions & Faculty Roster</p>
-
         </div>
-
       </div>
 
       <div class="d-flex align-items-center gap-2">
-
-        <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-1.5 fw-semibold shadow-sm text-navy" data-bs-toggle="modal" data-bs-target="#adminSecurityModal" style="font-size: 12px; color: var(--navy);">
-
-          <i class="bi bi-shield-lock-fill text-danger me-1"></i>Security & Password
-
+        <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-2 fw-semibold shadow-sm d-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#adminSecurityModal" style="font-size: 12px; color: #0F172A;">
+          <i class="bi bi-shield-lock-fill text-danger"></i>Security & Password
         </button>
-
-        <a href="{{ url_for('online_admission') }}" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1.5 fw-semibold" style="font-size: 12px;">
-
-          <i class="bi bi-plus-circle me-1"></i>New Admission
-
+        <a href="{{ url_for('online_admission') }}" target="_blank" class="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold shadow-sm d-flex align-items-center gap-1.5" style="font-size: 12px; background: #2563EB; border-color: #2563EB;">
+          <i class="bi bi-person-plus-fill"></i>New Admission
         </a>
-
-        <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger rounded-pill px-3 py-1.5 fw-semibold shadow-sm" style="font-size: 12px;">
-
-          <i class="bi bi-box-arrow-right me-1"></i>Logout
-
+        <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger rounded-pill px-3 py-2 fw-semibold shadow-sm d-flex align-items-center gap-1.5" style="font-size: 12px; background: #DC2626; border-color: #DC2626;">
+          <i class="bi bi-box-arrow-right"></i>Logout
         </a>
-
       </div>
-
     </div>
-
   </div>
-
   <!-- Flash Alerts -->
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -127,11 +235,10 @@
   {% endif %}
 
   <!-- KPI Metric Cards -->
-
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4" id="kpiMetricRow">
     <!-- Active Filter Indicator Banner -->
     <div id="kpiFilterBadgeRow" class="col-12 d-none">
-      <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded-3 shadow-xs" style="background: linear-gradient(135deg, #EEF2FF, #E0E7FF); border: 1.5px solid #6366F1;">
+      <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded-4 shadow-xs" style="background: linear-gradient(135deg, #EEF2FF, #E0E7FF); border: 1.5px solid #6366F1;">
         <div class="d-flex align-items-center gap-2">
           <span class="badge bg-primary rounded-pill px-2.5 py-1"><i class="bi bi-funnel-fill me-1"></i>Filter Applied</span>
           <span class="small fw-bold text-dark" id="kpiFilterDescription">Showing filtered student metrics</span>
@@ -143,184 +250,274 @@
     </div>
 
     <!-- Total Enrolled Students -->
-    <div class="col-6 col-md-3">
-      <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
+    <div class="col-6 col-lg-3">
+      <div class="admin-kpi-card h-100 position-relative">
         <div class="d-flex justify-content-between align-items-start">
-          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;">Enrolled Students</span>
-          <span class="badge bg-primary-subtle text-primary rounded-pill p-1.5"><i class="bi bi-people-fill"></i></span>
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 46px; height: 46px; background: #EFF6FF; color: #2563EB;">
+              <i class="bi bi-people-fill fs-4"></i>
+            </div>
+            <div>
+              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px; letter-spacing: 0.5px;">ENROLLED STUDENTS</span>
+              <div class="fs-3 fw-bolder mt-0.5 text-dark" id="kpiTotalStudents">{{ total_students }}</div>
+              <div class="small fw-semibold mt-1 d-flex align-items-center text-success" id="kpiActiveStudents" style="font-size: 12px;">
+                <span class="badge bg-success rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-plus"></i></span>
+                {{ active_students }} Active Students
+              </div>
+            </div>
+          </div>
+          <i class="bi bi-chevron-right text-muted opacity-50" style="font-size: 13px;"></i>
         </div>
-        <div class="fs-3 fw-bold mt-2" style="color: var(--navy);" id="kpiTotalStudents">{{ total_students }}</div>
-        <div class="small text-success mt-1 fw-semibold" id="kpiActiveStudents"><i class="bi bi-check-circle-fill me-1"></i>{{ active_students }} Active Students</div>
-
       </div>
-
     </div>
 
     <!-- Total Fee Revenue Collected -->
-
-    <div class="col-6 col-md-3">
-      <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
+    <div class="col-6 col-lg-3">
+      <div class="admin-kpi-card h-100 position-relative">
         <div class="d-flex justify-content-between align-items-start">
-          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;" id="kpiRevenueTitle">Total Collection</span>
-          <span class="badge bg-success-subtle text-success rounded-pill p-1.5"><i class="bi bi-cash-stack"></i></span>
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 46px; height: 46px; background: #ECFDF5; color: #059669;">
+              <i class="bi bi-cash-stack fs-4"></i>
+            </div>
+            <div>
+              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px; letter-spacing: 0.5px;" id="kpiRevenueTitle">TOTAL COLLECTION</span>
+              <div class="fs-3 fw-bolder mt-0.5 text-success" id="kpiTotalRevenue">Rs. {{ "{:,}".format(total_revenue) }}</div>
+              <div class="small fw-semibold mt-1 d-flex align-items-center text-success" id="kpiRevenueSub" style="font-size: 12px;">
+                <span class="badge bg-success rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-plus"></i></span>
+                {{ payments | length }} Verified Receipts
+              </div>
+            </div>
+          </div>
+          <i class="bi bi-chevron-right text-muted opacity-50" style="font-size: 13px;"></i>
         </div>
-        <div class="fs-3 fw-bold mt-2 text-success" id="kpiTotalRevenue">Rs. {{ "{:,}".format(total_revenue) }}</div>
-        <div class="small text-muted mt-1" id="kpiRevenueSub">{{ payments | length }} Verified Receipts</div>
       </div>
     </div>
 
     <!-- Outstanding Receivables -->
-
-    <div class="col-6 col-md-3">
-      <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
+    <div class="col-6 col-lg-3">
+      <div class="admin-kpi-card h-100 position-relative">
         <div class="d-flex justify-content-between align-items-start">
-          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;" id="kpiPendingTitle">Pending Balance</span>
-          <span class="badge bg-danger-subtle text-danger rounded-pill p-1.5"><i class="bi bi-hourglass-split"></i></span>
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 46px; height: 46px; background: #FEF2F2; color: #DC2626;">
+              <i class="bi bi-credit-card-2-front fs-4"></i>
+            </div>
+            <div>
+              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px; letter-spacing: 0.5px;" id="kpiPendingTitle">PENDING BALANCE</span>
+              <div class="fs-3 fw-bolder mt-0.5 text-danger" id="kpiPendingBalance">Rs. {{ "{:,}".format(total_pending_receivables) }}</div>
+              <div class="small fw-semibold mt-1 d-flex align-items-center text-danger" id="kpiPendingSub" style="font-size: 12px;">
+                <span class="badge bg-danger rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-dash"></i></span>
+                Receivable from Students
+              </div>
+            </div>
+          </div>
+          <i class="bi bi-chevron-right text-muted opacity-50" style="font-size: 13px;"></i>
         </div>
-        <div class="fs-3 fw-bold mt-2 text-danger" id="kpiPendingBalance">Rs. {{ "{:,}".format(total_pending_receivables) }}</div>
-        <div class="small text-danger mt-1 fw-semibold" id="kpiPendingSub">Receivable from Students</div>
       </div>
     </div>
 
     <!-- Net Cash Balance -->
-
-    <div class="col-6 col-md-3">
-      <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
+    <div class="col-6 col-lg-3">
+      <div class="admin-kpi-card h-100 position-relative">
         <div class="d-flex justify-content-between align-items-start">
-          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;" id="kpiNetProfitTitle">Net Cash Balance</span>
-          <span class="badge bg-info-subtle text-info rounded-pill p-1.5"><i class="bi bi-wallet2"></i></span>
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 46px; height: 46px; background: #EFF6FF; color: #1D4ED8;">
+              <i class="bi bi-wallet2 fs-4"></i>
+            </div>
+            <div>
+              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px; letter-spacing: 0.5px;" id="kpiNetProfitTitle">NET CASH BALANCE</span>
+              <div class="fs-3 fw-bolder mt-0.5 text-primary" id="kpiNetProfit">Rs. {{ "{:,}".format(net_profit) }}</div>
+              <div class="small fw-semibold mt-1 d-flex align-items-center text-muted" id="kpiNetProfitSub" style="font-size: 12px;">
+                <i class="bi bi-receipt me-1 text-secondary"></i>Expenses: Rs. {{ "{:,}".format(total_expenses) }}
+              </div>
+            </div>
+          </div>
+          <i class="bi bi-chevron-right text-muted opacity-50" style="font-size: 13px;"></i>
         </div>
-        <div class="fs-3 fw-bold mt-2 text-primary" id="kpiNetProfit">Rs. {{ "{:,}".format(net_profit) }}</div>
-        <div class="small text-muted mt-1" id="kpiNetProfitSub">Expenses: Rs. {{ "{:,}".format(total_expenses) }}</div>
       </div>
     </div>
+  </div>
+  <!-- Navigation Grid (12 Icon Cards in 2x6 Grid) -->
+  <div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-2 mb-4" id="adminMainTab" role="tablist">
+    <!-- 1. Students Directory -->
+    <div class="col">
+      <button type="button" class="admin-nav-card active w-100" id="tab-btn-students" data-bs-toggle="pill" data-bs-target="#tab-content-students" role="tab" aria-selected="true">
+        <div class="admin-nav-icon" style="background: #2563EB;">
+          <i class="bi bi-people-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Students Directory</div>
+          <div class="admin-nav-sub">View & manage student records</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
 
+    <!-- 2. Fee Ledger -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-payments" data-bs-toggle="pill" data-bs-target="#tab-content-payments" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #059669;">
+          <i class="bi bi-database-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Fee Ledger</div>
+          <div class="admin-nav-sub">Manage fees & payments</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 3. Faculty & Staff -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-staff" data-bs-toggle="pill" data-bs-target="#tab-content-staff" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #7C3AED;">
+          <i class="bi bi-person-workspace text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Faculty & Staff</div>
+          <div class="admin-nav-sub">Manage faculty & staff</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 4. Institute Expenses -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-expenses" data-bs-toggle="pill" data-bs-target="#tab-content-expenses" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #EF4444;">
+          <i class="bi bi-cart-x-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Institute Expenses</div>
+          <div class="admin-nav-sub">Track expenses & records</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 5. Inquiries & Leads -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-inquiries" data-bs-toggle="pill" data-bs-target="#tab-content-inquiries" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #EA580C;">
+          <i class="bi bi-chat-left-dots-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Inquiries & Leads</div>
+          <div class="admin-nav-sub">Handle new inquiries</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 6. Hazri & Requests -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100 position-relative" id="tab-btn-attendance" data-bs-toggle="pill" data-bs-target="#tab-content-attendance" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #0891B2;">
+          <i class="bi bi-calendar-check-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Hazri & Requests</div>
+          <div class="admin-nav-sub">Attendance & requests</div>
+        </div>
+        {% if pending_att_count > 0 %}
+          <span class="badge bg-danger rounded-pill position-absolute top-0 end-0 m-1" style="font-size: 9px;">{{ pending_att_count }}</span>
+        {% endif %}
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 7. WhatsApp Groups -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-groups" data-bs-toggle="pill" data-bs-target="#tab-content-groups" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #16A34A;">
+          <i class="bi bi-whatsapp text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">WhatsApp Groups</div>
+          <div class="admin-nav-sub">Manage groups & broadcasts</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 8. Manage Courses -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-courses" data-bs-toggle="pill" data-bs-target="#tab-content-courses" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #4F46E5;">
+          <i class="bi bi-mortarboard-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Manage Courses</div>
+          <div class="admin-nav-sub">Courses & batches</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 9. Notes & Content -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-notes" data-bs-toggle="pill" data-bs-target="#tab-content-notes" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #E11D48;">
+          <i class="bi bi-file-earmark-text-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Notes & Content</div>
+          <div class="admin-nav-sub">Study material & notes</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 10. Timetables & DMC -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-timetables" data-bs-toggle="pill" data-bs-target="#tab-content-timetables" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #0284C7;">
+          <i class="bi bi-calendar3-range-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Timetables & DMC</div>
+          <div class="admin-nav-sub">Class schedule & results</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 11. Announcements -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-announcements" data-bs-toggle="pill" data-bs-target="#tab-content-announcements" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #D97706;">
+          <i class="bi bi-megaphone-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Announcements</div>
+          <div class="admin-nav-sub">Post announcements</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 12. Student Messages -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100 position-relative" id="tab-btn-messages" data-bs-toggle="pill" data-bs-target="#tab-content-messages" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #7C3AED;">
+          <i class="bi bi-envelope-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Student Messages</div>
+          <div class="admin-nav-sub">View student messages</div>
+        </div>
+        {% if unread_msg_count > 0 %}
+          <span class="badge bg-warning text-dark rounded-pill position-absolute top-0 end-0 m-1" style="font-size: 9px;">{{ unread_msg_count }}</span>
+        {% endif %}
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
   </div>
 
-  <!-- Main Navigation Tabs -->
+  <!-- Content & Right Sidebar Layout -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-xl-9 col-lg-9">
+      <div class="tab-content" id="adminMainTabContent">
 
-  <div class="portal-card p-3 mb-4 bg-white border shadow-sm">
-
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom pb-2 mb-0">
-
-      <ul class="nav nav-pills flex-grow-1" id="adminMainTab" role="tablist">
-
-        <li class="nav-item">
-
-          <button class="nav-link active fw-bold py-2 px-3 rounded-pill" id="tab-btn-students" data-bs-toggle="pill" data-bs-target="#tab-content-students" type="button" role="tab" style="font-size: 13px;">
-
-            <i class="bi bi-person-lines-fill me-1.5"></i>Students Directory ({{ students | length }})
-
-          </button>
-
-        </li>
-
-        <li class="nav-item">
-
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill" id="tab-btn-payments" data-bs-toggle="pill" data-bs-target="#tab-content-payments" type="button" role="tab" style="font-size: 13px;">
-
-            <i class="bi bi-receipt-cutoff me-1.5"></i>Fee Ledger ({{ payments | length }})
-
-          </button>
-
-        </li>
-
-        <li class="nav-item">
-
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill" id="tab-btn-staff" data-bs-toggle="pill" data-bs-target="#tab-content-staff" type="button" role="tab" style="font-size: 13px;">
-
-            <i class="bi bi-person-workspace me-1.5"></i>Faculty & Staff ({{ staff_overview | length }})
-
-          </button>
-
-        </li>
-
-        <li class="nav-item">
-
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill" id="tab-btn-expenses" data-bs-toggle="pill" data-bs-target="#tab-content-expenses" type="button" role="tab" style="font-size: 13px;">
-
-            <i class="bi bi-cart-x me-1.5"></i>Institute Expenses ({{ expenses | length }})
-
-          </button>
-
-        </li>
-
-        <li class="nav-item">
-
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill" id="tab-btn-inquiries" data-bs-toggle="pill" data-bs-target="#tab-content-inquiries" type="button" role="tab" style="font-size: 13px;">
-
-            <i class="bi bi-chat-left-dots me-1.5"></i>Inquiries & Leads ({{ inquiries | length }})
-
-          </button>
-
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill position-relative" id="tab-btn-attendance" data-bs-toggle="pill" data-bs-target="#tab-content-attendance" type="button" role="tab" style="font-size: 13px;">
-            <i class="bi bi-calendar-check me-1.5"></i>Hazri & Requests
-            {% if pending_att_count > 0 %}
-              <span class="badge bg-danger rounded-pill ms-1">{{ pending_att_count }}</span>
-            {% endif %}
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill position-relative" id="tab-btn-messages" data-bs-toggle="pill" data-bs-target="#tab-content-messages" type="button" role="tab" style="font-size: 13px;">
-            <i class="bi bi-chat-dots me-1.5"></i>Student Messages
-            {% if unread_msg_count > 0 %}
-              <span class="badge bg-warning text-dark rounded-pill ms-1">{{ unread_msg_count }}</span>
-            {% endif %}
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill position-relative" id="tab-btn-groups" data-bs-toggle="pill" data-bs-target="#tab-content-groups" type="button" role="tab" style="font-size: 13px;">
-            <i class="bi bi-whatsapp text-success me-1.5"></i>WhatsApp Groups ({{ all_groups | length }})
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill position-relative" id="tab-btn-courses" data-bs-toggle="pill" data-bs-target="#tab-content-courses" type="button" role="tab" style="font-size: 13px;">
-            <i class="bi bi-mortarboard-fill text-info me-1.5"></i>Manage Courses ({{ all_courses | length }})
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill position-relative" id="tab-btn-notes" data-bs-toggle="pill" data-bs-target="#tab-content-notes" type="button" role="tab" style="font-size: 13px;">
-            <i class="bi bi-journal-bookmark-fill text-primary me-1.5"></i>Notes & Content ({{ all_content | length }})
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill position-relative" id="tab-btn-timetables" data-bs-toggle="pill" data-bs-target="#tab-content-timetables" type="button" role="tab" style="font-size: 13px;">
-            <i class="bi bi-calendar3-range text-danger me-1.5"></i>Timetables & DMC
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link fw-bold py-2 px-3 rounded-pill position-relative" id="tab-btn-announcements" data-bs-toggle="pill" data-bs-target="#tab-content-announcements" type="button" role="tab" style="font-size: 13px;">
-            <i class="bi bi-megaphone-fill text-warning me-1.5"></i>Announcements ({{ all_announcements | length }})
-          </button>
-        </li>
-
-      </ul>
-
-      <!-- Quick Action Buttons -->
-
-      <div class="d-flex gap-2">
-
-        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
-
-          <i class="bi bi-cash-coin me-1"></i>Record Payment
-
-        </button>
-
-        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5 fw-semibold" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
-
-          <i class="bi bi-dash-circle me-1"></i>Add Expense
-
-        </button>
-
-      </div>
-
-    </div>
-
-    <!-- TAB CONTENTS -->
-
-    <div class="tab-content" id="adminMainTabContent">
 
       <!-- ============================================================== -->
 
@@ -330,48 +527,154 @@
 
       <div class="tab-pane fade show active" id="tab-content-students" role="tabpanel">
 
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-
-          <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
-            <div class="input-group input-group-sm" style="max-width: 270px;">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" id="adminStudentSearch" class="form-control bg-light border-start-0" placeholder="Search name, roll, phone...">
+        <!-- Dual Filters Row (Students Filters + Teachers Filters) -->
+        <div class="row g-3 mb-3">
+          <!-- Students Filters Card -->
+          <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2.5">
+                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 13px;">
+                  <i class="bi bi-people-fill text-primary me-2"></i>Students Filters
+                </h6>
+                <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 fw-semibold text-primary" style="font-size: 11px;" onclick="resetAdminFilters()">Clear All</button>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-6 col-sm-3">
+                  <label class="form-label small text-muted mb-1" style="font-size: 10.5px;">Course</label>
+                  <select id="adminCourseFilter" class="form-select form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAdminFilters()">
+                    <option value="">All Courses</option>
+                    {% set seen_courses = [] %}
+                    {% for item in students %}
+                      {% if item.student.course and item.student.course.strip() and item.student.course.strip() not in seen_courses %}
+                        {% set _ = seen_courses.append(item.student.course.strip()) %}
+                        <option value="{{ item.student.course.strip() }}">{{ item.student.course.strip() }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-6 col-sm-3">
+                  <label class="form-label small text-muted mb-1" style="font-size: 10.5px;">Batch</label>
+                  <select id="adminBatchFilter" class="form-select form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAdminFilters()">
+                    <option value="">All Batches</option>
+                    {% set seen_batches = [] %}
+                    {% for item in students %}
+                      {% if item.student.batch and item.student.batch.strip() and item.student.batch.strip() not in seen_batches %}
+                        {% set _ = seen_batches.append(item.student.batch.strip()) %}
+                        <option value="{{ item.student.batch.strip() }}">{{ item.student.batch.strip() }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-6 col-sm-3">
+                  <label class="form-label small text-muted mb-1" style="font-size: 10.5px;">Status</label>
+                  <select id="adminStatusFilter" class="form-select form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAdminFilters()">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                <div class="col-6 col-sm-3">
+                  <label class="form-label small text-muted mb-1" style="font-size: 10.5px;">Admission Date</label>
+                  <input type="date" id="adminDateFilter" class="form-control form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAdminFilters()">
+                </div>
+              </div>
+              <div class="row g-2">
+                <div class="col-8">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0 text-muted" style="font-size: 11px;"><i class="bi bi-search"></i></span>
+                    <input type="text" id="adminStudentSearch" class="form-control bg-light border-start-0 rounded-end-3" placeholder="Search by name, roll no, phone..." style="font-size: 11px;" oninput="applyAdminFilters()">
+                  </div>
+                </div>
+                <div class="col-4">
+                  <button type="button" class="btn btn-sm btn-primary w-100 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-1" style="font-size: 11px; background: #2563EB; border-color: #2563EB;" onclick="applyAdminFilters()">
+                    <i class="bi bi-funnel-fill"></i>Apply Filter
+                  </button>
+                </div>
+              </div>
             </div>
-
-            <!-- Course Filter Dropdown -->
-            <select id="adminCourseFilter" class="form-select form-select-sm bg-white border shadow-xs fw-semibold text-secondary" style="width: auto; min-width: 175px;" onchange="applyAdminStudentFilters()">
-              <option value="">≡ƒÄô All Courses (All)</option>
-              {% set seen_courses = [] %}
-              {% for item in students %}
-                {% if item.student.course and item.student.course.strip() and item.student.course.strip() not in seen_courses %}
-                  {% set _ = seen_courses.append(item.student.course.strip()) %}
-                  <option value="{{ item.student.course.strip() }}">{{ item.student.course.strip() }}</option>
-                {% endif %}
-              {% endfor %}
-            </select>
-
-            <!-- Teacher Filter Dropdown -->
-            <select id="adminTeacherFilter" class="form-select form-select-sm bg-white border shadow-xs fw-semibold text-secondary" style="width: auto; min-width: 175px;" onchange="applyAdminStudentFilters()">
-              <option value="">≡ƒæ¿ΓÇì≡ƒÅ½ All Teachers (All)</option>
-              {% for st in all_staff %}
-                <option value="{{ st.id }}">{{ st.name }} ({{ st.role or 'Faculty' }})</option>
-              {% endfor %}
-            </select>
-
-            <!-- Reset Filters Button -->
-            <button type="button" id="adminFilterResetBtn" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 d-none" onclick="resetAdminFilters()" title="Filters Reset Karein" style="font-size: 11px;">
-              <i class="bi bi-x-circle me-1"></i>Reset
-            </button>
           </div>
 
-          <div class="small text-muted">
-
-            <span class="badge bg-light text-dark border me-1">Tip</span> Click <strong class="text-primary">"Edit Student"</strong> on any row to modify profile, fees or reset password.
-
+          <!-- Teachers Filters Card -->
+          <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2.5">
+                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 13px;">
+                  <i class="bi bi-mortarboard-fill text-primary me-2"></i>Teachers Filters
+                </h6>
+                <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 fw-semibold text-primary" style="font-size: 11px;" onclick="resetAdminFilters()">Clear All</button>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-4">
+                  <label class="form-label small text-muted mb-1" style="font-size: 10.5px;">Department</label>
+                  <select id="adminTeacherFilter" class="form-select form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAdminFilters()">
+                    <option value="">All Teachers</option>
+                    {% for st in all_staff %}
+                      <option value="{{ st.id }}">{{ st.name }} ({{ st.role or 'Faculty' }})</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-4">
+                  <label class="form-label small text-muted mb-1" style="font-size: 10.5px;">Designation</label>
+                  <select id="adminDesigFilter" class="form-select form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAdminFilters()">
+                    <option value="">All Designations</option>
+                    <option value="Instructor">Instructor</option>
+                    <option value="Teacher">Teacher</option>
+                    <option value="HOD">HOD</option>
+                  </select>
+                </div>
+                <div class="col-4">
+                  <label class="form-label small text-muted mb-1" style="font-size: 10.5px;">Status</label>
+                  <select id="adminTeacherStatusFilter" class="form-select form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAdminFilters()">
+                    <option value="active">Active</option>
+                    <option value="">All</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row g-2">
+                <div class="col-8">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0 text-muted" style="font-size: 11px;"><i class="bi bi-search"></i></span>
+                    <input type="text" id="adminTeacherSearchInput" class="form-control bg-light border-start-0 rounded-end-3" placeholder="Search by name, phone, email..." style="font-size: 11px;" oninput="applyAdminFilters()">
+                  </div>
+                </div>
+                <div class="col-4">
+                  <button type="button" class="btn btn-sm btn-primary w-100 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-1" style="font-size: 11px; background: #2563EB; border-color: #2563EB;" onclick="applyAdminFilters()">
+                    <i class="bi bi-funnel-fill"></i>Apply Filter
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-
         </div>
 
+        <!-- Toolbar row (Search + View + Export) -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-2.5 mb-3">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="input-group input-group-sm flex-grow-1" style="max-width: 380px;">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control bg-light border-start-0" placeholder="Search student name, roll number, course..." oninput="document.getElementById('adminStudentSearch').value=this.value; applyAdminFilters();" style="font-size: 12px;">
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-primary active rounded-start-3" style="font-size: 11px;"><i class="bi bi-list-ul me-1"></i>List View</button>
+                <button type="button" class="btn btn-outline-secondary rounded-end-3" style="font-size: 11px;"><i class="bi bi-grid-fill me-1"></i>Card View</button>
+              </div>
+              <select class="form-select form-select-sm rounded-3" style="width: auto; font-size: 11px;">
+                <option value="10">Rows: 10</option>
+                <option value="25">Rows: 25</option>
+                <option value="50">Rows: 50</option>
+                <option value="all">Rows: All</option>
+              </select>
+              <button type="button" class="btn btn-sm btn-outline-success rounded-3 fw-semibold d-flex align-items-center gap-1" style="font-size: 11px;" onclick="exportTableToCSV('asdi_students.csv')">
+                <i class="bi bi-file-earmark-excel-fill text-success"></i>Excel
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger rounded-3 fw-semibold d-flex align-items-center gap-1" style="font-size: 11px;" onclick="window.print()">
+                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>PDF
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="table-responsive">
 
           <table class="table table-hover align-middle border rounded-3 overflow-hidden" style="font-size: 13px;">
@@ -1926,10 +2229,161 @@
           {% endif %}
         </div>
       </div>
-</div>
+    </div><!-- /col-12 col-xl-9 col-lg-9 -->
+
+    <!-- Right Sidebar -->
+    <div class="col-12 col-xl-3 col-lg-3">
+      <!-- Quick Actions -->
+      <div class="card border-0 shadow-sm rounded-4 mb-3 bg-white">
+        <div class="card-header bg-white border-0 pt-3 pb-2 px-3">
+          <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 14px;">
+            <i class="bi bi-lightning-charge-fill text-primary me-2"></i>Quick Actions
+          </h6>
+        </div>
+        <div class="card-body p-2 pt-0">
+          <div class="d-flex flex-column gap-1.5">
+            <!-- Action 1: Add New Student -->
+            <a href="javascript:void(0)" class="quick-action-item" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+              <div class="quick-action-icon" style="background: #ECFDF5; color: #059669;">
+                <i class="bi bi-person-plus-fill"></i>
+              </div>
+              <div class="quick-action-info">
+                <div class="quick-action-title">Add New Student</div>
+                <div class="quick-action-sub">Register a new student</div>
+              </div>
+              <i class="bi bi-chevron-right quick-action-arrow"></i>
+            </a>
+
+            <!-- Action 2: Add New Teacher -->
+            <a href="javascript:void(0)" class="quick-action-item" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+              <div class="quick-action-icon" style="background: #F5F3FF; color: #7C3AED;">
+                <i class="bi bi-person-workspace"></i>
+              </div>
+              <div class="quick-action-info">
+                <div class="quick-action-title">Add New Teacher</div>
+                <div class="quick-action-sub">Register a new teacher</div>
+              </div>
+              <i class="bi bi-chevron-right quick-action-arrow"></i>
+            </a>
+
+            <!-- Action 3: Record Fee Payment -->
+            <a href="javascript:void(0)" class="quick-action-item" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
+              <div class="quick-action-icon" style="background: #FEF2F2; color: #DC2626;">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+              <div class="quick-action-info">
+                <div class="quick-action-title">Record Fee Payment</div>
+                <div class="quick-action-sub">Add payment receipt</div>
+              </div>
+              <i class="bi bi-chevron-right quick-action-arrow"></i>
+            </a>
+
+            <!-- Action 4: Add Expense -->
+            <a href="javascript:void(0)" class="quick-action-item" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+              <div class="quick-action-icon" style="background: #FFF7ED; color: #EA580C;">
+                <i class="bi bi-dash-circle"></i>
+              </div>
+              <div class="quick-action-info">
+                <div class="quick-action-title">Add Expense</div>
+                <div class="quick-action-sub">Record institute expense</div>
+              </div>
+              <i class="bi bi-chevron-right quick-action-arrow"></i>
+            </a>
+
+            <!-- Action 5: Generate Report -->
+            <a href="javascript:void(0)" class="quick-action-item" onclick="switchAdminTab('payments')">
+              <div class="quick-action-icon" style="background: #EFF6FF; color: #2563EB;">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+              </div>
+              <div class="quick-action-info">
+                <div class="quick-action-title">Generate Report</div>
+                <div class="quick-action-sub">View & download reports</div>
+              </div>
+              <i class="bi bi-chevron-right quick-action-arrow"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card border-0 shadow-sm rounded-4 bg-white">
+        <div class="card-header bg-white border-0 pt-3 pb-2 px-3 d-flex justify-content-between align-items-center">
+          <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 14px;">
+            <i class="bi bi-clock-history text-primary me-2"></i>Recent Activity
+          </h6>
+          <a href="javascript:void(0)" onclick="switchAdminTab('payments')" class="text-primary text-decoration-none fw-semibold" style="font-size: 11px;">View All</a>
+        </div>
+        <div class="card-body p-3 pt-0">
+          <div class="d-flex flex-column gap-2.5">
+            <!-- Item 1: New student admission -->
+            <div class="d-flex align-items-start gap-2.5">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #EFF6FF; color: #2563EB; font-size: 14px;">
+                <i class="bi bi-person-fill"></i>
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">New student admission</div>
+                <div class="text-muted text-truncate" style="font-size: 11px;">
+                  {% if students and students[0] %}{{ students[0].student.name }} - Recent{% else %}Muhammad Raza - 3 hours ago{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 2: Fee received -->
+            <div class="d-flex align-items-start gap-2.5">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #ECFDF5; color: #059669; font-size: 14px;">
+                <i class="bi bi-cash-stack"></i>
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">Fee received</div>
+                <div class="text-muted text-truncate" style="font-size: 11px;">
+                  {% if payments and payments[0] %}Rs. {{ "{:,}".format(payments[0].amount) }} - {{ payments[0].student_name or 'ASDI' }}{% else %}Rs. 4,000 - ASDI-2025-0114{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 3: New inquiry -->
+            <div class="d-flex align-items-start gap-2.5">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #FFF7ED; color: #EA580C; font-size: 14px;">
+                <i class="bi bi-chat-left-dots-fill"></i>
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">New inquiry</div>
+                <div class="text-muted text-truncate" style="font-size: 11px;">
+                  {% if inquiries and inquiries[0] %}{{ inquiries[0].student_name or 'Online form' }} - {{ inquiries[0].course_interest or 'General' }}{% else %}Online form - 6 hours ago{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 4: Expense added -->
+            <div class="d-flex align-items-start gap-2.5">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #FEF2F2; color: #DC2626; font-size: 14px;">
+                <i class="bi bi-cart-dash-fill"></i>
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">Expense added</div>
+                <div class="text-muted text-truncate" style="font-size: 11px;">
+                  {% if expenses and expenses[0] %}{{ expenses[0].title }} - Rs. {{ "{:,}".format(expenses[0].amount) }}{% else %}Stationery - Rs. 2,500 - 7 hours ago{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 5: Timetable updated -->
+            <div class="d-flex align-items-start gap-2.5">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #EFF6FF; color: #0284C7; font-size: 14px;">
+                <i class="bi bi-calendar-event-fill"></i>
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">Timetable updated</div>
+                <div class="text-muted text-truncate" style="font-size: 11px;">BST Morning - 1 day ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /col-12 col-xl-3 col-lg-3 -->
+  </div><!-- /row g-3 mb-4 -->
 
 <!-- ============================================================== -->
-
 <!-- MODAL: ADMIN CREDENTIALS & SECURITY UPDATE                     -->
 
 <!-- ============================================================== -->
@@ -4325,5 +4779,55 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
+
+<script>
+// Tab card click synchronization
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.admin-nav-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      document.querySelectorAll('.admin-nav-card').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+});
+
+function switchAdminTab(targetId) {
+  var triggerEl = document.querySelector('#tab-btn-' + targetId);
+  if (triggerEl) {
+    var tab = bootstrap.Tab.getOrCreateInstance(triggerEl);
+    tab.show();
+    document.querySelectorAll('.admin-nav-card').forEach(c => c.classList.remove('active'));
+    triggerEl.classList.add('active');
+  }
+}
+
+function exportTableToCSV(filename) {
+  var csv = [];
+  var rows = document.querySelectorAll('#adminStudentTableBody tr.admin-student-row');
+  var header = ['Admission ID', 'Roll No', 'Name', 'Father Name', 'Course', 'Phone', 'Email', 'Total Fee', 'Paid', 'Balance', 'Status'];
+  csv.push(header.join(','));
+  rows.forEach(function(row) {
+    if (row.style.display !== 'none') {
+      var cells = row.querySelectorAll('td');
+      if (cells.length >= 10) {
+        var rowData = [];
+        for (var i = 1; i <= 10; i++) {
+          rowData.push('"' + (cells[i].innerText.replace(/"/g, '""').trim()) + '"');
+        }
+        csv.push(rowData.join(','));
+      }
+    }
+  });
+  var csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+  var downloadLink = document.createElement('a');
+  downloadLink.download = filename;
+  downloadLink.href = window.URL.createObjectURL(csvFile);
+  downloadLink.style.display = 'none';
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+}
+</script>
+
 {% endblock %}
 
