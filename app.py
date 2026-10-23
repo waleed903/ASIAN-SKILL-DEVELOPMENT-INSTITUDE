@@ -446,6 +446,26 @@ def init_required_tables():
                 message TEXT NOT NULL,
                 is_read INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS enrollments (
+                id {pk},
+                student_id INTEGER NOT NULL,
+                course TEXT NOT NULL,
+                roll_no TEXT,
+                batch TEXT,
+                semester TEXT,
+                teacher_id INTEGER,
+                total_fee {real_type} DEFAULT 0,
+                monthly_fee {real_type} DEFAULT 0,
+                fee_plan TEXT,
+                due_day INTEGER DEFAULT 10,
+                discount_amount {real_type} DEFAULT 0,
+                discount_reason TEXT,
+                status TEXT DEFAULT 'Active',
+                admission_date TEXT,
+                category TEXT,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )"""
         ]
 
@@ -460,6 +480,13 @@ def init_required_tables():
                 except Exception:
                     pass
                 print("[init table info]", tbl_err)
+
+        # Add enrollment_id column to payments if missing (backward compatible)
+        try:
+            c.execute("ALTER TABLE payments ADD COLUMN enrollment_id INTEGER")
+            c.commit()
+        except Exception:
+            pass  # Column already exists
 
         # Seed default settings if empty
         try:
@@ -1692,6 +1719,165 @@ def student_upload_photo():
         flash("Invalid format. Sirf PNG, JPG, JPEG, WEBP allowed hain.", "danger")
 
     return redirect(url_for("dashboard"))
+
+@app.route("/student/enrollments")
+@student_required
+def student_enrollments():
+    """Returns student's all enrollments as JSON for the multi-course selector."""
+    student_id = session["student_id"]
+    conn = get_db_connection()
+    enrollments = conn.execute(
+        "SELECT * FROM enrollments WHERE student_id = ? AND status = 'Active' ORDER BY id ASC",
+        (student_id,)
+    ).fetchall()
+    conn.close()
+    result = []
+    for e in enrollments:
+        result.append({
+            "id": e["id"],
+            "course": e["course"],
+            "roll_no": e["roll_no"],
+            "batch": e["batch"],
+            "semester": e["semester"],
+            "total_fee": float(e["total_fee"] or 0),
+            "monthly_fee": float(e["monthly_fee"] or 0),
+            "discount_amount": float(e["discount_amount"] or 0),
+            "due_day": e["due_day"] or 10,
+            "fee_plan": e["fee_plan"] or "Regular",
+            "status": e["status"],
+            "admission_date": e["admission_date"] or ""
+        })
+    return jsonify({"status": "success", "enrollments": result})
+
+@app.route("/student/enrollment/fee/<int:enrollment_id>")
+@student_required
+def student_enrollment_fee(enrollment_id):
+    """Returns fee data for a specific enrollment."""
+    student_id = session["student_id"]
+    conn = get_db_connection()
+    enrollment = conn.execute(
+        "SELECT * FROM enrollments WHERE id = ? AND student_id = ?",
+        (enrollment_id, student_id)
+    ).fetchone()
+    if not enrollment:
+        conn.close()
+        return jsonify({"status": "error", "message": "Enrollment not found"}), 404
+
+    # Get payments linked to this enrollment
+    # We match by student_id + enrollment_id stored in payments note field, or just student_id if only 1 enrollment
+    payments = conn.execute(
+        "SELECT * FROM payments WHERE student_id = ? AND (enrollment_id = ? OR enrollment_id IS NULL) ORDER BY pay_date DESC",
+        (student_id, enrollment_id)
+    ).fetchall()
+
+    # Check if enrollment_id column exists in payments
+    try:
+        payments_with_enrollment = conn.execute(
+            "SELECT * FROM payments WHERE student_id = ? AND enrollment_id = ? ORDER BY pay_date DESC",
+            (student_id, enrollment_id)
+        ).fetchall()
+        if payments_with_enrollment:
+            payments = payments_with_enrollment
+        else:
+            # Fallback: all payments for student (single course scenario)
+            all_payments = conn.execute(
+                "SELECT * FROM payments WHERE student_id = ? ORDER BY pay_date DESC",
+                (student_id,)
+            ).fetchall()
+            payments = all_payments
+    except Exception:
+        payments = conn.execute(
+            "SELECT * FROM payments WHERE student_id = ? ORDER BY pay_date DESC",
+            (student_id,)
+        ).fetchall()
+
+    conn.close()
+
+    total_fee = float(enrollment["total_fee"] or 0)
+    discount = float(enrollment["discount_amount"] or 0)
+    net_fee = max(0, total_fee - discount)
+    total_paid = sum(float(p["amount"] or 0) for p in payments)
+    balance = max(0, net_fee - total_paid)
+
+    return jsonify({
+        "status": "success",
+        "enrollment": {
+            "id": enrollment["id"],
+            "course": enrollment["course"],
+            "roll_no": enrollment["roll_no"],
+            "batch": enrollment["batch"],
+            "total_fee": total_fee,
+            "discount_amount": discount,
+            "net_fee": net_fee,
+            "total_paid": total_paid,
+            "balance": balance,
+            "monthly_fee": float(enrollment["monthly_fee"] or 0),
+            "due_day": enrollment["due_day"] or 10,
+            "fee_plan": enrollment["fee_plan"] or "Regular",
+            "is_cleared": balance <= 0
+        },
+        "payments": [
+            {
+                "id": p["id"],
+                "pay_date": p["pay_date"],
+                "amount": float(p["amount"] or 0),
+                "method": p["method"] or "Cash",
+                "receipt_no": p["receipt_no"] or f"RC-{p['id']}",
+                "note": p["note"] or ""
+            } for p in payments
+        ]
+    })
+
+@app.route("/admin/enrollment/add", methods=["POST"])
+@admin_required
+def admin_add_enrollment():
+    """Admin can add a new course enrollment for an existing student."""
+    student_id = request.form.get("student_id", "").strip()
+    course = request.form.get("enr_course", "").strip()
+    roll_no = request.form.get("enr_roll_no", "").strip()
+    batch = request.form.get("enr_batch", "").strip()
+    semester = request.form.get("enr_semester", "1st").strip()
+    total_fee = float(request.form.get("enr_total_fee", 0) or 0)
+    monthly_fee = float(request.form.get("enr_monthly_fee", 0) or 0)
+    discount = float(request.form.get("enr_discount", 0) or 0)
+    teacher_id = request.form.get("enr_teacher_id", "").strip()
+    teacher_id = int(teacher_id) if teacher_id and teacher_id.isdigit() else None
+    admission_date = request.form.get("enr_admission_date", datetime.now().strftime("%Y-%m-%d")).strip()
+
+    if not student_id or not course:
+        flash("Student ID aur Course darj karna lazmi hai.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    # Check if already enrolled in this course
+    existing = conn.execute(
+        "SELECT id FROM enrollments WHERE student_id = ? AND course = ? AND status = 'Active'",
+        (student_id, course)
+    ).fetchone()
+    if existing:
+        conn.close()
+        flash(f"Yeh student pehle se '{course}' mein enrolled hai!", "warning")
+        return redirect(url_for("admin_dashboard"))
+
+    conn.execute("""
+        INSERT INTO enrollments (student_id, course, roll_no, batch, semester, teacher_id,
+                                  total_fee, monthly_fee, discount_amount, admission_date, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')
+    """, (student_id, course, roll_no, batch, semester, teacher_id,
+          total_fee, monthly_fee, discount, admission_date))
+    conn.commit()
+
+    # Log audit
+    try:
+        conn.execute("""INSERT INTO audit_log (created_at, user_role, action, entity, entity_id, details)
+                        VALUES (?, 'Admin', 'ADD_ENROLLMENT', 'enrollments', ?, ?)""",
+                     (datetime.now().isoformat(), student_id, f"Added enrollment: {course}"))
+        conn.commit()
+    except Exception:
+        pass
+    conn.close()
+    flash(f"Student ka '{course}' course mein doosra enrollment kamyabi se add ho gaya!", "success")
+    return redirect(url_for("admin_dashboard"))
 
 @app.route("/student/security_update", methods=["POST"])
 
@@ -4444,6 +4630,11 @@ def send_group_message():
 
     group_id = int(request.form.get("group_id", 0))
     message = request.form.get("message", "").strip()
+    share_photo = request.form.get("share_photo", "").strip()
+
+    # If sharing a photo, build a message that includes the photo URL
+    if share_photo and not message:
+        message = "[Photo Shared]"
 
     if not group_id or not message:
         return jsonify({"status": "error", "message": "Empty message or group"}), 400
@@ -4472,6 +4663,10 @@ def send_group_message():
             sender_name = session.get("user_name", "Student")
             stu_row = conn.execute("SELECT photo FROM students WHERE id = ?", (student_id,)).fetchone()
             sender_photo = stu_row["photo"] if stu_row and "photo" in stu_row.keys() else ""
+            # If sharing photo, append the photo URL to the message
+            if share_photo and sender_photo:
+                photo_url = f"/uploads/profiles/{sender_photo}"
+                message = f"{message}\n[PHOTO:{photo_url}]"
         else:
             # Admin sending into group
             sender_id = 0

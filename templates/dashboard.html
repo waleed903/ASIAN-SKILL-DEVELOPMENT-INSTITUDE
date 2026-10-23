@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 
 
@@ -172,18 +172,12 @@
 
 
           <img src="{{ url_for('uploaded_profile', filename=student.photo) }}"
-
-
-
                alt="{{ student.name }}"
-
-
-
-               class="rounded-circle shadow-sm"
-
-
-
-               style="width:68px;height:68px;object-fit:cover;border:3px solid white;">
+               class="rounded-circle shadow-sm profile-pic-protected"
+               style="width:68px;height:68px;object-fit:cover;border:3px solid white; cursor:pointer;"
+               onclick="openProfilePicModal(this.src, '{{ student.name }}')"
+               oncontextmenu="return false;"
+               draggable="false">
 
 
 
@@ -363,6 +357,43 @@
 
 
 
+
+  <!-- Multi-Course Enrollment Selector (Auto-shown if student has multiple courses) -->
+  <div id="enrollmentSelectorSection" class="mb-3 d-none">
+    <div class="portal-card p-3" style="background: linear-gradient(135deg, #EEF2FF, #E0E7FF);">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <i class="bi bi-mortarboard-fill text-primary fs-5"></i>
+        <h6 class="fw-bold mb-0" style="color: #1e3a8a; font-size: 14px;">Aap Ke Courses (Multi-Enrollment)</h6>
+      </div>
+      <p class="text-muted small mb-2" style="font-size: 11px;">Aik course select karein jis ka data dekhna chahte hain:</p>
+      <div id="enrollmentTabsContainer" class="d-flex flex-wrap gap-2">
+        <!-- Dynamic tabs injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Multi-Course Fee Card (shown when a specific enrollment is selected) -->
+  <div id="enrollmentFeeCard" class="portal-card p-3 mb-3 d-none" style="background: linear-gradient(135deg, #080F4A, #1B2A9A); color: white;">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+      <div>
+        <span class="text-white-50 text-uppercase fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">Course Fee Status</span>
+        <div class="fw-bold text-white mt-1" id="enrCourseName" style="font-size: 13px;"></div>
+        <h3 class="fw-bold mb-0 mt-1" id="enrBalanceDisplay">Rs. --</h3>
+      </div>
+      <div class="rounded-circle p-2 bg-white bg-opacity-10">
+        <i class="bi bi-wallet2 text-white" style="font-size: 22px;"></i>
+      </div>
+    </div>
+    <div class="progress mt-2 mb-2" style="height: 6px; background-color: rgba(255,255,255,0.2);">
+      <div class="progress-bar bg-warning" id="enrProgressBar" role="progressbar" style="width: 0%;"></div>
+    </div>
+    <div class="d-flex justify-content-between" style="font-size: 11px; opacity: 0.9;">
+      <span id="enrPaidText">Paid: --</span>
+      <span id="enrTotalText">Total: --</span>
+    </div>
+    <!-- Enrollment Receipts -->
+    <div id="enrReceiptsContainer" class="mt-3"></div>
+  </div>
   <!-- TAB PANELS -->
 
 
@@ -1643,18 +1674,12 @@
 
 
             <img src="{{ url_for('uploaded_profile', filename=student.photo) }}"
-
-
-
                  alt="{{ student.name }}"
-
-
-
-                 class="rounded-circle shadow"
-
-
-
-                 style="width:100px;height:100px;object-fit:cover;border:4px solid var(--navy);">
+                 class="rounded-circle shadow profile-pic-protected"
+                 style="width:100px;height:100px;object-fit:cover;border:4px solid var(--navy); cursor:pointer;"
+                 onclick="openProfilePicModal(this.src, '{{ student.name }}')"
+                 oncontextmenu="return false;"
+                 draggable="false">
 
 
 
@@ -2636,6 +2661,78 @@
 
 
 
+
+    <!-- ===== PROFILE PIC MODAL (No Download) ===== -->
+    <div class="modal fade" id="profilePicModal" tabindex="-1" aria-labelledby="profilePicModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+          <div class="modal-header border-0 pb-0 px-3 pt-3">
+            <h6 class="modal-title fw-bold text-dark" id="profilePicModalLabel" style="font-size:13px;">
+              <i class="bi bi-person-circle text-primary me-1"></i>Profile Photo
+            </h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-3 text-center">
+            <div class="position-relative d-inline-block" style="user-select:none;">
+              <img id="profilePicModalImg"
+                   src=""
+                   alt="Profile Photo"
+                   class="rounded-circle shadow"
+                   style="width:180px; height:180px; object-fit:cover; border:4px solid var(--navy); pointer-events:none;"
+                   oncontextmenu="return false;"
+                   draggable="false">
+              <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:transparent;z-index:10;"
+                   oncontextmenu="return false;"
+                   ontouchstart="return false;"></div>
+            </div>
+            <div class="mt-2 fw-bold text-dark" id="profilePicModalName" style="font-size:14px;"></div>
+            <div class="text-muted small mt-1" style="font-size:10px;">
+              <i class="bi bi-shield-lock me-1 text-primary"></i>
+              Yeh photo share karne ke liye Groups mein share button use karein.
+            </div>
+            <div class="mt-3 text-start">
+              <div class="fw-bold text-dark mb-2" style="font-size:12px;">
+                <i class="bi bi-whatsapp text-success me-1"></i>Apni Photo Share Karein (Group Select Karein):
+              </div>
+              <div id="shareGroupsList">
+                {% if my_groups %}
+                  {% for g in my_groups %}
+                  <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-light border mb-1">
+                    <div>
+                      <div class="fw-bold text-dark" style="font-size:12px;">{{ g.name }}</div>
+                      <div class="text-muted" style="font-size:10px;">{{ g.course or 'Class Group' }}</div>
+                    </div>
+                    <button type="button"
+                            onclick="sharePhotoToGroup({{ g.id }}, '{{ g.name }}')"
+                            class="btn btn-sm btn-success rounded-pill px-3 fw-bold"
+                            style="font-size:11px;">
+                      <i class="bi bi-share-fill me-1"></i>Share
+                    </button>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="text-center py-2 text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>Koi group available nahi. Admin se group mein add karwayein.
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHOTO SHARE SUCCESS TOAST ===== -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11000;">
+      <div id="shareToast" class="toast align-items-center text-bg-success border-0 rounded-3" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body fw-bold" id="shareToastMsg">
+            <i class="bi bi-check-circle-fill me-2"></i>Photo shared!
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
 {% endblock %}
 
 
@@ -2759,6 +2856,190 @@
 
 
 {% block extra_scripts %}
+<script>
+// ===== PROFILE PIC PROTECTED VIEW =====
+
+// Disable right-click globally on profile pics
+document.addEventListener('contextmenu', function(e) {
+  if (e.target.classList.contains('profile-pic-protected') || e.target.closest('.modal-body')) {
+    e.preventDefault();
+    return false;
+  }
+});
+
+function openProfilePicModal(src, name) {
+  document.getElementById('profilePicModalImg').src = src;
+  document.getElementById('profilePicModalName').textContent = name;
+  const modal = new bootstrap.Modal(document.getElementById('profilePicModal'));
+  modal.show();
+}
+
+// ===== GROUP PHOTO SHARE =====
+async function sharePhotoToGroup(groupId, groupName) {
+  try {
+    const fd = new FormData();
+    fd.append('group_id', groupId);
+    fd.append('message', `📸 [Photo Shared by {{ student.name }}]`);
+    fd.append('share_photo', 'true');
+
+    const res = await fetch('/chat/group/send', { method: 'POST', body: fd });
+    const data = await res.json();
+
+    const toastEl = document.getElementById('shareToast');
+    const toastMsg = document.getElementById('shareToastMsg');
+
+    if (res.ok && data.status === 'success') {
+      toastMsg.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>Photo "${groupName}" group mein share ho gayi!`;
+      toastEl.classList.remove('text-bg-danger');
+      toastEl.classList.add('text-bg-success');
+    } else {
+      toastMsg.innerHTML = `<i class="bi bi-x-circle-fill me-2"></i>${data.message || 'Share failed!'}`;
+      toastEl.classList.remove('text-bg-success');
+      toastEl.classList.add('text-bg-danger');
+    }
+
+    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+    toast.show();
+
+    // Close modal
+    bootstrap.Modal.getInstance(document.getElementById('profilePicModal')).hide();
+
+  } catch(e) {
+    console.log('Share error:', e);
+  }
+}
+
+// Disable keyboard shortcuts for saving (Ctrl+S, Ctrl+U)
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && (e.key === 's' || e.key === 'u' || e.key === 'p')) {
+    if (document.getElementById('profilePicModal') && document.getElementById('profilePicModal').classList.contains('show')) {
+      e.preventDefault();
+      return false;
+    }
+  }
+});
+</script>
+
+<script>
+// ===== MULTI-COURSE ENROLLMENT SYSTEM =====
+let allEnrollments = [];
+let activeEnrollmentId = null;
+
+async function loadStudentEnrollments() {
+  try {
+    const res = await fetch('/student/enrollments');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.status === 'success' && data.enrollments && data.enrollments.length > 1) {
+      allEnrollments = data.enrollments;
+      showEnrollmentSelector(data.enrollments);
+    }
+  } catch(e) {
+    console.log('Enrollment load error:', e);
+  }
+}
+
+function showEnrollmentSelector(enrollments) {
+  const section = document.getElementById('enrollmentSelectorSection');
+  const container = document.getElementById('enrollmentTabsContainer');
+  if (!section || !container) return;
+
+  container.innerHTML = '';
+  enrollments.forEach((enr, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `btn btn-sm ${idx === 0 ? 'btn-primary' : 'btn-outline-primary'} rounded-pill fw-bold px-3 py-1`;
+    btn.style.fontSize = '12px';
+    btn.innerHTML = `<i class="bi bi-mortarboard me-1"></i>${enr.course} <span class="badge bg-white text-primary ms-1" style="font-size:9px;">${enr.roll_no || '--'}</span>`;
+    btn.onclick = () => selectEnrollment(enr.id, btn, enrollments);
+    container.appendChild(btn);
+  });
+
+  section.classList.remove('d-none');
+  // Auto-select first
+  if (enrollments.length > 0) {
+    selectEnrollment(enrollments[0].id, container.firstChild, enrollments);
+  }
+}
+
+async function selectEnrollment(enrollmentId, clickedBtn, enrollments) {
+  activeEnrollmentId = enrollmentId;
+
+  // Update button styles
+  document.querySelectorAll('#enrollmentTabsContainer button').forEach(b => {
+    b.className = 'btn btn-sm btn-outline-primary rounded-pill fw-bold px-3 py-1';
+    b.style.fontSize = '12px';
+  });
+  if (clickedBtn) {
+    clickedBtn.className = 'btn btn-sm btn-primary rounded-pill fw-bold px-3 py-1';
+    clickedBtn.style.fontSize = '12px';
+  }
+
+  // Fetch enrollment-specific fee data
+  try {
+    const res = await fetch(`/student/enrollment/fee/${enrollmentId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.status === 'success') {
+      showEnrollmentFeeCard(data.enrollment, data.payments);
+    }
+  } catch(e) {
+    console.log('Enrollment fee error:', e);
+  }
+}
+
+function showEnrollmentFeeCard(enr, payments) {
+  const card = document.getElementById('enrollmentFeeCard');
+  if (!card) return;
+
+  document.getElementById('enrCourseName').textContent = `${enr.course} ${enr.batch ? '| ' + enr.batch : ''}`;
+
+  const balance = enr.balance;
+  const balDisplay = document.getElementById('enrBalanceDisplay');
+  if (enr.is_cleared) {
+    balDisplay.innerHTML = `Rs. 0 <span class="badge bg-light text-success fw-bold ms-2" style="font-size:12px;">Full Paid</span>`;
+  } else {
+    balDisplay.innerHTML = `Rs. ${balance.toLocaleString()} <span class="badge bg-warning text-dark fw-bold ms-2" style="font-size:11px;">Pending</span>`;
+  }
+
+  const pct = enr.net_fee > 0 ? Math.min(100, (enr.total_paid / enr.net_fee * 100)) : 100;
+  document.getElementById('enrProgressBar').style.width = `${pct}%`;
+  document.getElementById('enrPaidText').textContent = `Paid: Rs. ${enr.total_paid.toLocaleString()}`;
+  document.getElementById('enrTotalText').textContent = `Total: Rs. ${enr.net_fee.toLocaleString()}`;
+
+  // Show receipts
+  const receiptsContainer = document.getElementById('enrReceiptsContainer');
+  if (payments && payments.length > 0) {
+    receiptsContainer.innerHTML = `
+      <div class="text-white-50 small fw-bold mb-2" style="font-size:11px; border-top: 1px solid rgba(255,255,255,0.2); padding-top:8px;">
+        <i class="bi bi-receipt me-1"></i>Payment Receipts (${payments.length})
+      </div>
+      ${payments.slice(0, 5).map(p => `
+        <div class="d-flex justify-content-between align-items-center p-2 rounded-3 mb-1" style="background: rgba(255,255,255,0.1);">
+          <div>
+            <div class="fw-bold text-white" style="font-size:12px;">${p.receipt_no}</div>
+            <div class="text-white-50" style="font-size:10px;"><i class="bi bi-calendar-check me-1"></i>${p.pay_date}</div>
+          </div>
+          <div class="text-end">
+            <div class="fw-bold text-warning" style="font-size:13px;">Rs. ${p.amount.toLocaleString()}</div>
+            <a href="/receipt/${p.id}" class="btn btn-sm py-0 px-2 rounded-pill mt-0" style="font-size:9px; background:rgba(255,255,255,0.15); color:white;">View</a>
+          </div>
+        </div>
+      `).join('')}
+    `;
+  } else {
+    receiptsContainer.innerHTML = '';
+  }
+
+  card.classList.remove('d-none');
+}
+
+// Load on page ready
+document.addEventListener('DOMContentLoaded', () => {
+  loadStudentEnrollments();
+});
+</script>
+
 <script>
 let currentActiveGroupId = null;
 let currentGroupIsLocked = false;
