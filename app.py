@@ -521,6 +521,40 @@ def init_required_tables():
                 pass
             print("[courses seed info]", seed_err)
 
+        # Ensure all existing students have official email and password_hash initialized
+        try:
+            from werkzeug.security import generate_password_hash
+            default_h = generate_password_hash("1234")
+            students_to_fix = c.execute("SELECT id, admission_no, email, password_hash FROM students").fetchall()
+            for st in students_to_fix:
+                s_id = st["id"]
+                s_adm = (st["admission_no"] or f"ASDI-{s_id}").strip().upper()
+                s_em = st["email"]
+                s_hash = st["password_hash"]
+
+                needs_update = False
+                new_em = s_em
+                new_hash = s_hash
+
+                if not s_em or str(s_em).strip() == "" or "@" not in str(s_em):
+                    clean_adm = s_adm.lower().replace("-", "").replace("/", "")
+                    new_em = f"{clean_adm}@asdi.edu"
+                    needs_update = True
+
+                if not s_hash or not str(s_hash).startswith(('scrypt:', 'pbkdf2:', 'argon2:')):
+                    new_hash = default_h
+                    needs_update = True
+
+                if needs_update:
+                    c.execute("UPDATE students SET email = ?, pin = ?, password_hash = ? WHERE id = ?", (new_em, new_hash, new_hash, s_id))
+            c.commit()
+        except Exception as seed_stud_err:
+            try:
+                c.rollback()
+            except Exception:
+                pass
+            print("[students security sync info]", seed_stud_err)
+
         c.close()
     except Exception as e:
         print("[init_required_tables info]", e)
