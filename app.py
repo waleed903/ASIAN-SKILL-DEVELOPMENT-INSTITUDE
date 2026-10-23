@@ -143,149 +143,351 @@ def wa_phone_filter(phone_str):
     return digits
 
 def init_required_tables():
-    """Ensures necessary auxiliary tables exist in the active database."""
+    """Ensures all necessary tables and seed data exist in the active database (Postgres and SQLite)."""
     try:
-        c = get_db_connection()
-        if not is_postgres():
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS student_attendance_requests (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    student_id INTEGER NOT NULL,
-                    req_date TEXT NOT NULL,
-                    status TEXT DEFAULT 'Pending',
-                    note TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS student_messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    student_id INTEGER NOT NULL,
-                    subject TEXT,
-                    message TEXT NOT NULL,
-                    reply TEXT,
-                    status TEXT DEFAULT 'Unread',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS online_payment_requests (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    student_id INTEGER NOT NULL,
-                    amount REAL NOT NULL,
-                    transaction_id TEXT,
-                    transaction_date TEXT,
-                    screenshot TEXT,
-                    method TEXT DEFAULT 'EasyPaisa',
-                    status TEXT DEFAULT 'Pending',
-                    admin_note TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS staff_chat_messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    sender_id INTEGER NOT NULL,
-                    sender_name TEXT NOT NULL,
-                    sender_role TEXT,
-                    sender_photo TEXT,
-                    receiver_id INTEGER DEFAULT 0,
-                    message TEXT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS courses (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT UNIQUE NOT NULL,
-                    category TEXT,
-                    fee REAL DEFAULT 0,
-                    duration TEXT,
-                    description TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS student_groups (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    course TEXT,
-                    batch TEXT,
-                    description TEXT,
-                    is_locked INTEGER DEFAULT 0,
-                    created_by TEXT DEFAULT 'Admin',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS group_members (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    group_id INTEGER NOT NULL,
-                    student_id INTEGER NOT NULL,
-                    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    UNIQUE(group_id, student_id)
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS group_messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    group_id INTEGER NOT NULL,
-                    sender_id INTEGER NOT NULL,
-                    sender_type TEXT DEFAULT 'student',
-                    sender_name TEXT NOT NULL,
-                    sender_photo TEXT,
-                    message TEXT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS course_content (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    course TEXT NOT NULL,
-                    title TEXT NOT NULL,
-                    description TEXT,
-                    file_path TEXT,
-                    drive_link TEXT,
-                    uploaded_by TEXT NOT NULL,
-                    uploader_role TEXT DEFAULT 'Admin',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS announcements (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    title TEXT NOT NULL,
-                    message TEXT NOT NULL,
-                    target_role TEXT DEFAULT 'All',
-                    is_active INTEGER DEFAULT 1,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS teacher_student_messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    staff_id INTEGER NOT NULL,
-                    staff_name TEXT NOT NULL,
-                    staff_photo TEXT,
-                    student_id INTEGER NOT NULL,
-                    message TEXT NOT NULL,
-                    is_read INTEGER DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS staff_attendance (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    staff_id INTEGER NOT NULL,
-                    att_date TEXT NOT NULL,
-                    status TEXT DEFAULT 'Present',
-                    check_in TEXT,
-                    check_out TEXT,
-                    note TEXT
-                )
-            """)
+        is_pg = is_postgres()
+        pk = "SERIAL PRIMARY KEY" if is_pg else "INTEGER PRIMARY KEY AUTOINCREMENT"
+        real_type = "NUMERIC" if is_pg else "REAL"
+        bool_active = "BOOLEAN DEFAULT TRUE" if is_pg else "INTEGER DEFAULT 1"
 
-            # Seed preset modern courses in English if courses table is empty
+        table_definitions = [
+            f"""CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS students (
+                id {pk},
+                admission_no TEXT UNIQUE,
+                roll_no TEXT,
+                category TEXT,
+                course TEXT,
+                semester TEXT,
+                batch TEXT,
+                admission_date TEXT,
+                name TEXT,
+                father_name TEXT,
+                cnic TEXT,
+                blood_group TEXT,
+                phone TEXT,
+                whatsapp TEXT,
+                address TEXT,
+                dob TEXT,
+                age TEXT,
+                occupation TEXT,
+                marital TEXT,
+                gender TEXT,
+                g_name TEXT,
+                g_relation TEXT,
+                g_cnic TEXT,
+                g_occupation TEXT,
+                g_phone TEXT,
+                g_email TEXT,
+                g_address TEXT,
+                em_name TEXT,
+                em_phone TEXT,
+                total_fee {real_type} DEFAULT 0,
+                monthly_fee {real_type} DEFAULT 0,
+                fee_plan TEXT,
+                due_day INTEGER DEFAULT 10,
+                photo TEXT,
+                status TEXT DEFAULT 'Active',
+                last_reminder TEXT,
+                created_at TEXT,
+                teacher_id INTEGER,
+                discount_amount {real_type} DEFAULT 0,
+                discount_reason TEXT,
+                email TEXT,
+                pin TEXT,
+                password_hash TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS staff (
+                id {pk},
+                name TEXT,
+                role TEXT DEFAULT 'Teacher',
+                subject TEXT,
+                phone TEXT,
+                whatsapp TEXT,
+                email TEXT,
+                share_pct {real_type},
+                duty_start TEXT DEFAULT '09:00',
+                days TEXT DEFAULT 'Mon,Tue,Wed,Thu,Fri,Sat',
+                salary {real_type} DEFAULT 0,
+                status TEXT DEFAULT 'Active',
+                note TEXT,
+                password_hash TEXT,
+                pin TEXT,
+                photo TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS payments (
+                id {pk},
+                student_id INTEGER,
+                pay_date TEXT,
+                amount {real_type} DEFAULT 0,
+                late_fee {real_type} DEFAULT 0,
+                receipt_no TEXT,
+                method TEXT,
+                note TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS expenses (
+                id {pk},
+                exp_date TEXT,
+                category TEXT,
+                amount {real_type},
+                note TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS batches (
+                id {pk},
+                name TEXT UNIQUE,
+                course TEXT,
+                days TEXT,
+                start_time TEXT,
+                end_time TEXT,
+                teacher TEXT,
+                room TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS schedule (
+                id {pk},
+                student_id INTEGER,
+                days TEXT,
+                start_time TEXT,
+                end_time TEXT,
+                subject TEXT,
+                teacher TEXT,
+                note TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS reminder_log (
+                id {pk},
+                student_id INTEGER,
+                sent_at TEXT,
+                phone TEXT,
+                message TEXT,
+                ok INTEGER,
+                info TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS attendance (
+                id {pk},
+                student_id INTEGER,
+                att_date TEXT,
+                status TEXT,
+                UNIQUE(student_id, att_date)
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS staff_attendance (
+                id {pk},
+                staff_id INTEGER,
+                att_date TEXT,
+                status TEXT DEFAULT 'Present',
+                check_in TEXT,
+                check_out TEXT,
+                note TEXT,
+                UNIQUE(staff_id, att_date)
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS staff_log (
+                id {pk},
+                staff_id INTEGER,
+                sent_at TEXT,
+                kind TEXT,
+                channel TEXT,
+                ok INTEGER,
+                info TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS audit_log (
+                id {pk},
+                created_at TEXT,
+                user_role TEXT DEFAULT 'Admin',
+                action TEXT,
+                entity TEXT,
+                entity_id INTEGER,
+                details TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS staff_salaries (
+                id {pk},
+                staff_id INTEGER,
+                pay_date TEXT,
+                month_year TEXT,
+                basic_salary {real_type} DEFAULT 0,
+                deductions {real_type} DEFAULT 0,
+                advance_deduction {real_type} DEFAULT 0,
+                bonus_share {real_type} DEFAULT 0,
+                net_paid {real_type} DEFAULT 0,
+                method TEXT DEFAULT 'Cash',
+                note TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS staff_advances (
+                id {pk},
+                staff_id INTEGER,
+                advance_date TEXT,
+                amount {real_type} DEFAULT 0,
+                note TEXT,
+                status TEXT DEFAULT 'Pending'
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS exam_results (
+                id {pk},
+                student_id INTEGER,
+                exam_title TEXT,
+                exam_date TEXT,
+                total_marks {real_type} DEFAULT 100,
+                obtained_marks {real_type} DEFAULT 0,
+                grade TEXT,
+                remarks TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS inquiries (
+                id {pk},
+                inq_date TEXT,
+                name TEXT,
+                father_name TEXT,
+                phone TEXT,
+                whatsapp TEXT,
+                course TEXT,
+                source TEXT,
+                status TEXT DEFAULT 'Pending',
+                follow_up_date TEXT,
+                note TEXT
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS student_attendance_requests (
+                id {pk},
+                student_id INTEGER NOT NULL,
+                req_date TEXT NOT NULL,
+                status TEXT DEFAULT 'Pending',
+                note TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS student_messages (
+                id {pk},
+                student_id INTEGER NOT NULL,
+                subject TEXT,
+                message TEXT NOT NULL,
+                reply TEXT,
+                status TEXT DEFAULT 'Unread',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS online_payment_requests (
+                id {pk},
+                student_id INTEGER NOT NULL,
+                amount {real_type} NOT NULL,
+                transaction_id TEXT,
+                transaction_date TEXT,
+                screenshot TEXT,
+                method TEXT DEFAULT 'EasyPaisa',
+                status TEXT DEFAULT 'Pending',
+                admin_note TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS staff_chat_messages (
+                id {pk},
+                sender_id INTEGER NOT NULL,
+                sender_name TEXT NOT NULL,
+                sender_role TEXT,
+                sender_photo TEXT,
+                receiver_id INTEGER DEFAULT 0,
+                message TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS courses (
+                id {pk},
+                name TEXT UNIQUE NOT NULL,
+                category TEXT,
+                fee {real_type} DEFAULT 0,
+                duration TEXT,
+                description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS student_groups (
+                id {pk},
+                name TEXT NOT NULL,
+                course TEXT,
+                batch TEXT,
+                description TEXT,
+                is_locked INTEGER DEFAULT 0,
+                created_by TEXT DEFAULT 'Admin',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS group_members (
+                id {pk},
+                group_id INTEGER NOT NULL,
+                student_id INTEGER NOT NULL,
+                added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(group_id, student_id)
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS group_messages (
+                id {pk},
+                group_id INTEGER NOT NULL,
+                sender_id INTEGER NOT NULL,
+                sender_type TEXT DEFAULT 'student',
+                sender_name TEXT NOT NULL,
+                sender_photo TEXT,
+                message TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS course_content (
+                id {pk},
+                course TEXT NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT,
+                file_path TEXT,
+                drive_link TEXT,
+                uploaded_by TEXT NOT NULL,
+                uploader_role TEXT DEFAULT 'Admin',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS announcements (
+                id {pk},
+                title TEXT NOT NULL,
+                message TEXT NOT NULL,
+                target_role TEXT DEFAULT 'All',
+                is_active {bool_active},
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            f"""CREATE TABLE IF NOT EXISTS teacher_student_messages (
+                id {pk},
+                staff_id INTEGER NOT NULL,
+                staff_name TEXT NOT NULL,
+                staff_photo TEXT,
+                student_id INTEGER NOT NULL,
+                message TEXT NOT NULL,
+                is_read INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )"""
+        ]
+
+        c = get_db_connection()
+        for stmt in table_definitions:
+            try:
+                c.execute(stmt)
+                c.commit()
+            except Exception as tbl_err:
+                try:
+                    c.rollback()
+                except Exception:
+                    pass
+                print("[init table info]", tbl_err)
+
+        # Seed default settings if empty
+        try:
+            s_row = c.execute("SELECT COUNT(*) FROM settings").fetchone()
+            s_cnt = (s_row["count"] if isinstance(s_row, dict) else s_row[0]) if s_row else 0
+            if s_cnt == 0:
+                defaults = [
+                    ("inst_name", "Asian Skill Development Institute"),
+                    ("phone", "0344-4996072"),
+                    ("admin_pin", "1234"),
+                    ("principal_pin", "9999"),
+                    ("staff_pin", "maryam")
+                ]
+                for k, v in defaults:
+                    try:
+                        c.execute("INSERT INTO settings (key, value) VALUES (?, ?)", (k, v))
+                    except Exception:
+                        pass
+                c.commit()
+        except Exception as set_err:
+            try:
+                c.rollback()
+            except Exception:
+                pass
+            print("[settings seed info]", set_err)
+
+        # Seed preset modern courses in English if courses table is empty
+        try:
             row_cnt = c.execute("SELECT COUNT(*) FROM courses").fetchone()
             cnt = (row_cnt["count"] if isinstance(row_cnt, dict) else row_cnt[0]) if row_cnt else 0
             if cnt == 0:
@@ -311,7 +513,14 @@ def init_required_tables():
                         """, (name, cat, fee, dur, desc))
                     except Exception:
                         pass
-        c.commit()
+                c.commit()
+        except Exception as seed_err:
+            try:
+                c.rollback()
+            except Exception:
+                pass
+            print("[courses seed info]", seed_err)
+
         c.close()
     except Exception as e:
         print("[init_required_tables info]", e)
