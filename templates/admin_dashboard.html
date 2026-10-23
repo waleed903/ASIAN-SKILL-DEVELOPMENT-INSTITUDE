@@ -1,90 +1,18 @@
 {% extends "base.html" %}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 {% block title %}Master Administration Console - ASDI Academic Portal{% endblock %}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 {% block content %}
 
-
-
-
-
-
-
 <div class="container-fluid py-3 px-3 px-md-4" style="max-width: 1400px;">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   <!-- Admin Header Bar -->
 
-
-
-
-
-
-
   <div class="portal-card p-3 p-md-4 mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #060B28 0%, #0A1145 50%, #0D186E 100%); color: white;">
-
-
-
-
-
-
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
 
-
-
-
-
-
-
       <div class="d-flex align-items-center gap-3">
-
-
-
-
-
-
 
         <div class="position-relative">
           {% if admin_dp %}
@@ -104,283 +32,69 @@
           </button>
         </div>
 
-
-
-
-
-
-
         <div>
-
-
-
-
-
-
 
           <div class="d-flex align-items-center gap-2">
 
-
-
-
-
-
-
             <h4 class="fw-bold mb-0 text-white tracking-tight">ASDI Institute Administration</h4>
-
-
-
-
-
-
 
             <span class="badge bg-danger rounded-pill px-2.5 py-1" style="font-size: 10px;">Root Access</span>
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
 
           <p class="text-white-50 small mb-0 mt-0.5">Central Management, Live Financial Ledger, Student Admissions & Faculty Roster</p>
 
-
-
-
-
-
-
         </div>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-      
-
-
-
-
-
-
 
       <div class="d-flex align-items-center gap-2">
 
-
-
-
-
-
-
         <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-1.5 fw-semibold shadow-sm text-navy" data-bs-toggle="modal" data-bs-target="#adminSecurityModal" style="font-size: 12px; color: var(--navy);">
-
-
-
-
-
-
 
           <i class="bi bi-shield-lock-fill text-danger me-1"></i>Security & Password
 
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
 
         <a href="{{ url_for('online_admission') }}" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1.5 fw-semibold" style="font-size: 12px;">
 
-
-
-
-
-
-
           <i class="bi bi-plus-circle me-1"></i>New Admission
 
-
-
-
-
-
-
         </a>
-
-
-
-
-
-
 
         <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger rounded-pill px-3 py-1.5 fw-semibold shadow-sm" style="font-size: 12px;">
 
-
-
-
-
-
-
           <i class="bi bi-box-arrow-right me-1"></i>Logout
-
-
-
-
-
-
 
         </a>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   <!-- Flash Alerts -->
 
-
-
-
-
-
-
   {% with messages = get_flashed_messages(with_categories=true) %}
-
-
-
-
-
-
 
     {% if messages %}
 
-
-
-
-
-
-
       {% for category, msg in messages %}
-
-
-
-
-
-
 
       <div class="alert alert-{{ 'danger' if category in ['error', 'danger'] else ('success' if category == 'success' else 'warning') }} alert-dismissible fade show d-flex align-items-center gap-2 py-2.5 px-3 rounded-3 mb-3 shadow-sm" style="font-size: 13px;" role="alert">
 
-
-
-
-
-
-
         <i class="bi bi-{{ 'check-circle-fill' if category == 'success' else 'exclamation-triangle-fill' }} fs-6"></i>
-
-
-
-
-
-
 
         <div>{{ msg }}</div>
 
-
-
-
-
-
-
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
       {% endfor %}
 
-
-
-
-
-
-
     {% endif %}
-
-
-
-
-
-
 
   {% endwith %}
 
@@ -393,7 +107,7 @@
       </div>
       <div>
         <div class="fw-bold text-dark" style="font-size: 14px;">
-          🔔 {{ pending_online_payments }} EasyPaisa Online Fee Payment(s) Await Verification!
+          ≡ƒöö {{ pending_online_payments }} EasyPaisa Online Fee Payment(s) Await Verification!
         </div>
         <div class="text-muted small" style="font-size: 11px;">
           Students ne <strong>0315-5545014</strong> par online fee bheji hai. Verify kar ke Approve karein taake balance auto update ho sake.
@@ -413,12 +127,6 @@
   {% endif %}
 
   <!-- KPI Metric Cards -->
-
-
-
-
-
-
 
   <div class="row g-3 mb-4">
     <!-- Active Filter Indicator Banner -->
@@ -444,43 +152,11 @@
         <div class="fs-3 fw-bold mt-2" style="color: var(--navy);" id="kpiTotalStudents">{{ total_students }}</div>
         <div class="small text-success mt-1 fw-semibold" id="kpiActiveStudents"><i class="bi bi-check-circle-fill me-1"></i>{{ active_students }} Active Students</div>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <!-- Total Fee Revenue Collected -->
-
-
-
-
-
-
 
     <div class="col-6 col-md-3">
       <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
@@ -493,27 +169,7 @@
       </div>
     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <!-- Outstanding Receivables -->
-
-
-
-
-
-
 
     <div class="col-6 col-md-3">
       <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
@@ -526,27 +182,7 @@
       </div>
     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <!-- Net Cash Balance -->
-
-
-
-
-
-
 
     <div class="col-6 col-md-3">
       <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
@@ -559,251 +195,63 @@
       </div>
     </div>
 
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   <!-- Main Navigation Tabs -->
 
-
-
-
-
-
-
   <div class="portal-card p-3 mb-4 bg-white border shadow-sm">
 
-
-
-
-
-
-
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom pb-3 mb-3">
-
-
-
-
-
-
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom pb-2 mb-0">
 
       <ul class="nav nav-pills flex-grow-1" id="adminMainTab" role="tablist">
 
-
-
-
-
-
-
         <li class="nav-item">
-
-
-
-
-
-
 
           <button class="nav-link active fw-bold py-2 px-3 rounded-pill" id="tab-btn-students" data-bs-toggle="pill" data-bs-target="#tab-content-students" type="button" role="tab" style="font-size: 13px;">
 
-
-
-
-
-
-
             <i class="bi bi-person-lines-fill me-1.5"></i>Students Directory ({{ students | length }})
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
         </li>
 
-
-
-
-
-
-
         <li class="nav-item">
-
-
-
-
-
-
 
           <button class="nav-link fw-bold py-2 px-3 rounded-pill" id="tab-btn-payments" data-bs-toggle="pill" data-bs-target="#tab-content-payments" type="button" role="tab" style="font-size: 13px;">
 
-
-
-
-
-
-
             <i class="bi bi-receipt-cutoff me-1.5"></i>Fee Ledger ({{ payments | length }})
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
         </li>
 
-
-
-
-
-
-
         <li class="nav-item">
-
-
-
-
-
-
 
           <button class="nav-link fw-bold py-2 px-3 rounded-pill" id="tab-btn-staff" data-bs-toggle="pill" data-bs-target="#tab-content-staff" type="button" role="tab" style="font-size: 13px;">
 
-
-
-
-
-
-
             <i class="bi bi-person-workspace me-1.5"></i>Faculty & Staff ({{ staff_overview | length }})
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
         </li>
 
-
-
-
-
-
-
         <li class="nav-item">
-
-
-
-
-
-
 
           <button class="nav-link fw-bold py-2 px-3 rounded-pill" id="tab-btn-expenses" data-bs-toggle="pill" data-bs-target="#tab-content-expenses" type="button" role="tab" style="font-size: 13px;">
 
-
-
-
-
-
-
             <i class="bi bi-cart-x me-1.5"></i>Institute Expenses ({{ expenses | length }})
 
-
-
-
-
-
-
           </button>
-
-
-
-
-
-
 
         </li>
 
-
-
-
-
-
-
         <li class="nav-item">
-
-
-
-
-
-
 
           <button class="nav-link fw-bold py-2 px-3 rounded-pill" id="tab-btn-inquiries" data-bs-toggle="pill" data-bs-target="#tab-content-inquiries" type="button" role="tab" style="font-size: 13px;">
 
-
-
-
-
-
-
             <i class="bi bi-chat-left-dots me-1.5"></i>Inquiries & Leads ({{ inquiries | length }})
 
-
-
-
-
-
-
           </button>
-
-
-
-
-
-
 
         </li>
         <li class="nav-item">
@@ -848,179 +296,41 @@
           </button>
         </li>
 
-
-
-
-
-
-
       </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <!-- Quick Action Buttons -->
 
-
-
-
-
-
-
       <div class="d-flex gap-2">
-
-
-
-
-
-
 
         <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
 
-
-
-
-
-
-
           <i class="bi bi-cash-coin me-1"></i>Record Payment
 
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
 
         <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1.5 fw-semibold" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
 
-
-
-
-
-
-
           <i class="bi bi-dash-circle me-1"></i>Add Expense
-
-
-
-
-
-
 
         </button>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <!-- TAB CONTENTS -->
-
-
-
-
-
-
 
     <div class="tab-content" id="adminMainTabContent">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <!-- TAB 1: ALL STUDENTS DIRECTORY WITH LIVE WEB EDITING           -->
 
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <div class="tab-pane fade show active" id="tab-content-students" role="tabpanel">
 
-
-
-
-
-
-
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-
-
-
-
-
-
 
           <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
             <div class="input-group input-group-sm" style="max-width: 270px;">
@@ -1030,7 +340,7 @@
 
             <!-- Course Filter Dropdown -->
             <select id="adminCourseFilter" class="form-select form-select-sm bg-white border shadow-xs fw-semibold text-secondary" style="width: auto; min-width: 175px;" onchange="applyAdminStudentFilters()">
-              <option value="">🎓 All Courses (All)</option>
+              <option value="">≡ƒÄô All Courses (All)</option>
               {% set seen_courses = [] %}
               {% for item in students %}
                 {% if item.student.course and item.student.course.strip() and item.student.course.strip() not in seen_courses %}
@@ -1042,7 +352,7 @@
 
             <!-- Teacher Filter Dropdown -->
             <select id="adminTeacherFilter" class="form-select form-select-sm bg-white border shadow-xs fw-semibold text-secondary" style="width: auto; min-width: 175px;" onchange="applyAdminStudentFilters()">
-              <option value="">👨‍🏫 All Teachers (All)</option>
+              <option value="">≡ƒæ¿ΓÇì≡ƒÅ½ All Teachers (All)</option>
               {% for st in all_staff %}
                 <option value="{{ st.id }}">{{ st.name }} ({{ st.role or 'Faculty' }})</option>
               {% endfor %}
@@ -1054,211 +364,53 @@
             </button>
           </div>
 
-
-
-
-
-
-
           <div class="small text-muted">
-
-
-
-
-
-
 
             <span class="badge bg-light text-dark border me-1">Tip</span> Click <strong class="text-primary">"Edit Student"</strong> on any row to modify profile, fees or reset password.
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <div class="table-responsive">
-
-
-
-
-
-
 
           <table class="table table-hover align-middle border rounded-3 overflow-hidden" style="font-size: 13px;">
 
-
-
-
-
-
-
             <thead class="table-light">
-
-
-
-
-
-
 
               <tr class="text-secondary fw-semibold">
 
-
-
-
-
-
-
                 <th>Photo</th>
-
-
-
-
-
-
 
                 <th>Admission ID / Roll #</th>
 
-
-
-
-
-
-
                 <th>Student Name & Father</th>
-
-
-
-
-
-
 
                 <th>Course / Batch</th>
 
-
-
-
-
-
-
                 <th>Contact Phone</th>
-
-
-
-
-
-
 
                 <th>Registered Email</th>
 
-
-
-
-
-
-
                 <th>Total Fee</th>
-
-
-
-
-
-
 
                 <th>Paid</th>
 
-
-
-
-
-
-
                 <th>Pending Balance</th>
-
-
-
-
-
-
 
                 <th>Status</th>
 
-
-
-
-
-
-
                 <th class="text-end">Actions</th>
-
-
-
-
-
-
 
               </tr>
 
-
-
-
-
-
-
             </thead>
-
-
-
-
-
-
 
             <tbody id="adminStudentTableBody">
 
-
-
-
-
-
-
               {% for item in students %}
 
-
-
-
-
-
-
               {% set s = item.student %}
-
-
-
-
-
-
 
               <tr class="admin-student-row"
                   data-course="{{ (s.course or '')|lower|trim }}"
@@ -1272,27 +424,9 @@
                   onclick="if(!event.target.closest('.no-row-click')){ bootstrap.Modal.getOrCreateInstance(document.getElementById('viewStudentProfileModal{{ s.id }}')).show(); }"
                   title="Student Profile dekhne ke liye click karein">
 
-
-
-
-
-
-
                 <td>
 
-
-
-
-
-
-
                   {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
-
-
-
-
-
-
 
                     <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
                          alt=""
@@ -1302,347 +436,89 @@
                          data-bs-toggle="tooltip"
                          onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
 
-
-
-
-
-
-
                   {% else %}
-
-
-
-
-
-
 
                     <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm mx-auto"
 
-
-
-
-
-
-
                          style="width:42px;height:42px;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:16px;">
-
-
-
-
-
-
 
                       {{ s.name[0] | upper }}
 
-
-
-
-
-
-
                     </div>
-
-
-
-
-
-
 
                   {% endif %}
 
-
-
-
-
-
-
                 </td>
-
-
-
-
-
-
 
                 <td class="font-monospace fw-bold text-dark">
 
-
-
-
-
-
-
                   <div>{{ s.admission_no }}</div>
-
-
-
-
-
-
 
                   <span class="badge bg-light text-secondary border" style="font-size: 10px;">Roll #{{ s.roll_no or '--' }}</span>
 
-
-
-
-
-
-
                 </td>
 
-
-
-
-
-
-
                 <td>
-
-
-
-
-
-
 
                   <div class="fw-bold text-dark">{{ s.name }}</div>
 
-
-
-
-
-
-
                   <div class="text-muted small" style="font-size: 11px;">S/D of: {{ s.father_name or 'N/A' }}</div>
-
-
-
-
-
-
 
                 </td>
 
-
-
-
-
-
-
                 <td>
-
-
-
-
-
-
 
                   <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ s.course or 'DIT' }}</span>
 
-
-
-
-
-
-
                   {% if s.batch %}<div class="text-muted small mt-0.5" style="font-size: 10.5px;">{{ s.batch }}</div>{% endif %}
 
-
-
-
-
-
-
                 </td>
-
-
-
-
-
-
 
                 <td class="font-monospace">{{ s.phone or '--' }}</td>
 
-
-
-
-
-
-
                 <td>
-
-
-
-
-
-
 
                   {% if s.email %}
 
-
-
-
-
-
-
                     <span class="text-primary font-monospace small"><i class="bi bi-check2 text-success me-1"></i>{{ s.email }}</span>
 
-
-
-
-
-
-
                   {% else %}
-
-
-
-
-
-
 
                     <span class="badge bg-warning-subtle text-warning border border-warning-subtle" style="font-size: 10px;">Pending Activation</span>
 
-
-
-
-
-
-
                   {% endif %}
 
-
-
-
-
-
-
                 </td>
-
-
-
-
-
-
 
                 <td class="fw-semibold">Rs. {{ "{:,}".format(item.net_fee) }}</td>
 
-
-
-
-
-
-
                 <td class="text-success fw-bold">Rs. {{ "{:,}".format(item.paid) }}</td>
 
-
-
-
-
-
-
                 <td>
-
-
-
-
-
-
 
                   {% if item.balance <= 0 %}
 
-
-
-
-
-
-
                     <span class="badge bg-success text-white rounded-pill px-2 py-1">Cleared</span>
-
-
-
-
-
-
 
                   {% else %}
 
-
-
-
-
-
-
                     <span class="badge bg-danger text-white rounded-pill px-2 py-1">Rs. {{ "{:,}".format(item.balance) }}</span>
-
-
-
-
-
-
 
                   {% endif %}
 
-
-
-
-
-
-
                 </td>
-
-
-
-
-
-
 
                 <td>
 
-
-
-
-
-
-
                   <span class="badge bg-{{ 'success' if (s.status or 'Active').lower() == 'active' else 'secondary' }}-subtle text-{{ 'success' if (s.status or 'Active').lower() == 'active' else 'secondary' }} rounded-pill">
-
-
-
-
-
-
 
                     {{ s.status or 'Active' }}
 
-
-
-
-
-
-
                   </span>
-
-
-
-
-
-
 
                 </td>
 
-
-
-
-
-
-
                 <td class="text-end">
-
-
-
-
-
-
 
                   <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 me-1 no-row-click" style="font-size: 11.5px;" data-bs-toggle="modal" data-bs-target="#viewStudentProfileModal{{ s.id }}" title="Student Profile Dekhein">
                     <i class="bi bi-person-badge me-1"></i>Profile
@@ -1651,99 +527,25 @@
                     <i class="bi bi-pencil-square me-1"></i>Edit
                   </button>
 
-
-
-
-
-
-
                 </td>
-
-
-
-
-
-
 
               </tr>
 
-
-
-
-
-
-
               {% endfor %}
-
-
-
-
-
-
 
             </tbody>
 
-
-
-
-
-
-
           </table>
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <!-- TAB 2: VERIFIED PAYMENTS LEDGER                               -->
 
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <div class="tab-pane fade" id="tab-content-payments" role="tabpanel">
 
@@ -1789,7 +591,7 @@
                     <td class="ps-3 fw-bold text-muted">#{{ req.id }}</td>
                     <td>
                       <div class="fw-bold text-dark">{{ req.student_name }}</div>
-                      <div class="text-muted" style="font-size: 10px;">{{ req.admission_no }} • {{ req.course }} • Ph: {{ req.phone }}</div>
+                      <div class="text-muted" style="font-size: 10px;">{{ req.admission_no }} ΓÇó {{ req.course }} ΓÇó Ph: {{ req.phone }}</div>
                     </td>
                     <td>
                       <span class="fw-bold fs-6 text-success">Rs. {{ "{:,}".format(req.amount|int) }}</span>
@@ -1870,428 +672,105 @@
           </div>
         </div>
 
-
-
-
-
-
-
-
         <div class="d-flex justify-content-between align-items-center mb-3">
-
-
-
-
-
-
 
           <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-text text-success me-1.5"></i>Official Receipts Ledger</h6>
 
-
-
-
-
-
-
           <span class="badge bg-success-subtle text-success border border-success-subtle">Total Collections: Rs. {{ "{:,}".format(total_revenue) }}</span>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <div class="table-responsive">
 
-
-
-
-
-
-
           <table class="table table-hover align-middle border rounded-3" style="font-size: 13px;">
-
-
-
-
-
-
 
             <thead class="table-light">
 
-
-
-
-
-
-
               <tr class="text-secondary fw-semibold">
-
-
-
-
-
-
 
                 <th>Receipt #</th>
 
-
-
-
-
-
-
                 <th>Payment Date</th>
-
-
-
-
-
-
 
                 <th>Student Name</th>
 
-
-
-
-
-
-
                 <th>Course</th>
-
-
-
-
-
-
 
                 <th>Method</th>
 
-
-
-
-
-
-
                 <th>Amount Paid</th>
-
-
-
-
-
-
 
                 <th>Remarks / Note</th>
 
-
-
-
-
-
-
                 <th class="text-end">Actions</th>
 
-
-
-
-
-
-
               </tr>
-
-
-
-
-
-
 
             </thead>
 
-
-
-
-
-
-
             <tbody>
-
-
-
-
-
-
 
               {% for p in payments %}
 
-
-
-
-
-
-
               <tr>
-
-
-
-
-
-
 
                 <td class="font-monospace fw-bold text-dark">{{ p.receipt_no or 'REC-' ~ p.id }}</td>
 
-
-
-
-
-
-
                 <td>{{ p.pay_date }}</td>
-
-
-
-
-
-
 
                 <td class="fw-bold text-dark">{{ p.student_name or 'Unknown' }}</td>
 
-
-
-
-
-
-
                 <td><span class="badge bg-light text-secondary border">{{ p.course or 'Course' }}</span></td>
-
-
-
-
-
-
 
                 <td><span class="badge bg-secondary-subtle text-secondary">{{ p.method or 'Cash' }}</span></td>
 
-
-
-
-
-
-
                 <td class="text-success fw-bold font-monospace fs-6">Rs. {{ "{:,}".format(p.amount) }}</td>
-
-
-
-
-
-
 
                 <td class="text-muted small">{{ p.note or '--' }}</td>
 
-
-
-
-
-
-
                 <td class="text-end">
-
-
-
-
-
-
 
                   <div class="d-inline-flex gap-1">
 
-
-
-
-
-
-
                     <a href="{{ url_for('receipt', receipt_id=p.id) }}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1" style="font-size: 11px;" title="Print Receipt">
-
-
-
-
-
-
 
                       <i class="bi bi-printer"></i> Slip
 
-
-
-
-
-
-
                     </a>
-
-
-
-
-
-
 
                     <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1" style="font-size: 11px;" data-bs-toggle="modal" data-bs-target="#editPaymentModal{{ p.id }}" title="Edit Payment">
 
-
-
-
-
-
-
                       <i class="bi bi-pencil-square"></i>
 
-
-
-
-
-
-
                     </button>
-
-
-
-
-
-
 
                     <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" style="font-size: 11px;" onclick="if(confirm('Are you sure you want to delete this payment record?')) { document.getElementById('deletePaymentForm{{ p.id }}').submit(); }" title="Delete Payment">
 
-
-
-
-
-
-
                       <i class="bi bi-trash3"></i>
-
-
-
-
-
-
 
                     </button>
 
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
 
                 </td>
 
-
-
-
-
-
-
               </tr>
-
-
-
-
-
-
 
               {% endfor %}
 
-
-
-
-
-
-
             </tbody>
-
-
-
-
-
-
 
           </table>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <!-- TAB 3: FACULTY & STAFF ROSTER                                  -->
 
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <div class="tab-pane fade" id="tab-content-staff" role="tabpanel">
 
@@ -2403,1084 +882,259 @@
           </div>
         </div>
 
-
-
-
-
-
-
-
         <div class="d-flex justify-content-between align-items-center mb-3">
-
-
-
-
-
-
 
           <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-person-workspace text-primary me-1.5"></i>Faculty Performance & Compensation</h6>
 
-
-
-
-
-
-
           <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#addStaffModal">
-
-
-
-
-
-
 
             <i class="bi bi-person-plus me-1"></i>Add Teacher / Staff
 
-
-
-
-
-
-
           </button>
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <div class="table-responsive">
-
-
-
-
-
-
 
           <table class="table table-hover align-middle border rounded-3" style="font-size: 13px;">
 
-
-
-
-
-
-
             <thead class="table-light">
 
-
-
-
-
-
-
               <tr class="text-secondary fw-semibold">
-
-
-
-
-
-
 
                 <th>Teacher Name</th>
 
-
-
-
-
-
-
                 <th>Role & Subject</th>
-
-
-
-
-
-
 
                 <th>Phone Number</th>
 
-
-
-
-
-
-
                 <th>Faculty Email</th>
-
-
-
-
-
-
 
                 <th>Assigned Students</th>
 
-
-
-
-
-
-
                 <th>Total Collected</th>
-
-
-
-
-
-
 
                 <th>Compensation Model</th>
 
-
-
-
-
-
-
                 <th class="text-end">Manage</th>
-
-
-
-
-
-
 
               </tr>
 
-
-
-
-
-
-
             </thead>
 
-
-
-
-
-
-
             <tbody>
-
-
-
-
-
-
 
               {% for item in staff_overview %}
 
-
-
-
-
-
-
               {% set st = item.staff %}
 
-
-
-
-
-
-
               <tr>
-
-
-
-
-
-
 
                 <td class="fw-bold text-dark fs-6">{{ st.name }}</td>
 
-
-
-
-
-
-
                 <td>
-
-
-
-
-
-
 
                   <span class="badge bg-primary text-white">{{ st.role }}</span>
 
-
-
-
-
-
-
                   <span class="text-muted small ms-1">{{ st.subject or 'General' }}</span>
 
-
-
-
-
-
-
                 </td>
-
-
-
-
-
-
 
                 <td class="font-monospace">{{ st.phone or '--' }}</td>
 
-
-
-
-
-
-
                 <td class="font-monospace text-primary small">{{ st.email or 'Not Linked' }}</td>
-
-
-
-
-
-
 
                 <td><span class="badge bg-light text-dark border px-2 py-1">{{ item.students_count }} Students</span></td>
 
-
-
-
-
-
-
                 <td class="text-success fw-bold">Rs. {{ "{:,}".format(item.fee_collected) }}</td>
-
-
-
-
-
-
 
                 <td>
 
-
-
-
-
-
-
                   {% if item.share_pct > 0 %}
-
-
-
-
-
-
 
                     <span class="text-primary fw-semibold">{{ item.share_pct }}% Share (Rs. {{ "{:,}".format(item.share_amount | int) }})</span>
 
-
-
-
-
-
-
                   {% elif st.salary > 0 %}
-
-
-
-
-
-
 
                     <span class="text-secondary fw-semibold">Fixed: Rs. {{ "{:,}".format(st.salary) }}</span>
 
-
-
-
-
-
-
                   {% else %}
-
-
-
-
-
-
 
                     <span class="text-muted">Standard</span>
 
-
-
-
-
-
-
                   {% endif %}
 
-
-
-
-
-
-
                 </td>
-
-
-
-
-
-
 
                 <td class="text-end">
 
-
-
-
-
-
-
                   <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1" style="font-size: 11px;" data-bs-toggle="modal" data-bs-target="#editStaffModal{{ st.id }}">
-
-
-
-
-
-
 
                     <i class="bi bi-gear me-1"></i>Edit Profile
 
-
-
-
-
-
-
                   </button>
-
-
-
-
-
-
 
                 </td>
 
-
-
-
-
-
-
               </tr>
-
-
-
-
-
-
 
               {% endfor %}
 
-
-
-
-
-
-
             </tbody>
-
-
-
-
-
-
 
           </table>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <!-- TAB 4: INSTITUTE EXPENSES                                      -->
 
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <div class="tab-pane fade" id="tab-content-expenses" role="tabpanel">
 
-
-
-
-
-
-
         <div class="d-flex justify-content-between align-items-center mb-3">
-
-
-
-
-
-
 
           <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-cart-x text-danger me-1.5"></i>Institute Expense Records</h6>
 
-
-
-
-
-
-
           <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Total Expenditure: Rs. {{ "{:,}".format(total_expenses) }}</span>
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <div class="table-responsive">
-
-
-
-
-
-
 
           <table class="table table-hover align-middle border rounded-3" style="font-size: 13px;">
 
-
-
-
-
-
-
             <thead class="table-light">
-
-
-
-
-
-
 
               <tr class="text-secondary fw-semibold">
 
-
-
-
-
-
-
                 <th>Date</th>
-
-
-
-
-
-
 
                 <th>Category</th>
 
-
-
-
-
-
-
                 <th>Amount</th>
-
-
-
-
-
-
 
                 <th>Expense Details / Remarks</th>
 
-
-
-
-
-
-
               </tr>
-
-
-
-
-
-
 
             </thead>
 
-
-
-
-
-
-
             <tbody>
-
-
-
-
-
-
 
               {% for e in expenses %}
 
-
-
-
-
-
-
               <tr>
-
-
-
-
-
-
 
                 <td>{{ e.exp_date }}</td>
 
-
-
-
-
-
-
                 <td><span class="badge bg-danger-subtle text-danger">{{ e.category or 'Expense' }}</span></td>
-
-
-
-
-
-
 
                 <td class="text-danger fw-bold font-monospace fs-6">- Rs. {{ "{:,}".format(e.amount) }}</td>
 
-
-
-
-
-
-
                 <td class="text-muted">{{ e.note or '--' }}</td>
-
-
-
-
-
-
 
               </tr>
 
-
-
-
-
-
-
               {% endfor %}
-
-
-
-
-
-
 
             </tbody>
 
-
-
-
-
-
-
           </table>
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <!-- TAB 5: INQUIRIES & ADMISSION LEADS                             -->
 
-
-
-
-
-
-
       <!-- ============================================================== -->
-
-
-
-
-
-
 
       <div class="tab-pane fade" id="tab-content-inquiries" role="tabpanel">
 
-
-
-
-
-
-
         <div class="d-flex justify-content-between align-items-center mb-3">
-
-
-
-
-
-
 
           <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-telephone-inbound text-info me-1.5"></i>Prospective Student Inquiries</h6>
 
-
-
-
-
-
-
           <button type="button" class="btn btn-sm btn-info text-white rounded-pill px-3 py-1.5 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#addInquiryModal">
-
-
-
-
-
-
 
             <i class="bi bi-plus-circle me-1"></i>New Inquiry
 
-
-
-
-
-
-
           </button>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <div class="table-responsive">
 
-
-
-
-
-
-
           <table class="table table-hover align-middle border rounded-3" style="font-size: 13px;">
-
-
-
-
-
-
 
             <thead class="table-light">
 
-
-
-
-
-
-
               <tr class="text-secondary fw-semibold">
-
-
-
-
-
-
 
                 <th>Date</th>
 
-
-
-
-
-
-
                 <th>Candidate Name</th>
-
-
-
-
-
-
 
                 <th>Contact Phone</th>
 
-
-
-
-
-
-
                 <th>Interested Course</th>
-
-
-
-
-
-
 
                 <th>Status</th>
 
-
-
-
-
-
-
                 <th>Notes</th>
 
-
-
-
-
-
-
               </tr>
-
-
-
-
-
-
 
             </thead>
 
-
-
-
-
-
-
             <tbody>
-
-
-
-
-
-
 
               {% for inq in inquiries %}
 
-
-
-
-
-
-
               <tr>
-
-
-
-
-
-
 
                 <td>{{ inq.inq_date }}</td>
 
-
-
-
-
-
-
                 <td class="fw-bold text-dark">{{ inq.name }}</td>
-
-
-
-
-
-
 
                 <td class="font-monospace">{{ inq.phone }}</td>
 
-
-
-
-
-
-
                 <td><span class="badge bg-primary-subtle text-primary">{{ inq.course }}</span></td>
-
-
-
-
-
-
 
                 <td><span class="badge bg-info text-white">{{ inq.status or 'New' }}</span></td>
 
-
-
-
-
-
-
                 <td class="text-muted small">{{ inq.note or '--' }}</td>
 
-
-
-
-
-
-
               </tr>
-
-
-
-
-
-
 
               {% else %}
 
-
-
-
-
-
-
               <tr>
-
-
-
-
-
-
 
                 <td colspan="6" class="text-center text-muted py-3">No inquiries recorded yet. Click "New Inquiry" above to record candidate calls or walk-ins.</td>
 
-
-
-
-
-
-
               </tr>
-
-
-
-
-
-
 
               {% endfor %}
 
-
-
-
-
-
-
             </tbody>
-
-
-
-
-
-
 
           </table>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     </div>
 
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <!-- ============================================================== -->
       <!-- TAB 6: ATTENDANCE & VERIFICATION                               -->
@@ -4274,2387 +1928,557 @@
       </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <!-- MODAL: ADMIN CREDENTIALS & SECURITY UPDATE                     -->
 
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <div class="modal fade" id="adminSecurityModal" tabindex="-1" aria-labelledby="adminSecurityModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered">
 
-
-
-
-
-
-
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
-
-
-
-
-
-
 
       <div class="modal-header" style="background: linear-gradient(135deg, #080F4A, #0D186E); color: white;">
 
-
-
-
-
-
-
         <h6 class="modal-title fw-bold" id="adminSecurityModalLabel">
-
-
-
-
-
-
 
           <i class="bi bi-shield-fill-lock me-2 text-warning"></i>Admin Security & Password Control
 
-
-
-
-
-
-
         </h6>
-
-
-
-
-
-
 
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
 
       <form method="POST" action="{{ url_for('admin_update_security') }}">
 
-
-
-
-
-
-
         <div class="modal-body p-4">
-
-
-
-
-
-
 
           <div class="alert alert-info py-2 px-3 small rounded-3 mb-3" style="font-size: 12px;">
 
-
-
-
-
-
-
             <i class="bi bi-shield-check me-1"></i>You can update your Admin Username, Official Email, and Master Password here.
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">New Admin Username</label>
 
-
-
-
-
-
-
             <input type="text" name="new_admin_username" class="form-control" placeholder="e.g. admin" value="admin">
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">New Official Admin Email</label>
 
-
-
-
-
-
-
             <input type="email" name="new_admin_email" class="form-control" placeholder="e.g. admin@gmail.com" value="admin@gmail.com">
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="row g-2 mb-3">
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">New Password</label>
 
-
-
-
-
-
-
               <input type="password" minlength="6" name="new_admin_password" class="form-control font-monospace" placeholder="Min 6 chars">
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Confirm New Password</label>
 
-
-
-
-
-
-
               <input type="password" minlength="6" name="confirm_admin_password" class="form-control font-monospace" placeholder="Re-enter password">
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <hr class="my-3">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-2">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-danger mb-1">Current Admin Password (Required to Verify) *</label>
 
-
-
-
-
-
-
             <input type="password" name="current_admin_password" class="form-control font-monospace border-danger-subtle" placeholder="Enter current admin password" required>
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
         <div class="modal-footer bg-light py-2.5">
 
-
-
-
-
-
-
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
 
-
-
-
-
-
-
           <button type="submit" class="btn btn-sm btn-danger rounded-pill px-4 fw-bold shadow-sm">
-
-
-
-
-
-
 
             <i class="bi bi-shield-check me-1"></i>Save Security Settings
 
-
-
-
-
-
-
           </button>
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
       </form>
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
 
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <!-- MODAL: RECORD FEE PAYMENT                                      -->
 
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-labelledby="recordPaymentModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered">
 
-
-
-
-
-
-
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
-
-
-
-
-
-
 
       <div class="modal-header" style="background: linear-gradient(135deg, #0A5C36, #1F9D6B); color: white;">
 
-
-
-
-
-
-
         <h6 class="modal-title fw-bold" id="recordPaymentModalLabel">
-
-
-
-
-
-
 
           <i class="bi bi-cash-stack me-2"></i>Record Student Fee Payment
 
-
-
-
-
-
-
         </h6>
-
-
-
-
-
-
 
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
 
       <form method="POST" action="{{ url_for('admin_add_payment') }}">
 
-
-
-
-
-
-
         <div class="modal-body p-4">
 
-
-
-
-
-
-
           <div class="mb-3">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Select Student *</label>
 
-
-
-
-
-
-
-            <select name="student_id" class="form-select" required>
-
-
-
-
-
-
+            <select name="student_id" id="paymentStudentSelect" class="form-select" required>
 
               <option value="">-- Choose Student --</option>
 
-
-
-
-
-
-
               {% for item in students %}
-
-
-
-
-
-
 
               {% set s = item.student %}
 
-
-
-
-
-
-
               <option value="{{ s.id }}">{{ s.name }} ({{ s.admission_no }} - Roll #{{ s.roll_no }}) - Balance: Rs. {{ item.balance }}</option>
-
-
-
-
-
-
 
               {% endfor %}
 
-
-
-
-
-
-
             </select>
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="row g-2 mb-3">
-
-
-
-
-
-
 
             <div class="col-sm-6">
 
-
-
-
-
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Amount (Rs.) *</label>
-
-
-
-
-
-
 
               <input type="number" step="100" name="amount" class="form-control font-monospace" placeholder="e.g. 5000" required>
 
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Payment Method</label>
 
-
-
-
-
-
-
               <select name="method" class="form-select">
-
-
-
-
-
-
 
                 <option value="Cash">Cash</option>
 
-
-
-
-
-
-
                 <option value="Bank Transfer">Bank Transfer</option>
-
-
-
-
-
-
 
                 <option value="EasyPaisa">EasyPaisa</option>
 
-
-
-
-
-
-
                 <option value="JazzCash">JazzCash</option>
-
-
-
-
-
-
 
               </select>
 
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Payment Date</label>
 
-
-
-
-
-
-
             <input type="date" name="pay_date" class="form-control" value="{{ now.strftime('%Y-%m-%d') }}">
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-2">
 
-
-
-
-
-
-
             <label class="form-label small fw-bold text-secondary mb-1">Note / Description</label>
-
-
-
-
-
-
 
             <input type="text" name="note" class="form-control" placeholder="e.g. Installment 1 / Exam fee">
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
         <div class="modal-footer bg-light py-2.5">
 
-
-
-
-
-
-
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
-
-
-
-
 
           <button type="submit" class="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-sm">
 
-
-
-
-
-
-
             <i class="bi bi-check-circle me-1"></i>Generate Receipt & Save
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
       </form>
 
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <!-- MODAL: ADD EXPENSE                                             -->
 
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered">
 
-
-
-
-
-
-
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
-
-
-
-
-
-
 
       <div class="modal-header" style="background: linear-gradient(135deg, #7C1D1D, #DC2626); color: white;">
 
-
-
-
-
-
-
         <h6 class="modal-title fw-bold" id="addExpenseModalLabel">
-
-
-
-
-
-
 
           <i class="bi bi-cart-dash me-2"></i>Record Institute Expense
 
-
-
-
-
-
-
         </h6>
-
-
-
-
-
-
 
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
 
       <form method="POST" action="{{ url_for('admin_add_expense') }}">
 
-
-
-
-
-
-
         <div class="modal-body p-4">
-
-
-
-
-
-
 
           <div class="row g-2 mb-3">
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Category *</label>
 
-
-
-
-
-
-
               <select name="category" class="form-select">
-
-
-
-
-
-
 
                 <option value="Rent">Campus Rent</option>
 
-
-
-
-
-
-
                 <option value="Electricity / Utility">Electricity / Utilities</option>
-
-
-
-
-
-
 
                 <option value="Internet / PTCL">Internet & Tech</option>
 
-
-
-
-
-
-
                 <option value="Printing & Stationery">Printing & Stationery</option>
-
-
-
-
-
-
 
                 <option value="Refreshments / Tea">Refreshments / Tea</option>
 
-
-
-
-
-
-
                 <option value="Maintenance / Repairs">Repairs & Maintenance</option>
-
-
-
-
-
-
 
                 <option value="Marketing & Ads">Marketing / Social Ads</option>
 
-
-
-
-
-
-
                 <option value="General">General / Miscellaneous</option>
-
-
-
-
-
-
 
               </select>
 
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Amount (Rs.) *</label>
 
-
-
-
-
-
-
               <input type="number" step="50" name="amount" class="form-control font-monospace" placeholder="e.g. 1500" required>
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Expense Date</label>
 
-
-
-
-
-
-
             <input type="date" name="exp_date" class="form-control" value="{{ now.strftime('%Y-%m-%d') }}">
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-2">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Note / Description</label>
 
-
-
-
-
-
-
             <input type="text" name="note" class="form-control" placeholder="e.g. Whiteboard markers, receipt books">
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
         <div class="modal-footer bg-light py-2.5">
 
-
-
-
-
-
-
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
-
-
-
-
 
           <button type="submit" class="btn btn-sm btn-danger rounded-pill px-4 fw-bold shadow-sm">
 
-
-
-
-
-
-
             <i class="bi bi-check-circle me-1"></i>Save Expense
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
       </form>
 
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <!-- MODAL: ADD INQUIRY                                             -->
 
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <div class="modal fade" id="addInquiryModal" tabindex="-1" aria-labelledby="addInquiryModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered">
 
-
-
-
-
-
-
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
-
-
-
-
-
-
 
       <div class="modal-header" style="background: linear-gradient(135deg, #0369A1, #0284C7); color: white;">
 
-
-
-
-
-
-
         <h6 class="modal-title fw-bold" id="addInquiryModalLabel">
-
-
-
-
-
-
 
           <i class="bi bi-telephone-plus me-2"></i>Add Student Inquiry / Lead
 
-
-
-
-
-
-
         </h6>
-
-
-
-
-
-
 
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
 
       <form method="POST" action="{{ url_for('admin_add_inquiry') }}">
 
-
-
-
-
-
-
         <div class="modal-body p-4">
-
-
-
-
-
-
 
           <div class="mb-3">
 
-
-
-
-
-
-
             <label class="form-label small fw-bold text-secondary mb-1">Candidate Name *</label>
-
-
-
-
-
-
 
             <input type="text" name="name" class="form-control" placeholder="e.g. Hamza Ali" required>
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="row g-2 mb-3">
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Contact Phone *</label>
 
-
-
-
-
-
-
               <input type="text" name="phone" class="form-control" placeholder="e.g. 0300-1234567" required>
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Course Interested In</label>
 
-
-
-
-
-
-
               <select name="course" class="form-select">
-
-
-
-
-
-
 
                 <option value="DIT">DIT</option>
 
-
-
-
-
-
-
                 <option value="Tuition">Tuition</option>
-
-
-
-
-
-
 
                 <option value="English">English</option>
 
-
-
-
-
-
-
               </select>
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-2">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Discussion Notes</label>
 
-
-
-
-
-
-
             <input type="text" name="note" class="form-control" placeholder="e.g. Visited campus with father, will join next Monday">
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
         <div class="modal-footer bg-light py-2.5">
 
-
-
-
-
-
-
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
-
-
-
-
 
           <button type="submit" class="btn btn-sm btn-info text-white rounded-pill px-4 fw-bold shadow-sm">
 
-
-
-
-
-
-
             <i class="bi bi-check-circle me-1"></i>Save Inquiry
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
       </form>
 
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <!-- MODAL: ADD FACULTY / STAFF MEMBER                              -->
 
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <div class="modal fade" id="addStaffModal" tabindex="-1" aria-labelledby="addStaffModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered">
-
-
-
-
-
-
 
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
 
-
-
-
-
-
-
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-
-
-
-
-
-
 
         <h6 class="modal-title fw-bold" id="addStaffModalLabel">
 
-
-
-
-
-
-
           <i class="bi bi-person-plus-fill me-2 text-warning"></i>Add Faculty / Staff Member
-
-
-
-
-
-
 
         </h6>
 
-
-
-
-
-
-
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
       <form method="POST" action="{{ url_for('admin_add_staff') }}">
-
-
-
-
-
-
 
         <div class="modal-body p-4">
 
-
-
-
-
-
-
           <div class="row g-2 mb-3">
-
-
-
-
-
-
 
             <div class="col-sm-8">
 
-
-
-
-
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Full Legal Name *</label>
-
-
-
-
-
-
 
               <input type="text" name="name" class="form-control" placeholder="e.g. SIR AHMAD" required>
 
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
 
             <div class="col-sm-4">
 
-
-
-
-
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Role</label>
-
-
-
-
-
-
 
               <select name="role" class="form-select">
 
-
-
-
-
-
-
                 <option value="Teacher">Teacher</option>
-
-
-
-
-
-
 
                 <option value="Staff">Staff</option>
 
-
-
-
-
-
-
                 <option value="Principal">Principal</option>
-
-
-
-
-
-
 
               </select>
 
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="row g-2 mb-3">
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Contact Phone *</label>
 
-
-
-
-
-
-
               <input type="text" name="phone" class="form-control" placeholder="e.g. 0300-1234567" required>
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Official Faculty Email</label>
 
-
-
-
-
-
-
               <input type="email" name="email" class="form-control" placeholder="e.g. teacher@gmail.com">
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="row g-2 mb-3">
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Subject / Department</label>
 
-
-
-
-
-
-
               <input type="text" name="subject" class="form-control" placeholder="e.g. Mathematics, IT">
 
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
 
             <div class="col-sm-6">
 
-
-
-
-
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Revenue Share % (or 0 for fixed)</label>
-
-
-
-
-
-
 
               <input type="number" name="share_pct" class="form-control" placeholder="e.g. 75">
 
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="mb-2">
 
-
-
-
-
-
-
             <label class="form-label small fw-bold text-secondary mb-1">Initial Password</label>
-
-
-
-
-
-
 
             <input type="password" name="password" class="form-control font-monospace" placeholder="Default: Password123">
 
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
         <div class="modal-footer bg-light py-2.5">
 
-
-
-
-
-
-
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
-
-
-
-
 
           <button type="submit" class="btn btn-sm btn-asdi rounded-pill px-4 fw-bold shadow-sm">
 
-
-
-
-
-
-
             <i class="bi bi-check-circle me-1"></i>Save Faculty Member
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
       </form>
 
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <!-- DYNAMIC MODALS: EDIT EACH STUDENT                             -->
 
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 {% for item in students %}
 
-
-
-
-
-
-
 {% set s = item.student %}
-
-
-
-
-
-
 
 <!-- MODAL: VIEW STUDENT PROFILE -->
 <div class="modal fade" id="viewStudentProfileModal{{ s.id }}" tabindex="-1" aria-hidden="true">
@@ -6752,8 +2576,9 @@
                 </span>
               </div>
               {% if item.balance > 0 %}
-                <button type="button" class="btn btn-sm btn-outline-success rounded-pill mt-3 w-100 fw-bold"
-                        data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
+                <button type="button" class="btn btn-sm btn-outline-success rounded-pill mt-3 w-100 fw-bold collect-fee-btn"
+                        data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#recordPaymentModal"
+                        data-student-id="{{ s.id }}" data-student-name="{{ s.name }}">
                   <i class="bi bi-cash me-1"></i>Collect Fee
                 </button>
               {% endif %}
@@ -6878,51 +2703,15 @@
 
 <div class="modal fade" id="editStudentModal{{ s.id }}" tabindex="-1" aria-hidden="true">
 
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered modal-lg">
-
-
-
-
-
-
 
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
 
-
-
-
-
-
-
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-
-
-
-
-
-
 
         <div class="d-flex align-items-center gap-3">
 
-
-
-
-
-
-
           {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
-
-
-
-
-
-
 
             <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
                  alt=""
@@ -6930,107 +2719,29 @@
                  style="width:48px;height:48px;min-width:48px;max-width:48px;min-height:48px;max-height:48px;aspect-ratio:1/1;object-fit:cover;border:2px solid rgba(255,255,255,0.5);"
                  onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
 
-
-
-
-
-
-
           {% else %}
-
-
-
-
-
-
 
             <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
 
-
-
-
-
-
-
                  style="width:48px;height:48px;background:rgba(255,255,255,0.15);color:white;font-size:20px;border:2px solid rgba(255,255,255,0.4);">
-
-
-
-
-
-
 
               {{ s.name[0] | upper }}
 
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
 
           {% endif %}
 
-
-
-
-
-
-
           <h6 class="modal-title fw-bold mb-0">
-
-
-
-
-
-
 
             <i class="bi bi-pencil-square me-2 text-warning"></i>Edit Student: {{ s.name }} ({{ s.admission_no }})
 
-
-
-
-
-
-
           </h6>
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
 
       <form method="POST" action="{{ url_for('admin_edit_student', student_id=s.id) }}">
         <div class="modal-body p-4">
@@ -7136,667 +2847,155 @@
       </form>
       <form id="deleteStudentForm{{ s.id }}" method="POST" action="{{ url_for('admin_delete_student', student_id=s.id) }}" style="display:none;"></form>
 
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
 
 {% endfor %}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <!-- DYNAMIC MODALS: EDIT EACH STAFF MEMBER                         -->
 
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 {% for item in staff_overview %}
 
-
-
-
-
-
-
 {% set st = item.staff %}
-
-
-
-
-
-
 
 <div class="modal fade" id="editStaffModal{{ st.id }}" tabindex="-1" aria-hidden="true">
 
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered">
-
-
-
-
-
-
 
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
 
-
-
-
-
-
-
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-
-
-
-
-
-
 
         <h6 class="modal-title fw-bold">
 
-
-
-
-
-
-
           <i class="bi bi-pencil-square me-2 text-warning"></i>Edit Faculty: {{ st.name }}
-
-
-
-
-
-
 
         </h6>
 
-
-
-
-
-
-
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
       <form method="POST" action="{{ url_for('admin_edit_staff', staff_id=st.id) }}">
-
-
-
-
-
-
 
         <div class="modal-body p-4">
 
-
-
-
-
-
-
           <div class="row g-2 mb-3">
-
-
-
-
-
-
 
             <div class="col-sm-8">
 
-
-
-
-
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Full Legal Name *</label>
-
-
-
-
-
-
 
               <input type="text" name="name" class="form-control" value="{{ st.name }}" required>
 
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
 
             <div class="col-sm-4">
 
-
-
-
-
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Role</label>
-
-
-
-
-
-
 
               <input type="text" name="role" class="form-control" value="{{ st.role }}">
 
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="row g-2 mb-3">
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Contact Phone</label>
 
-
-
-
-
-
-
               <input type="text" name="phone" class="form-control font-monospace" value="{{ st.phone or '' }}">
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Faculty Email</label>
 
-
-
-
-
-
-
               <input type="email" name="email" class="form-control" value="{{ st.email or '' }}">
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="row g-2 mb-3">
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Subject</label>
 
-
-
-
-
-
-
               <input type="text" name="subject" class="form-control" value="{{ st.subject or '' }}">
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Share %</label>
 
-
-
-
-
-
-
               <input type="number" name="share_pct" class="form-control" value="{{ st.share_pct or 0 }}">
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="row g-2 mb-2">
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Fixed Salary (Rs.)</label>
 
-
-
-
-
-
-
               <input type="number" name="salary" class="form-control" value="{{ st.salary or 0 }}">
 
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
 
             <div class="col-sm-6">
 
-
-
-
-
-
-
               <label class="form-label small fw-bold text-danger mb-1">Reset Password</label>
-
-
-
-
-
-
 
               <input type="password" minlength="6" name="new_password" class="form-control font-monospace" placeholder="Leave blank to keep">
 
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
         <div class="modal-footer bg-light py-2.5">
 
-
-
-
-
-
-
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
-
-
-
-
 
           <button type="submit" class="btn btn-sm btn-asdi rounded-pill px-4 fw-bold shadow-sm">
 
-
-
-
-
-
-
             <i class="bi bi-check-circle me-1"></i>Save Faculty Profile
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
       </form>
 
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
 
 {% endfor %}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 {% block extra_scripts %}
 
-
-
-
-
-
-
 <script>
-
-
-
-
-
-
 
   // --- Real-time Multi-Filter Engine (Search + Course + Teacher + Dynamic Top KPIs) ---
   const searchInput = document.getElementById('adminStudentSearch');
@@ -7875,7 +3074,7 @@
           parts.push(optText);
         }
         if (q) parts.push(`Search "${q}"`);
-        filterDesc.innerHTML = `Showing <strong>${visibleCount} students</strong> (${parts.join(' • ')})`;
+        filterDesc.innerHTML = `Showing <strong>${visibleCount} students</strong> (${parts.join(' ΓÇó ')})`;
       }
 
       const elTotal = document.getElementById('kpiTotalStudents');
@@ -7948,1557 +3147,633 @@
     searchInput.addEventListener('input', applyAdminStudentFilters);
   }
 
-
-
-
-
-
-
 </script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <!-- DYNAMIC MODALS: EDIT & DELETE PAYMENTS                         -->
 
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 {% for p in payments %}
 
-
-
-
-
-
-
 <div class="modal fade" id="editPaymentModal{{ p.id }}" tabindex="-1" aria-hidden="true">
-
-
-
-
-
-
 
   <div class="modal-dialog modal-dialog-centered">
 
-
-
-
-
-
-
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
 
-
-
-
-
-
-
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-
-
-
-
-
-
 
         <h6 class="modal-title fw-bold">
 
-
-
-
-
-
-
           <i class="bi bi-pencil-square me-2 text-warning"></i>Edit Payment Receipt #{{ p.receipt_no or p.id }}
-
-
-
-
-
-
 
         </h6>
 
-
-
-
-
-
-
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
 
       <form method="POST" action="{{ url_for('admin_edit_payment', payment_id=p.id) }}">
 
-
-
-
-
-
-
         <div class="modal-body p-4">
 
-
-
-
-
-
-
           <div class="mb-3">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Student</label>
 
-
-
-
-
-
-
             <input type="text" class="form-control" value="{{ p.student_name }} ({{ p.admission_no or '' }})" readonly disabled>
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
           <div class="row g-2 mb-3">
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Amount Paid (Rs.) *</label>
 
-
-
-
-
-
-
               <input type="number" step="any" name="amount" class="form-control font-monospace" value="{{ p.amount }}" required>
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
             <div class="col-sm-6">
-
-
-
-
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Payment Date *</label>
 
-
-
-
-
-
-
               <input type="date" name="pay_date" class="form-control" value="{{ p.pay_date }}" required>
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
           <div class="mb-3">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Payment Method</label>
 
-
-
-
-
-
-
             <select name="method" class="form-select">
-
-
-
-
-
-
 
               <option value="Cash" {% if p.method == 'Cash' %}selected{% endif %}>Cash</option>
 
-
-
-
-
-
-
               <option value="EasyPaisa" {% if p.method == 'EasyPaisa' %}selected{% endif %}>EasyPaisa</option>
-
-
-
-
-
-
 
               <option value="JazzCash" {% if p.method == 'JazzCash' %}selected{% endif %}>JazzCash</option>
 
-
-
-
-
-
-
               <option value="Bank Transfer" {% if p.method == 'Bank Transfer' %}selected{% endif %}>Bank Transfer</option>
-
-
-
-
-
-
 
             </select>
 
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
           <div class="mb-2">
-
-
-
-
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Remarks / Note</label>
 
-
-
-
-
-
-
             <input type="text" name="note" class="form-control" value="{{ p.note or '' }}" placeholder="Optional note...">
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
         </div>
 
-
-
-
-
-
-
         <div class="modal-footer bg-light py-2.5 d-flex justify-content-between">
-
-
-
-
-
-
 
           <button type="button" class="btn btn-sm btn-outline-danger" onclick="if(confirm('Are you sure you want to delete this payment?')) { document.getElementById('deletePaymentForm{{ p.id }}').submit(); }">
 
-
-
-
-
-
-
             <i class="bi bi-trash3 me-1"></i>Delete
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
           <div class="d-flex gap-2">
 
-
-
-
-
-
-
             <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
-
-
-
-
 
             <button type="submit" class="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-sm">
 
-
-
-
-
-
-
               <i class="bi bi-check-circle me-1"></i>Update Payment
-
-
-
-
-
-
 
             </button>
 
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
       </form>
-
-
-
-
-
-
 
       <form id="deletePaymentForm{{ p.id }}" method="POST" action="{{ url_for('admin_delete_payment', payment_id=p.id) }}" style="display:none;"></form>
 
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
 
 {% endfor %}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================== -->
-
-
 
 <!-- MODALS FOR BATCHES, RESULTS & STUDENT MESSAGES                 -->
 
-
-
 <!-- ============================================================== -->
-
-
-
-
-
-
 
 <!-- Modal: Add Batch / Time Table Slot -->
 
-
-
 <div class="modal fade" id="addBatchModal" tabindex="-1" aria-hidden="true">
-
-
 
   <div class="modal-dialog modal-dialog-centered">
 
-
-
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
 
-
-
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-
-
 
         <h6 class="modal-title fw-bold"><i class="bi bi-clock-history me-2 text-warning"></i>Add Time Table / Batch</h6>
 
-
-
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 
-
-
       </div>
-
-
 
       <form method="POST" action="{{ url_for('admin_add_batch') }}">
 
-
-
         <div class="modal-body p-4">
-
-
 
           <div class="row g-2 mb-3">
 
-
-
             <div class="col-sm-6">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Batch Name *</label>
-
-
 
               <input type="text" name="name" class="form-control" placeholder="e.g. DIT Morning 2026" required>
 
-
-
             </div>
-
-
 
             <div class="col-sm-6">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Course *</label>
-
-
 
               <input type="text" name="course" class="form-control" placeholder="e.g. DIT, English, Tuition" required>
 
-
-
             </div>
-
-
 
           </div>
 
-
-
           <div class="row g-2 mb-3">
-
-
 
             <div class="col-sm-6">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Start Time</label>
-
-
 
               <input type="text" name="start_time" class="form-control" placeholder="e.g. 09:00 AM">
 
-
-
             </div>
-
-
 
             <div class="col-sm-6">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">End Time</label>
-
-
 
               <input type="text" name="end_time" class="form-control" placeholder="e.g. 11:00 AM">
 
-
-
             </div>
-
-
 
           </div>
 
-
-
           <div class="row g-2 mb-3">
-
-
 
             <div class="col-sm-6">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Class Days</label>
-
-
 
               <input type="text" name="days" class="form-control" value="Mon-Fri">
 
-
-
             </div>
-
-
 
             <div class="col-sm-6">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Room / Lab</label>
-
-
 
               <input type="text" name="room" class="form-control" value="Lab 1">
 
-
-
             </div>
-
-
 
           </div>
 
-
-
           <div class="mb-2">
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Teacher In Charge</label>
 
-
-
             <input type="text" name="teacher" class="form-control" placeholder="e.g. Sir Waleed">
-
-
 
           </div>
 
-
-
         </div>
-
-
 
         <div class="modal-footer bg-light py-2.5">
 
-
-
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
 
           <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">Save Batch Slot</button>
 
-
-
         </div>
-
-
 
       </form>
 
-
-
     </div>
-
-
 
   </div>
 
-
-
 </div>
-
-
-
-
-
-
 
 <!-- Modal: Add Student Result / DMC -->
 
-
-
 <div class="modal fade" id="addResultModal" tabindex="-1" aria-hidden="true">
-
-
 
   <div class="modal-dialog modal-dialog-centered">
 
-
-
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
 
-
-
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-
-
 
         <h6 class="modal-title fw-bold"><i class="bi bi-award me-2 text-warning"></i>Add Student Exam Result</h6>
 
-
-
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 
-
-
       </div>
-
-
 
       <form method="POST" action="{{ url_for('admin_add_result') }}">
 
-
-
         <div class="modal-body p-4">
-
-
 
           <div class="mb-3">
 
-
-
             <label class="form-label small fw-bold text-secondary mb-1">Student *</label>
 
-
-
-            <select name="student_id" class="form-select" required>
-
-
+            <select name="student_id" id="otherStudentSelect" class="form-select" required>
 
               <option value="">-- Choose Student --</option>
 
-
-
               {% for item in students %}
-
-
 
               <option value="{{ item.student.id }}">{{ item.student.name }} (Roll #{{ item.student.roll_no or '--' }})</option>
 
-
-
               {% endfor %}
-
-
 
             </select>
 
-
-
           </div>
-
-
 
           <div class="row g-2 mb-3">
 
-
-
             <div class="col-sm-7">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Exam Title *</label>
-
-
 
               <input type="text" name="exam_title" class="form-control" placeholder="e.g. Midterm MS Office" required>
 
-
-
             </div>
-
-
 
             <div class="col-sm-5">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Exam Date</label>
-
-
 
               <input type="date" name="exam_date" class="form-control">
 
-
-
             </div>
-
-
 
           </div>
 
-
-
           <div class="row g-2 mb-3">
-
-
 
             <div class="col-sm-4">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Total Marks</label>
-
-
 
               <input type="number" name="total_marks" class="form-control font-monospace" value="100" required>
 
-
-
             </div>
-
-
 
             <div class="col-sm-4">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Obtained</label>
-
-
 
               <input type="number" name="obtained_marks" class="form-control font-monospace" value="0" required>
 
-
-
             </div>
-
-
 
             <div class="col-sm-4">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Grade</label>
-
-
 
               <input type="text" name="grade" class="form-control" value="A">
 
-
-
             </div>
-
-
 
           </div>
 
-
-
           <div class="mb-2">
 
-
-
             <label class="form-label small fw-bold text-secondary mb-1">Remarks</label>
-
-
 
             <input type="text" name="remarks" class="form-control" placeholder="e.g. Excellent Practical Work">
 
-
-
           </div>
-
-
 
         </div>
 
-
-
         <div class="modal-footer bg-light py-2.5">
 
-
-
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
 
           <button type="submit" class="btn btn-sm btn-warning text-dark rounded-pill px-4 fw-bold">Publish Result</button>
 
-
-
         </div>
-
-
 
       </form>
 
-
-
     </div>
-
-
 
   </div>
 
-
-
 </div>
-
-
-
-
-
-
 
 <!-- Dynamic Modals for Editing Batches -->
 
-
-
 {% for b in batches %}
-
-
 
 <div class="modal fade" id="editBatchModal{{ b.id }}" tabindex="-1" aria-hidden="true">
 
-
-
   <div class="modal-dialog modal-dialog-centered">
-
-
 
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
 
-
-
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-
-
 
         <h6 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2 text-warning"></i>Edit Batch / Slot</h6>
 
-
-
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 
-
-
       </div>
-
-
 
       <form method="POST" action="{{ url_for('admin_edit_batch', batch_id=b.id) }}">
 
-
-
         <div class="modal-body p-4">
-
-
 
           <div class="row g-2 mb-3">
 
-
-
             <div class="col-sm-6">
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Batch Name *</label>
 
-
-
               <input type="text" name="name" class="form-control" value="{{ b.name }}" required>
-
-
 
             </div>
 
-
-
             <div class="col-sm-6">
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Course *</label>
 
-
-
               <input type="text" name="course" class="form-control" value="{{ b.course }}" required>
-
-
 
             </div>
 
-
-
           </div>
-
-
 
           <div class="row g-2 mb-3">
 
-
-
             <div class="col-sm-6">
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Start Time</label>
 
-
-
               <input type="text" name="start_time" class="form-control" value="{{ b.start_time or '' }}">
-
-
 
             </div>
 
-
-
             <div class="col-sm-6">
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">End Time</label>
 
-
-
               <input type="text" name="end_time" class="form-control" value="{{ b.end_time or '' }}">
-
-
 
             </div>
 
-
-
           </div>
-
-
 
           <div class="row g-2 mb-3">
 
-
-
             <div class="col-sm-6">
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Class Days</label>
 
-
-
               <input type="text" name="days" class="form-control" value="{{ b.days or 'Mon-Fri' }}">
 
-
-
             </div>
-
-
 
             <div class="col-sm-6">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Room / Lab</label>
-
-
 
               <input type="text" name="room" class="form-control" value="{{ b.room or 'Lab 1' }}">
 
-
-
             </div>
-
-
 
           </div>
 
-
-
           <div class="mb-2">
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Teacher</label>
 
-
-
             <input type="text" name="teacher" class="form-control" value="{{ b.teacher or '' }}">
-
-
 
           </div>
 
-
-
         </div>
 
-
-
         <div class="modal-footer bg-light py-2.5 d-flex justify-content-between">
-
-
 
           <button type="button" class="btn btn-sm btn-outline-danger" onclick="if(confirm('Delete this batch?')) { document.getElementById('deleteBatchForm{{ b.id }}').submit(); }">Delete</button>
 
-
-
           <div class="d-flex gap-2">
 
-
-
             <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
 
             <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">Update Batch</button>
 
-
-
           </div>
-
-
 
         </div>
 
-
-
       </form>
-
-
 
       <form id="deleteBatchForm{{ b.id }}" method="POST" action="{{ url_for('admin_delete_batch', batch_id=b.id) }}" style="display:none;"></form>
 
-
-
     </div>
-
-
 
   </div>
 
-
-
 </div>
 
-
-
 {% endfor %}
-
-
-
-
-
-
 
 <!-- Dynamic Modals for Editing Exam Results -->
 
-
-
 {% for res in all_results %}
-
-
 
 <div class="modal fade" id="editResultModal{{ res.id }}" tabindex="-1" aria-hidden="true">
 
-
-
   <div class="modal-dialog modal-dialog-centered">
-
-
 
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
 
-
-
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-
-
 
         <h6 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2 text-warning"></i>Edit Result: {{ res.student_name }}</h6>
 
-
-
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 
-
-
       </div>
-
-
 
       <form method="POST" action="{{ url_for('admin_edit_result', result_id=res.id) }}">
 
-
-
         <div class="modal-body p-4">
 
-
-
           <div class="row g-2 mb-3">
-
-
 
             <div class="col-sm-7">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Exam Title *</label>
-
-
 
               <input type="text" name="exam_title" class="form-control" value="{{ res.exam_title }}" required>
 
-
-
             </div>
-
-
 
             <div class="col-sm-5">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Exam Date</label>
-
-
 
               <input type="date" name="exam_date" class="form-control" value="{{ res.exam_date }}">
 
-
-
             </div>
 
-
-
           </div>
-
-
 
           <div class="row g-2 mb-3">
 
-
-
             <div class="col-sm-4">
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Total Marks</label>
 
-
-
               <input type="number" name="total_marks" class="form-control font-monospace" value="{{ res.total_marks }}" required>
-
-
 
             </div>
 
-
-
             <div class="col-sm-4">
-
-
 
               <label class="form-label small fw-bold text-secondary mb-1">Obtained</label>
 
-
-
               <input type="number" name="obtained_marks" class="form-control font-monospace" value="{{ res.obtained_marks }}" required>
 
-
-
             </div>
-
-
 
             <div class="col-sm-4">
 
-
-
               <label class="form-label small fw-bold text-secondary mb-1">Grade</label>
-
-
 
               <input type="text" name="grade" class="form-control" value="{{ res.grade or 'Pass' }}">
 
-
-
             </div>
-
-
 
           </div>
 
-
-
           <div class="mb-2">
-
-
 
             <label class="form-label small fw-bold text-secondary mb-1">Remarks</label>
 
-
-
             <input type="text" name="remarks" class="form-control" value="{{ res.remarks or '' }}">
-
-
 
           </div>
 
-
-
         </div>
-
-
 
         <div class="modal-footer bg-light py-2.5 d-flex justify-content-between">
 
-
-
           <button type="button" class="btn btn-sm btn-outline-danger" onclick="if(confirm('Delete this result?')) { document.getElementById('deleteResultForm{{ res.id }}').submit(); }">Delete</button>
-
-
 
           <div class="d-flex gap-2">
 
-
-
             <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
 
             <button type="submit" class="btn btn-sm btn-warning text-dark rounded-pill px-4 fw-bold">Update Result</button>
 
-
-
           </div>
-
-
 
         </div>
 
-
-
       </form>
-
-
 
       <form id="deleteResultForm{{ res.id }}" method="POST" action="{{ url_for('admin_delete_result', result_id=res.id) }}" style="display:none;"></form>
 
-
-
     </div>
-
-
 
   </div>
 
-
-
 </div>
 
-
-
 {% endfor %}
-
-
-
-
-
-
 
 <!-- Dynamic Modals for Replying to Student Messages -->
 
-
-
 {% for msg in all_student_msgs %}
-
-
 
 <div class="modal fade" id="replyMsgModal{{ msg.id }}" tabindex="-1" aria-hidden="true">
 
-
-
   <div class="modal-dialog modal-dialog-centered">
-
-
 
     <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
 
-
-
       <div class="modal-header" style="background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white;">
-
-
 
         <h6 class="modal-title fw-bold"><i class="bi bi-reply-fill me-2 text-warning"></i>Reply to {{ msg.student_name }}</h6>
 
-
-
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-
-
 
       </div>
 
-
-
       <form method="POST" action="{{ url_for('admin_reply_message', msg_id=msg.id) }}">
-
-
 
         <div class="modal-body p-4">
 
-
-
           <div class="p-3 rounded-3 bg-light border mb-3">
-
-
 
             <div class="fw-bold text-primary mb-1">{{ msg.subject }}</div>
 
-
-
             <p class="mb-0 text-dark small">{{ msg.message }}</p>
 
-
-
           </div>
-
-
 
           <div class="mb-2">
 
-
-
             <label class="form-label small fw-bold text-secondary mb-1">Official Admin Reply *</label>
-
-
 
             <textarea name="reply" class="form-control" rows="3" placeholder="Enter your response..." required>{{ msg.reply or '' }}</textarea>
 
-
-
           </div>
 
-
-
         </div>
-
-
 
         <div class="modal-footer bg-light py-2.5">
 
-
-
           <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-
-
 
           <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">Send Reply</button>
 
-
-
         </div>
-
-
 
       </form>
 
-
-
     </div>
-
-
 
   </div>
 
-
-
 </div>
 
-
-
 {% endfor %}
-
-
-
-
-
-
-
-
 
 <!-- Admin DP Upload Modal -->
 <div class="modal fade" id="adminDpModal" tabindex="-1" aria-hidden="true">
@@ -9909,7 +4184,6 @@ async function deleteGroupMessage(msgId) {
 }
 </script>
 
-
 <!-- MODAL: ADMIN UPLOAD COURSE CONTENT -->
 <div class="modal fade" id="adminUploadContentModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -10009,11 +4283,47 @@ async function deleteGroupMessage(msgId) {
 </div>
 {% endfor %}
 
+
+<script>
+// Collect Fee: Auto-select student when opened from profile modal
+document.addEventListener('DOMContentLoaded', function () {
+  var payModal = document.getElementById('recordPaymentModal');
+  if (!payModal) return;
+
+  payModal.addEventListener('show.bs.modal', function (event) {
+    var trigger = event.relatedTarget;
+    if (!trigger) return;
+
+    var studentId   = trigger.getAttribute('data-student-id');
+    var studentName = trigger.getAttribute('data-student-name');
+    var select = document.getElementById('paymentStudentSelect');
+    if (!select) return;
+
+    if (studentId) {
+      select.value = studentId;
+      select.style.display = 'none';
+      var wrapper = select.closest('.mb-3');
+      if (wrapper && !wrapper.querySelector('.student-locked-badge')) {
+        var badge = document.createElement('div');
+        badge.className = 'student-locked-badge alert alert-success py-2 px-3 mb-0 rounded-3 fw-semibold small';
+        badge.innerHTML = '<i class="bi bi-person-check-fill me-2"></i>' + studentName + '<span class="text-muted ms-2 fw-normal">(Auto-selected)</span>';
+        wrapper.appendChild(badge);
+      }
+    } else {
+      select.style.display = '';
+      select.value = '';
+      var old = payModal.querySelector('.student-locked-badge');
+      if (old) old.remove();
+    }
+  });
+
+  payModal.addEventListener('hidden.bs.modal', function () {
+    var select = document.getElementById('paymentStudentSelect');
+    if (select) { select.style.display = ''; select.value = ''; }
+    var old = payModal.querySelector('.student-locked-badge');
+    if (old) old.remove();
+  });
+});
+</script>
 {% endblock %}
-
-
-
-
-
-
 
