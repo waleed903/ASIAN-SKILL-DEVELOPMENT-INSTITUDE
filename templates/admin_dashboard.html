@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 
 
@@ -1518,46 +1518,12 @@
 
 
                     <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
-
-
-
-
-
-
-
-                         alt="{{ s.name }}"
-
-
-
-
-
-
-
-                         class="rounded-circle shadow-sm"
-
-
-
-
-
-
-
-                         style="width:42px;height:42px;object-fit:cover;border:2px solid var(--navy);"
-
-
-
-
-
-
-
+                         alt=""
+                         class="rounded-circle shadow-sm flex-shrink-0"
+                         style="width:42px;height:42px;min-width:42px;max-width:42px;min-height:42px;max-height:42px;aspect-ratio:1/1;object-fit:cover;border:2px solid var(--navy);display:inline-block;"
                          title="{{ s.name }}"
-
-
-
-
-
-
-
-                         data-bs-toggle="tooltip">
+                         data-bs-toggle="tooltip"
+                         onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
 
 
 
@@ -3826,7 +3792,7 @@
                   <td>
                     <div class="d-flex align-items-center gap-2">
                       {% if r.photo and r.photo != '' and not r.photo.startswith('/') and not r.photo.startswith('C:') %}
-                        <img src="{{ url_for('uploaded_profile', filename=r.photo) }}" alt="{{ r.student_name }}" class="rounded-circle shadow-sm" style="width:36px;height:36px;object-fit:cover;border:2px solid var(--navy);">
+                        <img src="{{ url_for('uploaded_profile', filename=r.photo) }}" alt="" class="rounded-circle shadow-sm flex-shrink-0" style="width:36px;height:36px;min-width:36px;max-width:36px;min-height:36px;max-height:36px;aspect-ratio:1/1;object-fit:cover;border:2px solid var(--navy);" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
                       {% else %}
                         <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width:36px;height:36px;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:14px;">
                           {{ r.student_name[0] | upper }}
@@ -6922,7 +6888,7 @@
       <div class="modal-header border-0 text-white p-4" style="background: linear-gradient(135deg, #091242 0%, #0D186E 55%, #182885 100%);">
         <div class="d-flex align-items-center gap-3 w-100">
           {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
-            <img src="{{ url_for('uploaded_profile', filename=s.photo) }}" alt="{{ s.name }}" class="rounded-circle shadow" style="width: 74px; height: 74px; object-fit: cover; border: 3px solid rgba(255,255,255,0.85);">
+            <img src="{{ url_for('uploaded_profile', filename=s.photo) }}" alt="" class="rounded-circle shadow flex-shrink-0" style="width: 74px; height: 74px; min-width: 74px; max-width: 74px; min-height: 74px; max-height: 74px; aspect-ratio: 1/1; object-fit: cover; border: 3px solid rgba(255,255,255,0.85);" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
           {% else %}
             <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow text-white" style="width: 74px; height: 74px; background: rgba(255,255,255,0.2); font-size: 28px; border: 3px solid rgba(255,255,255,0.85);">
               {{ s.name[0] | upper }}
@@ -7182,30 +7148,10 @@
 
 
             <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
-
-
-
-
-
-
-
-                 alt="{{ s.name }}"
-
-
-
-
-
-
-
-                 class="rounded-circle shadow"
-
-
-
-
-
-
-
-                 style="width:48px;height:48px;object-fit:cover;border:2px solid rgba(255,255,255,0.5);">
+                 alt=""
+                 class="rounded-circle shadow flex-shrink-0"
+                 style="width:48px;height:48px;min-width:48px;max-width:48px;min-height:48px;max-height:48px;aspect-ratio:1/1;object-fit:cover;border:2px solid rgba(255,255,255,0.5);"
+                 onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
 
 
 

@@ -213,7 +213,7 @@
       0%, 100% { transform: translateY(0) scale(1); }
       50% { transform: translateY(-5px) scale(1.04); }
     }
-    /* Protect profile pictures from saving/downloading */
+    /* Protect profile pictures from saving/downloading and enforce circular aspect ratio */
     .profile-pic-protected {
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -227,6 +227,13 @@
       -khtml-user-drag: none;
       -moz-user-drag: none;
       -o-user-drag: none;
+    }
+    img.rounded-circle {
+      aspect-ratio: 1 / 1 !important;
+      object-fit: cover !important;
+      flex-shrink: 0 !important;
+      display: inline-block !important;
+      overflow: hidden !important;
     }
 </style>
   {% block extra_head %}{% endblock %}

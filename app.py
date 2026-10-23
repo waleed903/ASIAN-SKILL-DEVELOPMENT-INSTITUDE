@@ -6,7 +6,7 @@ from datetime import datetime
 
 from functools import wraps
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, abort, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, abort, send_from_directory, Response
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -4273,13 +4273,30 @@ def logout():
 
     return redirect(url_for("login"))
 
-@app.route("/uploads/profiles/<filename>")
+DEFAULT_AVATAR_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="gradAvatar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0D186E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#182885;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="50" fill="url(#gradAvatar)" />
+  <circle cx="50" cy="38" r="18" fill="#ffffff" opacity="0.9" />
+  <path d="M 22 84 A 30 30 0 0 1 78 84 Z" fill="#ffffff" opacity="0.9" />
+</svg>"""
 
+@app.route("/uploads/profiles/<path:filename>")
 def uploaded_profile(filename):
-
-    """Serves uploaded student profile photos."""
-
-    return send_from_directory(UPLOAD_FOLDER, filename)
+    """Serves uploaded student profile photos with safe fallback if missing."""
+    if not filename or str(filename).strip() in ("", "None", "null", "undefined"):
+        return Response(DEFAULT_AVATAR_SVG, mimetype="image/svg+xml")
+    try:
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        if os.path.isfile(file_path):
+            return send_from_directory(UPLOAD_FOLDER, filename)
+    except Exception:
+        pass
+    return Response(DEFAULT_AVATAR_SVG, mimetype="image/svg+xml")
 
 @app.route("/health")
 

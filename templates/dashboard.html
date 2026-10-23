@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 
 
@@ -172,12 +172,13 @@
 
 
           <img src="{{ url_for('uploaded_profile', filename=student.photo) }}"
-               alt="{{ student.name }}"
-               class="rounded-circle shadow-sm profile-pic-protected"
-               style="width:68px;height:68px;object-fit:cover;border:3px solid white; cursor:pointer;"
+               alt=""
+               class="rounded-circle shadow-sm profile-pic-protected flex-shrink-0"
+               style="width:68px;height:68px;min-width:68px;max-width:68px;min-height:68px;max-height:68px;aspect-ratio:1/1;object-fit:cover;border:3px solid white; cursor:pointer;"
                onclick="openProfilePicModal(this.src, '{{ student.name }}')"
                oncontextmenu="return false;"
-               draggable="false">
+               draggable="false"
+               onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
 
 
 
@@ -1674,12 +1675,13 @@
 
 
             <img src="{{ url_for('uploaded_profile', filename=student.photo) }}"
-                 alt="{{ student.name }}"
-                 class="rounded-circle shadow profile-pic-protected"
-                 style="width:100px;height:100px;object-fit:cover;border:4px solid var(--navy); cursor:pointer;"
+                 alt=""
+                 class="rounded-circle shadow profile-pic-protected flex-shrink-0"
+                 style="width:100px;height:100px;min-width:100px;max-width:100px;min-height:100px;max-height:100px;aspect-ratio:1/1;object-fit:cover;border:4px solid var(--navy); cursor:pointer;"
                  onclick="openProfilePicModal(this.src, '{{ student.name }}')"
                  oncontextmenu="return false;"
-                 draggable="false">
+                 draggable="false"
+                 onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
 
 
 
