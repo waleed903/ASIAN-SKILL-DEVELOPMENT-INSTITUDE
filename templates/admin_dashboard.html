@@ -421,78 +421,28 @@
 
 
   <div class="row g-3 mb-4">
-
-
-
-
-
-
+    <!-- Active Filter Indicator Banner -->
+    <div id="kpiFilterBadgeRow" class="col-12 d-none">
+      <div class="d-flex align-items-center justify-content-between p-2.5 px-3 rounded-3 shadow-xs" style="background: linear-gradient(135deg, #EEF2FF, #E0E7FF); border: 1.5px solid #6366F1;">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary rounded-pill px-2.5 py-1"><i class="bi bi-funnel-fill me-1"></i>Filter Applied</span>
+          <span class="small fw-bold text-dark" id="kpiFilterDescription">Showing filtered student metrics</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold bg-white" onclick="resetAdminFilters()" style="font-size: 11px;">
+          <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Overall
+        </button>
+      </div>
+    </div>
 
     <!-- Total Enrolled Students -->
-
-
-
-
-
-
-
     <div class="col-6 col-md-3">
-
-
-
-
-
-
-
       <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
-
-
-
-
-
-
-
         <div class="d-flex justify-content-between align-items-start">
-
-
-
-
-
-
-
           <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;">Enrolled Students</span>
-
-
-
-
-
-
-
           <span class="badge bg-primary-subtle text-primary rounded-pill p-1.5"><i class="bi bi-people-fill"></i></span>
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-        <div class="fs-3 fw-bold mt-2" style="color: var(--navy);">{{ total_students }}</div>
-
-
-
-
-
-
-
-        <div class="small text-success mt-1 fw-semibold"><i class="bi bi-check-circle-fill me-1"></i>{{ active_students }} Active Students</div>
+        <div class="fs-3 fw-bold mt-2" style="color: var(--navy);" id="kpiTotalStudents">{{ total_students }}</div>
+        <div class="small text-success mt-1 fw-semibold" id="kpiActiveStudents"><i class="bi bi-check-circle-fill me-1"></i>{{ active_students }} Active Students</div>
 
 
 
@@ -533,77 +483,14 @@
 
 
     <div class="col-6 col-md-3">
-
-
-
-
-
-
-
       <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
-
-
-
-
-
-
-
         <div class="d-flex justify-content-between align-items-start">
-
-
-
-
-
-
-
-          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;">Total Collection</span>
-
-
-
-
-
-
-
+          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;" id="kpiRevenueTitle">Total Collection</span>
           <span class="badge bg-success-subtle text-success rounded-pill p-1.5"><i class="bi bi-cash-stack"></i></span>
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-        <div class="fs-3 fw-bold mt-2 text-success">Rs. {{ "{:,}".format(total_revenue) }}</div>
-
-
-
-
-
-
-
-        <div class="small text-muted mt-1">{{ payments | length }} Verified Receipts</div>
-
-
-
-
-
-
-
+        <div class="fs-3 fw-bold mt-2 text-success" id="kpiTotalRevenue">Rs. {{ "{:,}".format(total_revenue) }}</div>
+        <div class="small text-muted mt-1" id="kpiRevenueSub">{{ payments | length }} Verified Receipts</div>
       </div>
-
-
-
-
-
-
-
     </div>
 
 
@@ -629,77 +516,14 @@
 
 
     <div class="col-6 col-md-3">
-
-
-
-
-
-
-
       <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
-
-
-
-
-
-
-
         <div class="d-flex justify-content-between align-items-start">
-
-
-
-
-
-
-
-          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;">Pending Balance</span>
-
-
-
-
-
-
-
+          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;" id="kpiPendingTitle">Pending Balance</span>
           <span class="badge bg-danger-subtle text-danger rounded-pill p-1.5"><i class="bi bi-hourglass-split"></i></span>
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-        <div class="fs-3 fw-bold mt-2 text-danger">Rs. {{ "{:,}".format(total_pending_receivables) }}</div>
-
-
-
-
-
-
-
-        <div class="small text-danger mt-1 fw-semibold">Receivable from Students</div>
-
-
-
-
-
-
-
+        <div class="fs-3 fw-bold mt-2 text-danger" id="kpiPendingBalance">Rs. {{ "{:,}".format(total_pending_receivables) }}</div>
+        <div class="small text-danger mt-1 fw-semibold" id="kpiPendingSub">Receivable from Students</div>
       </div>
-
-
-
-
-
-
-
     </div>
 
 
@@ -725,77 +549,14 @@
 
 
     <div class="col-6 col-md-3">
-
-
-
-
-
-
-
       <div class="portal-card p-3 p-md-4 h-100 border bg-white shadow-sm">
-
-
-
-
-
-
-
         <div class="d-flex justify-content-between align-items-start">
-
-
-
-
-
-
-
-          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;">Net Cash Balance</span>
-
-
-
-
-
-
-
+          <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;" id="kpiNetProfitTitle">Net Cash Balance</span>
           <span class="badge bg-info-subtle text-info rounded-pill p-1.5"><i class="bi bi-wallet2"></i></span>
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-        <div class="fs-3 fw-bold mt-2 text-primary">Rs. {{ "{:,}".format(net_profit) }}</div>
-
-
-
-
-
-
-
-        <div class="small text-muted mt-1">Expenses: Rs. {{ "{:,}".format(total_expenses) }}</div>
-
-
-
-
-
-
-
+        <div class="fs-3 fw-bold mt-2 text-primary" id="kpiNetProfit">Rs. {{ "{:,}".format(net_profit) }}</div>
+        <div class="small text-muted mt-1" id="kpiNetProfitSub">Expenses: Rs. {{ "{:,}".format(total_expenses) }}</div>
       </div>
-
-
-
-
-
-
-
     </div>
 
 
@@ -1261,30 +1022,36 @@
 
 
 
-          <div class="input-group input-group-sm" style="max-width: 380px;">
+          <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
+            <div class="input-group input-group-sm" style="max-width: 270px;">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" id="adminStudentSearch" class="form-control bg-light border-start-0" placeholder="Search name, roll, phone...">
+            </div>
 
+            <!-- Course Filter Dropdown -->
+            <select id="adminCourseFilter" class="form-select form-select-sm bg-white border shadow-xs fw-semibold text-secondary" style="width: auto; min-width: 175px;" onchange="applyAdminStudentFilters()">
+              <option value="">🎓 All Courses (All)</option>
+              {% set seen_courses = [] %}
+              {% for item in students %}
+                {% if item.student.course and item.student.course.strip() and item.student.course.strip() not in seen_courses %}
+                  {% set _ = seen_courses.append(item.student.course.strip()) %}
+                  <option value="{{ item.student.course.strip() }}">{{ item.student.course.strip() }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
 
+            <!-- Teacher Filter Dropdown -->
+            <select id="adminTeacherFilter" class="form-select form-select-sm bg-white border shadow-xs fw-semibold text-secondary" style="width: auto; min-width: 175px;" onchange="applyAdminStudentFilters()">
+              <option value="">👨‍🏫 All Teachers (All)</option>
+              {% for st in all_staff %}
+                <option value="{{ st.id }}">{{ st.name }} ({{ st.role or 'Faculty' }})</option>
+              {% endfor %}
+            </select>
 
-
-
-
-
-            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-
-
-
-
-
-
-
-            <input type="text" id="adminStudentSearch" class="form-control bg-light border-start-0" placeholder="Search student name, roll number, course...">
-
-
-
-
-
-
-
+            <!-- Reset Filters Button -->
+            <button type="button" id="adminFilterResetBtn" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 d-none" onclick="resetAdminFilters()" title="Filters Reset Karein" style="font-size: 11px;">
+              <i class="bi bi-x-circle me-1"></i>Reset
+            </button>
           </div>
 
 
@@ -1493,7 +1260,17 @@
 
 
 
-              <tr class="admin-student-row" style="cursor: pointer;" onclick="if(!event.target.closest('.no-row-click')){ bootstrap.Modal.getOrCreateInstance(document.getElementById('viewStudentProfileModal{{ s.id }}')).show(); }" title="Student Profile dekhne ke liye click karein">
+              <tr class="admin-student-row"
+                  data-course="{{ (s.course or '')|lower|trim }}"
+                  data-teacher-id="{{ s.teacher_id or '' }}"
+                  data-teacher-name="{{ (item.teacher_name or '')|lower|trim }}"
+                  data-status="{{ (s.status or 'Active')|lower|trim }}"
+                  data-fee="{{ item.net_fee or 0 }}"
+                  data-paid="{{ item.paid or 0 }}"
+                  data-balance="{{ item.balance or 0 }}"
+                  style="cursor: pointer;"
+                  onclick="if(!event.target.closest('.no-row-click')){ bootstrap.Modal.getOrCreateInstance(document.getElementById('viewStudentProfileModal{{ s.id }}')).show(); }"
+                  title="Student Profile dekhne ke liye click karein">
 
 
 
@@ -8021,86 +7798,154 @@
 
 
 
-  // Real-time student search filter
-
-
-
-
-
-
-
+  // --- Real-time Multi-Filter Engine (Search + Course + Teacher + Dynamic Top KPIs) ---
   const searchInput = document.getElementById('adminStudentSearch');
+  const courseFilter = document.getElementById('adminCourseFilter');
+  const teacherFilter = document.getElementById('adminTeacherFilter');
+  const resetBtn = document.getElementById('adminFilterResetBtn');
+  const filterBanner = document.getElementById('kpiFilterBadgeRow');
+  const filterDesc = document.getElementById('kpiFilterDescription');
 
+  // Cache original KPI values
+  const originalKPIs = {
+    totalStudents: document.getElementById('kpiTotalStudents')?.textContent?.trim() || '0',
+    activeStudentsHtml: document.getElementById('kpiActiveStudents')?.innerHTML || '',
+    totalRevenue: document.getElementById('kpiTotalRevenue')?.textContent?.trim() || 'Rs. 0',
+    revenueSub: document.getElementById('kpiRevenueSub')?.textContent?.trim() || '',
+    pendingBalance: document.getElementById('kpiPendingBalance')?.textContent?.trim() || 'Rs. 0',
+    pendingSub: document.getElementById('kpiPendingSub')?.textContent?.trim() || '',
+    netProfit: document.getElementById('kpiNetProfit')?.textContent?.trim() || 'Rs. 0',
+    netProfitTitle: document.getElementById('kpiNetProfitTitle')?.textContent?.trim() || 'Net Cash Balance',
+    netProfitSub: document.getElementById('kpiNetProfitSub')?.textContent?.trim() || ''
+  };
 
+  function applyAdminStudentFilters() {
+    const q = (searchInput ? searchInput.value : '').toLowerCase().trim();
+    const selCourse = (courseFilter ? courseFilter.value : '').toLowerCase().trim();
+    const selTeacherId = (teacherFilter ? teacherFilter.value : '').trim();
 
+    const isFiltered = (q !== '' || selCourse !== '' || selTeacherId !== '');
 
+    let visibleCount = 0;
+    let activeCount = 0;
+    let totalFeeSum = 0;
+    let totalPaidSum = 0;
+    let totalBalanceSum = 0;
 
+    const rows = document.querySelectorAll('.admin-student-row');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      const rowCourse = (row.dataset.course || '').toLowerCase().trim();
+      const rowTeacherId = (row.dataset.teacherId || '').trim();
+      const rowStatus = (row.dataset.status || '').toLowerCase().trim();
 
+      const matchSearch = (q === '' || text.includes(q));
+      const matchCourse = (selCourse === '' || rowCourse === selCourse || rowCourse.includes(selCourse));
+      const matchTeacher = (selTeacherId === '' || rowTeacherId === selTeacherId);
 
-  if (searchInput) {
-
-
-
-
-
-
-
-    searchInput.addEventListener('input', function() {
-
-
-
-
-
-
-
-      const q = this.value.toLowerCase().trim();
-
-
-
-
-
-
-
-      document.querySelectorAll('.admin-student-row').forEach(row => {
-
-
-
-
-
-
-
-        const text = row.textContent.toLowerCase();
-
-
-
-
-
-
-
-        row.style.display = text.includes(q) ? '' : 'none';
-
-
-
-
-
-
-
-      });
-
-
-
-
-
-
-
+      if (matchSearch && matchCourse && matchTeacher) {
+        row.style.display = '';
+        visibleCount++;
+        if (rowStatus === 'active') activeCount++;
+        totalFeeSum += parseFloat(row.dataset.fee || 0);
+        totalPaidSum += parseFloat(row.dataset.paid || 0);
+        totalBalanceSum += parseFloat(row.dataset.balance || 0);
+      } else {
+        row.style.display = 'none';
+      }
     });
 
+    // Update Reset button visibility
+    if (resetBtn) {
+      if (isFiltered) resetBtn.classList.remove('d-none');
+      else resetBtn.classList.add('d-none');
+    }
 
+    // Dynamic Top KPI update
+    if (isFiltered) {
+      if (filterBanner) filterBanner.classList.remove('d-none');
+      if (filterDesc) {
+        let parts = [];
+        if (selCourse && courseFilter) {
+          const optText = courseFilter.options[courseFilter.selectedIndex]?.text || selCourse;
+          parts.push(optText);
+        }
+        if (selTeacherId && teacherFilter) {
+          const optText = teacherFilter.options[teacherFilter.selectedIndex]?.text || 'Teacher';
+          parts.push(optText);
+        }
+        if (q) parts.push(`Search "${q}"`);
+        filterDesc.innerHTML = `Showing <strong>${visibleCount} students</strong> (${parts.join(' • ')})`;
+      }
 
+      const elTotal = document.getElementById('kpiTotalStudents');
+      if (elTotal) elTotal.textContent = visibleCount.toLocaleString();
 
+      const elActive = document.getElementById('kpiActiveStudents');
+      if (elActive) elActive.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>${activeCount} Active in Filter`;
 
+      const elRev = document.getElementById('kpiTotalRevenue');
+      if (elRev) elRev.textContent = 'Rs. ' + Math.round(totalPaidSum).toLocaleString();
 
+      const elRevSub = document.getElementById('kpiRevenueSub');
+      if (elRevSub) elRevSub.textContent = `Collected from ${visibleCount} Filtered Students`;
 
+      const elPending = document.getElementById('kpiPendingBalance');
+      if (elPending) elPending.textContent = 'Rs. ' + Math.round(totalBalanceSum).toLocaleString();
+
+      const elPendingSub = document.getElementById('kpiPendingSub');
+      if (elPendingSub) elPendingSub.textContent = `Receivable from ${visibleCount} Filtered Students`;
+
+      const elProfit = document.getElementById('kpiNetProfit');
+      if (elProfit) elProfit.textContent = 'Rs. ' + Math.round(totalFeeSum).toLocaleString();
+
+      const elProfitTitle = document.getElementById('kpiNetProfitTitle');
+      if (elProfitTitle) elProfitTitle.textContent = 'Filtered Total Course Fees';
+
+      const elProfitSub = document.getElementById('kpiNetProfitSub');
+      if (elProfitSub) elProfitSub.textContent = `Total package fees of ${visibleCount} students`;
+
+    } else {
+      if (filterBanner) filterBanner.classList.add('d-none');
+
+      const elTotal = document.getElementById('kpiTotalStudents');
+      if (elTotal) elTotal.textContent = originalKPIs.totalStudents;
+
+      const elActive = document.getElementById('kpiActiveStudents');
+      if (elActive) elActive.innerHTML = originalKPIs.activeStudentsHtml;
+
+      const elRev = document.getElementById('kpiTotalRevenue');
+      if (elRev) elRev.textContent = originalKPIs.totalRevenue;
+
+      const elRevSub = document.getElementById('kpiRevenueSub');
+      if (elRevSub) elRevSub.textContent = originalKPIs.revenueSub;
+
+      const elPending = document.getElementById('kpiPendingBalance');
+      if (elPending) elPending.textContent = originalKPIs.pendingBalance;
+
+      const elPendingSub = document.getElementById('kpiPendingSub');
+      if (elPendingSub) elPendingSub.textContent = originalKPIs.pendingSub;
+
+      const elProfit = document.getElementById('kpiNetProfit');
+      if (elProfit) elProfit.textContent = originalKPIs.netProfit;
+
+      const elProfitTitle = document.getElementById('kpiNetProfitTitle');
+      if (elProfitTitle) elProfitTitle.textContent = originalKPIs.netProfitTitle;
+
+      const elProfitSub = document.getElementById('kpiNetProfitSub');
+      if (elProfitSub) elProfitSub.textContent = originalKPIs.netProfitSub;
+    }
+  }
+
+  function resetAdminFilters() {
+    if (searchInput) searchInput.value = '';
+    if (courseFilter) courseFilter.value = '';
+    if (teacherFilter) teacherFilter.value = '';
+    applyAdminStudentFilters();
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', applyAdminStudentFilters);
   }
 
 
