@@ -716,7 +716,7 @@ def login():
         settings = get_settings()
 
         # -------------------------------------------------------------
-        # 1. STUDENT LOGIN (Seamless Roll No / Mobile / Email + Password Auth)
+        # 1. STUDENT LOGIN (Strict 3-Way Security: Admission No/Roll No + Registered Email + Password)
         # -------------------------------------------------------------
         if login_type == "student":
             roll_or_adm = (request.form.get("roll_no") or request.form.get("identifier") or "").strip()
@@ -727,13 +727,16 @@ def login():
             form_email = student_email
 
             cleaned_id = roll_or_adm.replace(" ", "").upper()
-            cleaned_phone = clean_phone(roll_or_adm)
             cleaned_email = student_email.lower().strip()
 
             if not roll_or_adm:
-                error = "Student Roll No, Admission No ya Mobile Number darj karna zaroori hai."
+                error = "Student Admission No ya Roll No darj karna lazmi hai."
+            elif not student_email:
+                error = "Student Registered Email Address darj karna lazmi hai."
+            elif "@" not in student_email or "." not in student_email:
+                error = "Durust Student Email Address darj karein."
             elif not password:
-                error = "Apna Password darj karna zaroori hai (Default Password: 1234)."
+                error = "Student Security Password darj karna lazmi hai."
             else:
                 students = conn.execute("SELECT * FROM students").fetchall()
                 matched_student = None
@@ -741,91 +744,63 @@ def login():
                 for s in students:
                     adm = str(s["admission_no"] or "").strip().upper()
                     roll = str(s["roll_no"] or "").strip().upper()
-                    s_phone = clean_phone(s["phone"])
-                    s_wa = clean_phone(s["whatsapp"])
-                    s_g_phone = clean_phone(s["g_phone"])
-                    s_cnic = str(s["cnic"] or "").replace("-", "").strip()
-                    s_email_val = str(s["email"] or "").strip().lower()
+                    s_id_str = str(s["id"]).strip()
 
-                    # Match Admission No or Roll No
-                    if cleaned_id and (roll == cleaned_id or adm == cleaned_id or adm.endswith("-" + cleaned_id) or adm.endswith("/" + cleaned_id)):
+                    # Match Admission No, Roll No or ID
+                    if cleaned_id and (roll == cleaned_id or adm == cleaned_id or adm.endswith("-" + cleaned_id) or adm.endswith("/" + cleaned_id) or cleaned_id == s_id_str):
                         matched_student = s
                         break
 
-                    # Match Phone / WhatsApp / Guardian Phone / CNIC
-                    if cleaned_phone and (cleaned_phone == s_phone or cleaned_phone == s_wa or cleaned_phone == s_g_phone or cleaned_phone == s_cnic):
-                        matched_student = s
-                        break
-
-                    # Match Email
-                    if "@" in roll_or_adm and s_email_val and roll_or_adm.lower() == s_email_val:
-                        matched_student = s
-                        break
-
-                # If still not found and email field was provided, try matching by email field
-                if not matched_student and cleaned_email and "@" in cleaned_email:
-                    for s in students:
-                        s_em = str(s["email"] or "").strip().lower()
-                        s_gem = str(s["g_email"] or "").strip().lower()
-                        if cleaned_email == s_em or cleaned_email == s_gem:
-                            matched_student = s
-                            break
-
-                # If still not found, try matching by student name
-                if not matched_student and len(cleaned_id) >= 3 and not cleaned_id.isdigit():
-                    for s in students:
-                        s_name = str(s["name"] or "").strip().upper()
-                        if cleaned_id in s_name or s_name in cleaned_id:
-                            matched_student = s
-                            break
+                # Fallback: match by admission phone or WhatsApp if entered in roll_or_adm
+                if not matched_student:
+                    cleaned_phone = clean_phone(roll_or_adm)
+                    if cleaned_phone:
+                        for s in students:
+                            s_phone = clean_phone(s["phone"])
+                            s_wa = clean_phone(s["whatsapp"])
+                            if s_phone == cleaned_phone or s_wa == cleaned_phone:
+                                matched_student = s
+                                break
 
                 if not matched_student:
-                    error = f"Roll No, Admission No ya Mobile '{roll_or_adm}' ka koi student record nahi mila. Barah-e-karam apna durust Roll No check karein."
+                    error = f"Admission No ya Roll No '{roll_or_adm}' ka koi student record nahi mila. Barah-e-karam apna durust Admission No check karein."
                 else:
                     s_email = str(matched_student["email"] or "").strip().lower()
-                    s_phone = clean_phone(matched_student["phone"])
-                    roll_num = str(matched_student["roll_no"] or "").strip()
-
-                    # Auto-link email if student didn't have one and provided one
-                    if not s_email and cleaned_email and "@" in cleaned_email:
-                        s_email = cleaned_email
-
                     stored_pin = str(matched_student["pin"] or "").strip()
                     stored_hash = str(matched_student["password_hash"] if "password_hash" in matched_student.keys() else "").strip()
                     effective_hash = stored_hash or stored_pin
 
-                    # Allowed default pins for convenience
-                    default_student_pins = [
-                        "1234", "123456", "asdi123", "student123", "Student@2026", "1234", "123456", "Admin@2026",
-                        str(settings.get("admin_pin", "1234")).strip(),
-                        roll_num,
-                        s_phone,
-                        s_phone[-4:] if len(s_phone) >= 4 else ""
-                    ]
-                    default_student_pins = [p for p in default_student_pins if p]
+                    # Strict Security Step 1: Verify Email matches registered student email
+                    if not s_email:
+                        # Auto-link if first time setting up
+                        s_email = cleaned_email
+                        conn.execute("UPDATE students SET email = ? WHERE id = ?", (s_email, matched_student["id"]))
+                        conn.commit()
+                    elif s_email != cleaned_email:
+                        error = f"Security Check Failed: Email '{cleaned_email}' is student record ke sath match nahi karta."
+                        conn.close()
+                        return render_template("login.html", error=error, active_tab=active_tab, form_roll=form_roll, form_email=form_email)
 
+                    # Strict Security Step 2: Verify Password strictly (NO DEFAULT BYPASS)
                     is_valid = False
                     if effective_hash and verify_student_password(effective_hash, password):
                         is_valid = True
-                    elif password in default_student_pins:
-                        is_valid = True
-                    elif not effective_hash:
-                        # First time logging in with user-entered password
+                    elif stored_pin and stored_pin == password:
                         is_valid = True
 
                     if not is_valid:
-                        error = "Ghalat Password! Barah-e-karam apna durust password darj karein (Default: 1234) ya 'Forgot Password' se reset karein."
+                        error = "Ghalat Student Password! Barah-e-karam apna durust password darj karein ya 'Forgot Password' se reset karein."
                     else:
-                        # Save/upgrade security credentials so they work consistently
-                        if not effective_hash or not effective_hash.startswith(('scrypt:', 'pbkdf2:', 'argon2:')) or password in default_student_pins:
-                            sync_student_security(matched_student["id"], s_email or cleaned_email, password)
+                        # Save/upgrade security hash if needed
+                        if not effective_hash or not effective_hash.startswith(('scrypt:', 'pbkdf2:', 'argon2:')):
+                            sync_student_security(matched_student["id"], s_email, password)
 
                         session.clear()
                         session["role"] = "student"
                         session["student_id"] = matched_student["id"]
                         session["user_name"] = matched_student["name"]
                         session["roll_no"] = matched_student["roll_no"] or matched_student["admission_no"]
-                        session["email"] = s_email or cleaned_email or f"student{matched_student['id']}@asdi.edu"
+                        session["email"] = s_email
                         conn.close()
 
                         flash(f"Khush Aamdeed, {matched_student['name']}! Student Portal session shuru ho gaya.", "success")

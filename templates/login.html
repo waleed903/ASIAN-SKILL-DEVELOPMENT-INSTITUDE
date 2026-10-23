@@ -74,17 +74,17 @@
         
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
           <span class="small fw-bold text-dark"><i class="bi bi-person-check-fill text-primary me-1"></i>Student Portal Login</span>
-          <span class="badge bg-primary-subtle text-primary" style="font-size: 11px;">Student Portal</span>
+          <span class="badge bg-primary text-white" style="font-size: 11px;">Strict 3-Way Auth</span>
         </div>
 
         <form method="POST" action="{{ url_for('login') }}" id="studentLoginForm">
           <input type="hidden" name="login_type" value="student">
           
-          <!-- FIELD 1: STUDENT ROLL NO / ADMISSION NO -->
+          <!-- FIELD 1: STUDENT ADMISSION NO / ROLL NO -->
           <div class="mb-3">
             <label for="roll_no" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
-              <span><i class="bi bi-person-vcard text-primary me-1"></i>Student Roll No / Admission ID</span>
-              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+              <span><i class="bi bi-person-vcard text-primary me-1"></i>Student Admission No / Roll No</span>
+              <span class="text-danger fw-bold" style="font-size: 10.5px;">Required</span>
             </label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
@@ -95,7 +95,7 @@
                 class="form-control bg-light border-start-0 py-2 font-monospace" 
                 id="roll_no" 
                 name="roll_no" 
-                placeholder="e.g. 1, ASDI-2026-0001 or Mobile" 
+                placeholder="e.g. ASDI-2026-0002 or Roll No" 
                 value="{{ form_roll or '' }}"
                 required 
                 autocomplete="username"
@@ -103,15 +103,15 @@
               >
             </div>
             <div class="form-text text-muted" style="font-size: 11px;">
-              Roll Number (e.g. 1, 2), Admission No ya Mobile Number darj karein.
+              Apna Official Admission No ya Roll No darj karein.
             </div>
           </div>
 
-          <!-- FIELD 2: REGISTERED EMAIL (OPTIONAL) -->
+          <!-- FIELD 2: REGISTERED EMAIL (MANDATORY) -->
           <div class="mb-3">
             <label for="email" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
-              <span><i class="bi bi-envelope-at text-primary me-1"></i>Registered Email Address</span>
-              <span class="text-muted" style="font-size: 10.5px;">Optional</span>
+              <span><i class="bi bi-envelope-at text-primary me-1"></i>Registered Student Email</span>
+              <span class="text-danger fw-bold" style="font-size: 10.5px;">Required</span>
             </label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
@@ -122,14 +122,15 @@
                 class="form-control bg-light border-start-0 py-2" 
                 id="email" 
                 name="email" 
-                placeholder="e.g. student@gmail.com (Optional)" 
+                placeholder="e.g. student@gmail.com or asdi20260002@asdi.edu" 
                 value="{{ form_email or '' }}"
+                required
                 autocomplete="email"
                 style="border-radius: 0 12px 12px 0; font-size: 14px;"
               >
             </div>
             <div class="form-text text-muted" style="font-size: 11px;">
-              Optional: Agar email yaad na ho to sirf Roll No aur Password se login karein.
+              Student ki registered email address lazmi hai.
             </div>
           </div>
 
@@ -137,7 +138,7 @@
           <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <label for="password" class="form-label small fw-bold text-secondary mb-0">
-                <i class="bi bi-shield-lock text-primary me-1"></i>Student Password
+                <i class="bi bi-shield-lock text-primary me-1"></i>Student Security Password
               </label>
               <a href="#" class="text-decoration-none small text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" style="font-size: 11.5px;">
                 Forgot Password?
@@ -152,7 +153,7 @@
                 class="form-control bg-light border-start-0 border-end-0 py-2 font-monospace" 
                 id="password" 
                 name="password" 
-                placeholder="Enter your password (default: 1234)" 
+                placeholder="Enter your student password" 
                 required 
                 autocomplete="current-password"
                 style="font-size: 14px;"
@@ -168,12 +169,15 @@
                 <i class="bi bi-eye" id="passwordToggleIcon"></i>
               </button>
             </div>
+            <div class="form-text text-muted" style="font-size: 11px;">
+              Apna private student account password darj karein.
+            </div>
           </div>
 
           <!-- Submit Button -->
           <button type="submit" class="btn btn-asdi w-100 py-2.5 mt-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm rounded-3">
-            <i class="bi bi-box-arrow-in-right fs-6"></i>
-            <span>Sign In to Student Portal</span>
+            <i class="bi bi-shield-check fs-6"></i>
+            <span>Verify & Sign In to Student Portal</span>
           </button>
         </form>
 
