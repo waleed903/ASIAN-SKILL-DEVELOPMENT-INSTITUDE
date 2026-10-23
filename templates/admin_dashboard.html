@@ -134,6 +134,63 @@
     color: #94A3B8;
     flex-shrink: 0;
   }
+
+  .quick-action-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12px 8px;
+    background: #F8FAFC;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 14px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    height: 100%;
+  }
+  .quick-action-tile:hover {
+    background: #EFF6FF;
+    border-color: #93C5FD;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(37,99,235,0.08);
+  }
+  .quick-action-tile-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    margin-bottom: 6px;
+  }
+  .quick-action-tile-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1E293B;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .quick-action-tile-sub {
+    font-size: 9.5px;
+    color: #64748B;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .admin-student-table th {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 12px 14px;
+    background: #F8FAFC;
+    border-bottom: 1.5px solid #E2E8F0;
+  }
+  .admin-student-table td {
+    white-space: nowrap;
+    font-size: 13px;
+    padding: 12px 14px;
+    vertical-align: middle;
+  }
 </style>
 
 
@@ -336,6 +393,112 @@
       </div>
     </div>
   </div>
+  <!-- Quick Actions & Recent Activity Top Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2.5">
+          <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 13.5px;">
+            <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Quick Actions
+          </h6>
+          <span class="badge bg-light text-muted border" style="font-size: 11px;">Admin Shortcuts</span>
+        </div>
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-5 g-2">
+          <!-- 1. Add Student -->
+          <div class="col">
+            <a href="javascript:void(0)" class="quick-action-tile" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+              <div class="quick-action-tile-icon" style="background: #ECFDF5; color: #059669;">
+                <i class="bi bi-person-plus-fill"></i>
+              </div>
+              <div class="quick-action-tile-title">Add Student</div>
+              <div class="quick-action-tile-sub">New Admission</div>
+            </a>
+          </div>
+          <!-- 2. Add Teacher -->
+          <div class="col">
+            <a href="javascript:void(0)" class="quick-action-tile" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+              <div class="quick-action-tile-icon" style="background: #F5F3FF; color: #7C3AED;">
+                <i class="bi bi-person-workspace"></i>
+              </div>
+              <div class="quick-action-tile-title">Add Teacher</div>
+              <div class="quick-action-tile-sub">Faculty Roster</div>
+            </a>
+          </div>
+          <!-- 3. Record Fee -->
+          <div class="col">
+            <a href="javascript:void(0)" class="quick-action-tile" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
+              <div class="quick-action-tile-icon" style="background: #FEF2F2; color: #DC2626;">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+              <div class="quick-action-tile-title">Record Fee</div>
+              <div class="quick-action-tile-sub">Add Payment</div>
+            </a>
+          </div>
+          <!-- 4. Add Expense -->
+          <div class="col">
+            <a href="javascript:void(0)" class="quick-action-tile" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+              <div class="quick-action-tile-icon" style="background: #FFF7ED; color: #EA580C;">
+                <i class="bi bi-dash-circle"></i>
+              </div>
+              <div class="quick-action-tile-title">Add Expense</div>
+              <div class="quick-action-tile-sub">Institute Cost</div>
+            </a>
+          </div>
+          <!-- 5. Fee Ledger -->
+          <div class="col">
+            <a href="javascript:void(0)" class="quick-action-tile" onclick="switchAdminTab('payments')">
+              <div class="quick-action-tile-icon" style="background: #EFF6FF; color: #2563EB;">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+              </div>
+              <div class="quick-action-tile-title">Fee Ledger</div>
+              <div class="quick-action-tile-sub">Reports & Dues</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-12 col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 13.5px;">
+            <i class="bi bi-clock-history text-primary me-2"></i>Recent Activity
+          </h6>
+          <a href="javascript:void(0)" onclick="switchAdminTab('payments')" class="text-primary text-decoration-none fw-semibold" style="font-size: 11px;">View Ledger</a>
+        </div>
+        <div class="d-flex flex-column gap-2" style="max-height: 125px; overflow-y: auto;">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 28px; height: 28px; background: #EFF6FF; color: #2563EB; font-size: 13px;">
+              <i class="bi bi-person-fill"></i>
+            </div>
+            <div class="flex-grow-1 min-w-0" style="font-size: 11px;">
+              <span class="fw-bold text-dark text-truncate d-block">{% if students and students[0] %}{{ students[0].student.name }}{% else %}New Admission{% endif %}</span>
+              <span class="text-muted">Student Registered</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 28px; height: 28px; background: #ECFDF5; color: #059669; font-size: 13px;">
+              <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="flex-grow-1 min-w-0" style="font-size: 11px;">
+              <span class="fw-bold text-dark text-truncate d-block">{% if payments and payments[0] %}Rs. {{ "{:,}".format(payments[0].amount) }} ({{ payments[0].student_name or 'Fee' }}){% else %}Fee Collection{% endif %}</span>
+              <span class="text-muted">Receipt Generated</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 28px; height: 28px; background: #FEF2F2; color: #DC2626; font-size: 13px;">
+              <i class="bi bi-dash-circle"></i>
+            </div>
+            <div class="flex-grow-1 min-w-0" style="font-size: 11px;">
+              <span class="fw-bold text-dark text-truncate d-block">{% if expenses and expenses[0] %}{{ expenses[0].title }} - Rs. {{ "{:,}".format(expenses[0].amount) }}{% else %}Institute Expense{% endif %}</span>
+              <span class="text-muted">Expense Voucher</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- Navigation Grid (12 Icon Cards in 2x6 Grid) -->
   <div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-2 mb-4" id="adminMainTab" role="tablist">
     <!-- 1. Students Directory -->
@@ -513,10 +676,8 @@
     </div>
   </div>
 
-  <!-- Content & Right Sidebar Layout -->
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-xl-9 col-lg-9">
-      <div class="tab-content" id="adminMainTabContent">
+  <!-- Tab Contents (Full 100% Width) -->
+  <div class="tab-content w-100" id="adminMainTabContent">
 
 
       <!-- ============================================================== -->
@@ -677,7 +838,7 @@
         </div>
         <div class="table-responsive">
 
-          <table class="table table-hover align-middle border rounded-3 overflow-hidden" style="font-size: 13px;">
+          <table class="table table-hover align-middle mb-0 admin-student-table" style="min-width: 1150px; font-size: 13px;">
 
             <thead class="table-light">
 
@@ -717,12 +878,15 @@
 
               <tr class="admin-student-row"
                   data-course="{{ (s.course or '')|lower|trim }}"
+                  data-batch="{{ (s.batch or '')|lower|trim }}"
                   data-teacher-id="{{ s.teacher_id or '' }}"
                   data-teacher-name="{{ (item.teacher_name or '')|lower|trim }}"
                   data-status="{{ (s.status or 'Active')|lower|trim }}"
+                  data-date="{{ (s.admission_date or s.created_at or '')|trim }}"
                   data-fee="{{ item.net_fee or 0 }}"
                   data-paid="{{ item.paid or 0 }}"
                   data-balance="{{ item.balance or 0 }}"
+                  data-search="{{ ((s.name or '') ~ ' ' ~ (s.father_name or '') ~ ' ' ~ (s.admission_no or '') ~ ' ' ~ (s.roll_no or '') ~ ' ' ~ (s.phone or '') ~ ' ' ~ (s.email or '') ~ ' ' ~ (s.course or '') ~ ' ' ~ (s.batch or ''))|lower|trim }}"
                   style="cursor: pointer;"
                   onclick="if(!event.target.closest('.no-row-click')){ bootstrap.Modal.getOrCreateInstance(document.getElementById('viewStudentProfileModal{{ s.id }}')).show(); }"
                   title="Student Profile dekhne ke liye click karein">
@@ -1437,7 +1601,6 @@
 
     </div>
 
-  </div>
 
       <!-- ============================================================== -->
       <!-- TAB 6: ATTENDANCE & VERIFICATION                               -->
@@ -2229,161 +2392,10 @@
           {% endif %}
         </div>
       </div>
-    </div><!-- /col-12 col-xl-9 col-lg-9 -->
-
-    <!-- Right Sidebar -->
-    <div class="col-12 col-xl-3 col-lg-3">
-      <!-- Quick Actions -->
-      <div class="card border-0 shadow-sm rounded-4 mb-3 bg-white">
-        <div class="card-header bg-white border-0 pt-3 pb-2 px-3">
-          <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 14px;">
-            <i class="bi bi-lightning-charge-fill text-primary me-2"></i>Quick Actions
-          </h6>
-        </div>
-        <div class="card-body p-2 pt-0">
-          <div class="d-flex flex-column gap-1.5">
-            <!-- Action 1: Add New Student -->
-            <a href="javascript:void(0)" class="quick-action-item" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-              <div class="quick-action-icon" style="background: #ECFDF5; color: #059669;">
-                <i class="bi bi-person-plus-fill"></i>
-              </div>
-              <div class="quick-action-info">
-                <div class="quick-action-title">Add New Student</div>
-                <div class="quick-action-sub">Register a new student</div>
-              </div>
-              <i class="bi bi-chevron-right quick-action-arrow"></i>
-            </a>
-
-            <!-- Action 2: Add New Teacher -->
-            <a href="javascript:void(0)" class="quick-action-item" data-bs-toggle="modal" data-bs-target="#addStaffModal">
-              <div class="quick-action-icon" style="background: #F5F3FF; color: #7C3AED;">
-                <i class="bi bi-person-workspace"></i>
-              </div>
-              <div class="quick-action-info">
-                <div class="quick-action-title">Add New Teacher</div>
-                <div class="quick-action-sub">Register a new teacher</div>
-              </div>
-              <i class="bi bi-chevron-right quick-action-arrow"></i>
-            </a>
-
-            <!-- Action 3: Record Fee Payment -->
-            <a href="javascript:void(0)" class="quick-action-item" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
-              <div class="quick-action-icon" style="background: #FEF2F2; color: #DC2626;">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-              <div class="quick-action-info">
-                <div class="quick-action-title">Record Fee Payment</div>
-                <div class="quick-action-sub">Add payment receipt</div>
-              </div>
-              <i class="bi bi-chevron-right quick-action-arrow"></i>
-            </a>
-
-            <!-- Action 4: Add Expense -->
-            <a href="javascript:void(0)" class="quick-action-item" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
-              <div class="quick-action-icon" style="background: #FFF7ED; color: #EA580C;">
-                <i class="bi bi-dash-circle"></i>
-              </div>
-              <div class="quick-action-info">
-                <div class="quick-action-title">Add Expense</div>
-                <div class="quick-action-sub">Record institute expense</div>
-              </div>
-              <i class="bi bi-chevron-right quick-action-arrow"></i>
-            </a>
-
-            <!-- Action 5: Generate Report -->
-            <a href="javascript:void(0)" class="quick-action-item" onclick="switchAdminTab('payments')">
-              <div class="quick-action-icon" style="background: #EFF6FF; color: #2563EB;">
-                <i class="bi bi-file-earmark-bar-graph"></i>
-              </div>
-              <div class="quick-action-info">
-                <div class="quick-action-title">Generate Report</div>
-                <div class="quick-action-sub">View & download reports</div>
-              </div>
-              <i class="bi bi-chevron-right quick-action-arrow"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Activity -->
-      <div class="card border-0 shadow-sm rounded-4 bg-white">
-        <div class="card-header bg-white border-0 pt-3 pb-2 px-3 d-flex justify-content-between align-items-center">
-          <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 14px;">
-            <i class="bi bi-clock-history text-primary me-2"></i>Recent Activity
-          </h6>
-          <a href="javascript:void(0)" onclick="switchAdminTab('payments')" class="text-primary text-decoration-none fw-semibold" style="font-size: 11px;">View All</a>
-        </div>
-        <div class="card-body p-3 pt-0">
-          <div class="d-flex flex-column gap-2.5">
-            <!-- Item 1: New student admission -->
-            <div class="d-flex align-items-start gap-2.5">
-              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #EFF6FF; color: #2563EB; font-size: 14px;">
-                <i class="bi bi-person-fill"></i>
-              </div>
-              <div class="flex-grow-1 min-w-0">
-                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">New student admission</div>
-                <div class="text-muted text-truncate" style="font-size: 11px;">
-                  {% if students and students[0] %}{{ students[0].student.name }} - Recent{% else %}Muhammad Raza - 3 hours ago{% endif %}
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 2: Fee received -->
-            <div class="d-flex align-items-start gap-2.5">
-              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #ECFDF5; color: #059669; font-size: 14px;">
-                <i class="bi bi-cash-stack"></i>
-              </div>
-              <div class="flex-grow-1 min-w-0">
-                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">Fee received</div>
-                <div class="text-muted text-truncate" style="font-size: 11px;">
-                  {% if payments and payments[0] %}Rs. {{ "{:,}".format(payments[0].amount) }} - {{ payments[0].student_name or 'ASDI' }}{% else %}Rs. 4,000 - ASDI-2025-0114{% endif %}
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 3: New inquiry -->
-            <div class="d-flex align-items-start gap-2.5">
-              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #FFF7ED; color: #EA580C; font-size: 14px;">
-                <i class="bi bi-chat-left-dots-fill"></i>
-              </div>
-              <div class="flex-grow-1 min-w-0">
-                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">New inquiry</div>
-                <div class="text-muted text-truncate" style="font-size: 11px;">
-                  {% if inquiries and inquiries[0] %}{{ inquiries[0].student_name or 'Online form' }} - {{ inquiries[0].course_interest or 'General' }}{% else %}Online form - 6 hours ago{% endif %}
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 4: Expense added -->
-            <div class="d-flex align-items-start gap-2.5">
-              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #FEF2F2; color: #DC2626; font-size: 14px;">
-                <i class="bi bi-cart-dash-fill"></i>
-              </div>
-              <div class="flex-grow-1 min-w-0">
-                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">Expense added</div>
-                <div class="text-muted text-truncate" style="font-size: 11px;">
-                  {% if expenses and expenses[0] %}{{ expenses[0].title }} - Rs. {{ "{:,}".format(expenses[0].amount) }}{% else %}Stationery - Rs. 2,500 - 7 hours ago{% endif %}
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 5: Timetable updated -->
-            <div class="d-flex align-items-start gap-2.5">
-              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5" style="width: 32px; height: 32px; background: #EFF6FF; color: #0284C7; font-size: 14px;">
-                <i class="bi bi-calendar-event-fill"></i>
-              </div>
-              <div class="flex-grow-1 min-w-0">
-                <div class="fw-semibold text-dark text-truncate" style="font-size: 12px;">Timetable updated</div>
-                <div class="text-muted text-truncate" style="font-size: 11px;">BST Morning - 1 day ago</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div><!-- /col-12 col-xl-3 col-lg-3 -->
-  </div><!-- /row g-3 mb-4 -->
+  </div><!-- /adminMainTabContent -->
 
 <!-- ============================================================== -->
+
 <!-- MODAL: ADMIN CREDENTIALS & SECURITY UPDATE                     -->
 
 <!-- ============================================================== -->
@@ -3450,34 +3462,94 @@
 {% block extra_scripts %}
 
 <script>
+// ============================================================================
+// ASDI ADMIN DASHBOARD: REAL-TIME GLOBAL MULTI-FILTER & DYNAMIC KPI ENGINE
+// ============================================================================
 
-  // --- Real-time Multi-Filter Engine (Search + Course + Teacher + Dynamic Top KPIs) ---
-  const searchInput = document.getElementById('adminStudentSearch');
-  const courseFilter = document.getElementById('adminCourseFilter');
-  const teacherFilter = document.getElementById('adminTeacherFilter');
-  const resetBtn = document.getElementById('adminFilterResetBtn');
-  const filterBanner = document.getElementById('kpiFilterBadgeRow');
-  const filterDesc = document.getElementById('kpiFilterDescription');
-
-  // Cache original KPI values
-  const originalKPIs = {
-    totalStudents: document.getElementById('kpiTotalStudents')?.textContent?.trim() || '0',
-    activeStudentsHtml: document.getElementById('kpiActiveStudents')?.innerHTML || '',
-    totalRevenue: document.getElementById('kpiTotalRevenue')?.textContent?.trim() || 'Rs. 0',
-    revenueSub: document.getElementById('kpiRevenueSub')?.textContent?.trim() || '',
-    pendingBalance: document.getElementById('kpiPendingBalance')?.textContent?.trim() || 'Rs. 0',
-    pendingSub: document.getElementById('kpiPendingSub')?.textContent?.trim() || '',
-    netProfit: document.getElementById('kpiNetProfit')?.textContent?.trim() || 'Rs. 0',
-    netProfitTitle: document.getElementById('kpiNetProfitTitle')?.textContent?.trim() || 'Net Cash Balance',
-    netProfitSub: document.getElementById('kpiNetProfitSub')?.textContent?.trim() || ''
+(function() {
+  let overallKPIs = {
+    total: '',
+    active: '',
+    revenue: '',
+    revenueSub: '',
+    pending: '',
+    pendingSub: '',
+    net: '',
+    netSub: ''
   };
 
-  function applyAdminStudentFilters() {
-    const q = (searchInput ? searchInput.value : '').toLowerCase().trim();
-    const selCourse = (courseFilter ? courseFilter.value : '').toLowerCase().trim();
-    const selTeacherId = (teacherFilter ? teacherFilter.value : '').trim();
+  document.addEventListener('DOMContentLoaded', function() {
+    // Cache original overall metrics
+    const elTotal = document.getElementById('kpiTotalStudents');
+    const elActive = document.getElementById('kpiActiveStudents');
+    const elRev = document.getElementById('kpiTotalRevenue');
+    const elRevSub = document.getElementById('kpiRevenueSub');
+    const elPending = document.getElementById('kpiPendingBalance');
+    const elPendingSub = document.getElementById('kpiPendingSub');
+    const elNet = document.getElementById('kpiNetProfit');
+    const elNetSub = document.getElementById('kpiNetProfitSub');
 
-    const isFiltered = (q !== '' || selCourse !== '' || selTeacherId !== '');
+    if (elTotal) overallKPIs.total = elTotal.textContent.trim();
+    if (elActive) overallKPIs.active = elActive.innerHTML.trim();
+    if (elRev) overallKPIs.revenue = elRev.textContent.trim();
+    if (elRevSub) overallKPIs.revenueSub = elRevSub.textContent.trim();
+    if (elPending) overallKPIs.pending = elPending.textContent.trim();
+    if (elPendingSub) overallKPIs.pendingSub = elPendingSub.textContent.trim();
+    if (elNet) overallKPIs.net = elNet.textContent.trim();
+    if (elNetSub) overallKPIs.netSub = elNetSub.textContent.trim();
+
+    // Bind real-time input & change events on all filter elements
+    const filterInputIds = [
+      'adminStudentSearch', 'adminStudentSearch2', 'adminCourseFilter',
+      'adminBatchFilter', 'adminStatusFilter', 'adminDateFilter',
+      'adminTeacherFilter', 'adminDesigFilter', 'adminTeacherStatusFilter',
+      'adminTeacherSearchInput', 'adminRowsPerPage'
+    ];
+
+    filterInputIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', applyAdminFilters);
+        el.addEventListener('change', applyAdminFilters);
+        el.addEventListener('keyup', applyAdminFilters);
+      }
+    });
+
+    // Sync searches
+    const s1 = document.getElementById('adminStudentSearch');
+    const s2 = document.getElementById('adminStudentSearch2');
+    if (s1 && s2) {
+      s1.addEventListener('input', () => { s2.value = s1.value; });
+      s2.addEventListener('input', () => { s1.value = s2.value; });
+    }
+  });
+
+  window.applyAdminFilters = function() {
+    const s1 = document.getElementById('adminStudentSearch');
+    const s2 = document.getElementById('adminStudentSearch2');
+    const q1 = s1 ? s1.value.toLowerCase().trim() : '';
+    const q2 = s2 ? s2.value.toLowerCase().trim() : '';
+    const q = q1 || q2;
+
+    const courseFilter = document.getElementById('adminCourseFilter');
+    const batchFilter = document.getElementById('adminBatchFilter');
+    const statusFilter = document.getElementById('adminStatusFilter');
+    const dateFilter = document.getElementById('adminDateFilter');
+    const teacherFilter = document.getElementById('adminTeacherFilter');
+    const desigFilter = document.getElementById('adminDesigFilter');
+    const tStatusFilter = document.getElementById('adminTeacherStatusFilter');
+    const tSearchInput = document.getElementById('adminTeacherSearchInput');
+    const rowsPerPageSelect = document.getElementById('adminRowsPerPage');
+
+    const selCourse = courseFilter ? courseFilter.value.toLowerCase().trim() : '';
+    const selBatch = batchFilter ? batchFilter.value.toLowerCase().trim() : '';
+    const selStatus = statusFilter ? statusFilter.value.toLowerCase().trim() : '';
+    const selDate = dateFilter ? dateFilter.value.trim() : '';
+    const selTeacher = teacherFilter ? teacherFilter.value.trim() : '';
+    const selTeacherQ = tSearchInput ? tSearchInput.value.toLowerCase().trim() : '';
+    const rowsLimit = rowsPerPageSelect ? (parseInt(rowsPerPageSelect.value) || 9999) : 9999;
+
+    const isFiltered = (q !== '' || selCourse !== '' || selBatch !== '' || selStatus !== '' || selDate !== '' || selTeacher !== '' || selTeacherQ !== '');
 
     let visibleCount = 0;
     let activeCount = 0;
@@ -3487,18 +3559,29 @@
 
     const rows = document.querySelectorAll('.admin-student-row');
     rows.forEach(row => {
-      const text = row.textContent.toLowerCase();
+      const text = (row.dataset.search || row.textContent).toLowerCase();
       const rowCourse = (row.dataset.course || '').toLowerCase().trim();
+      const rowBatch = (row.dataset.batch || '').toLowerCase().trim();
+      const rowStatus = (row.dataset.status || 'active').toLowerCase().trim();
+      const rowDate = (row.dataset.date || '').trim();
       const rowTeacherId = (row.dataset.teacherId || '').trim();
-      const rowStatus = (row.dataset.status || '').toLowerCase().trim();
+      const rowTeacherName = (row.dataset.teacherName || '').toLowerCase().trim();
 
       const matchSearch = (q === '' || text.includes(q));
       const matchCourse = (selCourse === '' || rowCourse === selCourse || rowCourse.includes(selCourse));
-      const matchTeacher = (selTeacherId === '' || rowTeacherId === selTeacherId);
+      const matchBatch = (selBatch === '' || rowBatch === selBatch || rowBatch.includes(selBatch));
+      const matchStatus = (selStatus === '' || rowStatus === selStatus);
+      const matchDate = (selDate === '' || rowDate.includes(selDate));
+      const matchTeacher = (selTeacher === '' || rowTeacherId === selTeacher);
+      const matchTeacherQ = (selTeacherQ === '' || rowTeacherName.includes(selTeacherQ));
 
-      if (matchSearch && matchCourse && matchTeacher) {
-        row.style.display = '';
+      if (matchSearch && matchCourse && matchBatch && matchStatus && matchDate && matchTeacher && matchTeacherQ) {
         visibleCount++;
+        if (visibleCount <= rowsLimit) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
         if (rowStatus === 'active') activeCount++;
         totalFeeSum += parseFloat(row.dataset.fee || 0);
         totalPaidSum += parseFloat(row.dataset.paid || 0);
@@ -3508,13 +3591,10 @@
       }
     });
 
-    // Update Reset button visibility
-    if (resetBtn) {
-      if (isFiltered) resetBtn.classList.remove('d-none');
-      else resetBtn.classList.add('d-none');
-    }
+    // Update Filter Indicator Banner
+    const filterBanner = document.getElementById('kpiFilterBadgeRow');
+    const filterDesc = document.getElementById('kpiFilterDescription');
 
-    // Dynamic Top KPI update
     if (isFiltered) {
       if (filterBanner) filterBanner.classList.remove('d-none');
       if (filterDesc) {
@@ -3523,84 +3603,95 @@
           const optText = courseFilter.options[courseFilter.selectedIndex]?.text || selCourse;
           parts.push(optText);
         }
-        if (selTeacherId && teacherFilter) {
+        if (selBatch) parts.push(`Batch: ${selBatch}`);
+        if (selStatus) parts.push(`Status: ${selStatus}`);
+        if (selTeacher && teacherFilter) {
           const optText = teacherFilter.options[teacherFilter.selectedIndex]?.text || 'Teacher';
           parts.push(optText);
         }
         if (q) parts.push(`Search "${q}"`);
-        filterDesc.innerHTML = `Showing <strong>${visibleCount} students</strong> (${parts.join(' ΓÇó ')})`;
+        filterDesc.innerHTML = `Showing <strong>${visibleCount} students</strong> (${parts.join(' • ')})`;
       }
 
+      // Update Top KPI Cards dynamically
       const elTotal = document.getElementById('kpiTotalStudents');
       if (elTotal) elTotal.textContent = visibleCount.toLocaleString();
 
       const elActive = document.getElementById('kpiActiveStudents');
-      if (elActive) elActive.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>${activeCount} Active in Filter`;
+      if (elActive) elActive.innerHTML = `<span class="badge bg-success rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-funnel-fill"></i></span>${activeCount} Active (Filtered)`;
 
       const elRev = document.getElementById('kpiTotalRevenue');
-      if (elRev) elRev.textContent = 'Rs. ' + Math.round(totalPaidSum).toLocaleString();
+      if (elRev) elRev.textContent = `Rs. ${Math.round(totalPaidSum).toLocaleString()}`;
 
       const elRevSub = document.getElementById('kpiRevenueSub');
-      if (elRevSub) elRevSub.textContent = `Collected from ${visibleCount} Filtered Students`;
+      if (elRevSub) elRevSub.innerHTML = `<span class="badge bg-success rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-plus"></i></span>Collected from ${visibleCount} Students`;
 
       const elPending = document.getElementById('kpiPendingBalance');
-      if (elPending) elPending.textContent = 'Rs. ' + Math.round(totalBalanceSum).toLocaleString();
+      if (elPending) elPending.textContent = `Rs. ${Math.round(totalBalanceSum).toLocaleString()}`;
 
       const elPendingSub = document.getElementById('kpiPendingSub');
-      if (elPendingSub) elPendingSub.textContent = `Receivable from ${visibleCount} Filtered Students`;
+      if (elPendingSub) elPendingSub.innerHTML = `<span class="badge bg-danger rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-dash"></i></span>Due from ${visibleCount} Students`;
 
-      const elProfit = document.getElementById('kpiNetProfit');
-      if (elProfit) elProfit.textContent = 'Rs. ' + Math.round(totalFeeSum).toLocaleString();
-
-      const elProfitTitle = document.getElementById('kpiNetProfitTitle');
-      if (elProfitTitle) elProfitTitle.textContent = 'Filtered Total Course Fees';
-
-      const elProfitSub = document.getElementById('kpiNetProfitSub');
-      if (elProfitSub) elProfitSub.textContent = `Total package fees of ${visibleCount} students`;
-
+      const elNet = document.getElementById('kpiNetProfit');
+      if (elNet) elNet.textContent = `Rs. ${Math.round(totalPaidSum).toLocaleString()}`;
     } else {
-      if (filterBanner) filterBanner.classList.add('d-none');
-
-      const elTotal = document.getElementById('kpiTotalStudents');
-      if (elTotal) elTotal.textContent = originalKPIs.totalStudents;
-
-      const elActive = document.getElementById('kpiActiveStudents');
-      if (elActive) elActive.innerHTML = originalKPIs.activeStudentsHtml;
-
-      const elRev = document.getElementById('kpiTotalRevenue');
-      if (elRev) elRev.textContent = originalKPIs.totalRevenue;
-
-      const elRevSub = document.getElementById('kpiRevenueSub');
-      if (elRevSub) elRevSub.textContent = originalKPIs.revenueSub;
-
-      const elPending = document.getElementById('kpiPendingBalance');
-      if (elPending) elPending.textContent = originalKPIs.pendingBalance;
-
-      const elPendingSub = document.getElementById('kpiPendingSub');
-      if (elPendingSub) elPendingSub.textContent = originalKPIs.pendingSub;
-
-      const elProfit = document.getElementById('kpiNetProfit');
-      if (elProfit) elProfit.textContent = originalKPIs.netProfit;
-
-      const elProfitTitle = document.getElementById('kpiNetProfitTitle');
-      if (elProfitTitle) elProfitTitle.textContent = originalKPIs.netProfitTitle;
-
-      const elProfitSub = document.getElementById('kpiNetProfitSub');
-      if (elProfitSub) elProfitSub.textContent = originalKPIs.netProfitSub;
+      window.resetAdminKPIsToOverall();
     }
-  }
+  };
 
-  function resetAdminFilters() {
-    if (searchInput) searchInput.value = '';
-    if (courseFilter) courseFilter.value = '';
-    if (teacherFilter) teacherFilter.value = '';
-    applyAdminStudentFilters();
-  }
+  // Backwards-compatible alias
+  window.applyAdminStudentFilters = window.applyAdminFilters;
 
-  if (searchInput) {
-    searchInput.addEventListener('input', applyAdminStudentFilters);
-  }
+  window.resetAdminFilters = function() {
+    const ids = [
+      'adminStudentSearch', 'adminStudentSearch2', 'adminCourseFilter',
+      'adminBatchFilter', 'adminStatusFilter', 'adminDateFilter',
+      'adminTeacherFilter', 'adminDesigFilter', 'adminTeacherStatusFilter',
+      'adminTeacherSearchInput'
+    ];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
 
+    const rowsPerPageSelect = document.getElementById('adminRowsPerPage');
+    if (rowsPerPageSelect) rowsPerPageSelect.value = '10';
+
+    const rows = document.querySelectorAll('.admin-student-row');
+    rows.forEach(r => r.style.display = '');
+
+    window.resetAdminKPIsToOverall();
+  };
+
+  window.resetAdminKPIsToOverall = function() {
+    const filterBanner = document.getElementById('kpiFilterBadgeRow');
+    if (filterBanner) filterBanner.classList.add('d-none');
+
+    const elTotal = document.getElementById('kpiTotalStudents');
+    if (elTotal && overallKPIs.total) elTotal.textContent = overallKPIs.total;
+
+    const elActive = document.getElementById('kpiActiveStudents');
+    if (elActive && overallKPIs.active) elActive.innerHTML = overallKPIs.active;
+
+    const elRev = document.getElementById('kpiTotalRevenue');
+    if (elRev && overallKPIs.revenue) elRev.textContent = overallKPIs.revenue;
+
+    const elRevSub = document.getElementById('kpiRevenueSub');
+    if (elRevSub && overallKPIs.revenueSub) elRevSub.textContent = overallKPIs.revenueSub;
+
+    const elPending = document.getElementById('kpiPendingBalance');
+    if (elPending && overallKPIs.pending) elPending.textContent = overallKPIs.pending;
+
+    const elPendingSub = document.getElementById('kpiPendingSub');
+    if (elPendingSub && overallKPIs.pendingSub) elPendingSub.textContent = overallKPIs.pendingSub;
+
+    const elNet = document.getElementById('kpiNetProfit');
+    if (elNet && overallKPIs.net) elNet.textContent = overallKPIs.net;
+
+    const elNetSub = document.getElementById('kpiNetProfitSub');
+    if (elNetSub && overallKPIs.netSub) elNetSub.textContent = overallKPIs.netSub;
+  };
+})();
 </script>
 
 <!-- ============================================================== -->
