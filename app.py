@@ -3404,6 +3404,38 @@ def admin_add_expense():
 
         return redirect(url_for("admin_dashboard"))
 
+@app.route("/admin/teacher_payout", methods=["POST"])
+@admin_required
+def admin_teacher_payout():
+    """Record payment/payout to a faculty teacher."""
+    teacher_id = request.form.get("teacher_id")
+    amount = float(request.form.get("amount", 0) or 0)
+    exp_date = request.form.get("pay_date", datetime.now().strftime("%Y-%m-%d"))
+    payout_type = request.form.get("payout_type", "Salary")
+    method = request.form.get("method", "Cash")
+    note = request.form.get("note", "").strip()
+
+    if amount <= 0:
+        flash("Valid payout amount is required.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db_connection()
+    st = conn.execute("SELECT name FROM staff WHERE id = ?", (teacher_id,)).fetchone()
+    teacher_name = st["name"] if st else f"Teacher #{teacher_id}"
+
+    category = "Faculty Payout"
+    payout_note = f"Payout ({payout_type}) to {teacher_name} via {method}. {note}".strip()
+
+    conn.execute(
+        "INSERT INTO expenses (exp_date, category, amount, note) VALUES (?, ?, ?, ?)",
+        (exp_date, category, amount, payout_note)
+    )
+    conn.commit()
+    conn.close()
+
+    flash(f"Teacher Payout of Rs. {amount:,.0f} to {teacher_name} successfully recorded!", "success")
+    return redirect(url_for("admin_dashboard"))
+
     conn = get_db_connection()
 
     conn.execute("INSERT INTO expenses (exp_date, category, amount, note) VALUES (?, ?, ?, ?)",

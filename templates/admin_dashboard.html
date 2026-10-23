@@ -500,7 +500,7 @@
     </div>
   </div>
   <!-- Navigation Grid (12 Icon Cards in 2x6 Grid) -->
-  <div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-2 mb-4" id="adminMainTab" role="tablist">
+  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-7 g-2 mb-4" id="adminMainTab" role="tablist">
     <!-- 1. Students Directory -->
     <div class="col">
       <button type="button" class="admin-nav-card active w-100" id="tab-btn-students" data-bs-toggle="pill" data-bs-target="#tab-content-students" role="tab" aria-selected="true">
@@ -509,7 +509,7 @@
         </div>
         <div class="admin-nav-info">
           <div class="admin-nav-title">Students Directory</div>
-          <div class="admin-nav-sub">View & manage student records</div>
+          <div class="admin-nav-sub">Directory & records</div>
         </div>
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
@@ -523,7 +523,7 @@
         </div>
         <div class="admin-nav-info">
           <div class="admin-nav-title">Fee Ledger</div>
-          <div class="admin-nav-sub">Manage fees & payments</div>
+          <div class="admin-nav-sub">Fees & receipts</div>
         </div>
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
@@ -537,41 +537,55 @@
         </div>
         <div class="admin-nav-info">
           <div class="admin-nav-title">Faculty & Staff</div>
-          <div class="admin-nav-sub">Manage faculty & staff</div>
+          <div class="admin-nav-sub">Faculty roster</div>
         </div>
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
     </div>
 
-    <!-- 4. Institute Expenses -->
+    <!-- 4. Teacher Payouts (NEW) -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-teacher-payouts" data-bs-toggle="pill" data-bs-target="#tab-content-teacher-payouts" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #0D9488;">
+          <i class="bi bi-cash-coin text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Teacher Payouts</div>
+          <div class="admin-nav-sub">Salary & share</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 5. Institute Expenses -->
     <div class="col">
       <button type="button" class="admin-nav-card w-100" id="tab-btn-expenses" data-bs-toggle="pill" data-bs-target="#tab-content-expenses" role="tab" aria-selected="false">
         <div class="admin-nav-icon" style="background: #EF4444;">
           <i class="bi bi-cart-x-fill text-white"></i>
         </div>
         <div class="admin-nav-info">
-          <div class="admin-nav-title">Institute Expenses</div>
-          <div class="admin-nav-sub">Track expenses & records</div>
+          <div class="admin-nav-title">Expenses</div>
+          <div class="admin-nav-sub">Track records</div>
         </div>
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
     </div>
 
-    <!-- 5. Inquiries & Leads -->
+    <!-- 6. Inquiries & Leads -->
     <div class="col">
       <button type="button" class="admin-nav-card w-100" id="tab-btn-inquiries" data-bs-toggle="pill" data-bs-target="#tab-content-inquiries" role="tab" aria-selected="false">
         <div class="admin-nav-icon" style="background: #EA580C;">
           <i class="bi bi-chat-left-dots-fill text-white"></i>
         </div>
         <div class="admin-nav-info">
-          <div class="admin-nav-title">Inquiries & Leads</div>
-          <div class="admin-nav-sub">Handle new inquiries</div>
+          <div class="admin-nav-title">Inquiries</div>
+          <div class="admin-nav-sub">Leads & follow-up</div>
         </div>
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
     </div>
 
-    <!-- 6. Hazri & Requests -->
+    <!-- 7. Hazri & Requests -->
     <div class="col">
       <button type="button" class="admin-nav-card w-100 position-relative" id="tab-btn-attendance" data-bs-toggle="pill" data-bs-target="#tab-content-attendance" role="tab" aria-selected="false">
         <div class="admin-nav-icon" style="background: #0891B2;">
@@ -579,7 +593,7 @@
         </div>
         <div class="admin-nav-info">
           <div class="admin-nav-title">Hazri & Requests</div>
-          <div class="admin-nav-sub">Attendance & requests</div>
+          <div class="admin-nav-sub">Attendance check</div>
         </div>
         {% if pending_att_count > 0 %}
           <span class="badge bg-danger rounded-pill position-absolute top-0 end-0 m-1" style="font-size: 9px;">{{ pending_att_count }}</span>
@@ -588,7 +602,21 @@
       </button>
     </div>
 
-    <!-- 7. WhatsApp Groups -->
+    <!-- 8. Certification (NEW) -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-certifications" data-bs-toggle="pill" data-bs-target="#tab-content-certifications" role="tab" aria-selected="false">
+        <div class="admin-nav-icon" style="background: #F59E0B;">
+          <i class="bi bi-award-fill text-white"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">Certification</div>
+          <div class="admin-nav-sub">Diplomas & verify</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
+
+    <!-- 9. WhatsApp Groups -->
     <div class="col">
       <button type="button" class="admin-nav-card w-100" id="tab-btn-groups" data-bs-toggle="pill" data-bs-target="#tab-content-groups" role="tab" aria-selected="false">
         <div class="admin-nav-icon" style="background: #16A34A;">
@@ -596,13 +624,13 @@
         </div>
         <div class="admin-nav-info">
           <div class="admin-nav-title">WhatsApp Groups</div>
-          <div class="admin-nav-sub">Manage groups & broadcasts</div>
+          <div class="admin-nav-sub">Community chat</div>
         </div>
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
     </div>
 
-    <!-- 8. Manage Courses -->
+    <!-- 10. Manage Courses -->
     <div class="col">
       <button type="button" class="admin-nav-card w-100" id="tab-btn-courses" data-bs-toggle="pill" data-bs-target="#tab-content-courses" role="tab" aria-selected="false">
         <div class="admin-nav-icon" style="background: #4F46E5;">
@@ -616,7 +644,7 @@
       </button>
     </div>
 
-    <!-- 9. Notes & Content -->
+    <!-- 11. Notes & Content -->
     <div class="col">
       <button type="button" class="admin-nav-card w-100" id="tab-btn-notes" data-bs-toggle="pill" data-bs-target="#tab-content-notes" role="tab" aria-selected="false">
         <div class="admin-nav-icon" style="background: #E11D48;">
@@ -624,13 +652,13 @@
         </div>
         <div class="admin-nav-info">
           <div class="admin-nav-title">Notes & Content</div>
-          <div class="admin-nav-sub">Study material & notes</div>
+          <div class="admin-nav-sub">Study materials</div>
         </div>
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
     </div>
 
-    <!-- 10. Timetables & DMC -->
+    <!-- 12. Timetables & DMC -->
     <div class="col">
       <button type="button" class="admin-nav-card w-100" id="tab-btn-timetables" data-bs-toggle="pill" data-bs-target="#tab-content-timetables" role="tab" aria-selected="false">
         <div class="admin-nav-icon" style="background: #0284C7;">
@@ -638,13 +666,13 @@
         </div>
         <div class="admin-nav-info">
           <div class="admin-nav-title">Timetables & DMC</div>
-          <div class="admin-nav-sub">Class schedule & results</div>
+          <div class="admin-nav-sub">Class schedule</div>
         </div>
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
     </div>
 
-    <!-- 11. Announcements -->
+    <!-- 13. Announcements -->
     <div class="col">
       <button type="button" class="admin-nav-card w-100" id="tab-btn-announcements" data-bs-toggle="pill" data-bs-target="#tab-content-announcements" role="tab" aria-selected="false">
         <div class="admin-nav-icon" style="background: #D97706;">
@@ -652,21 +680,21 @@
         </div>
         <div class="admin-nav-info">
           <div class="admin-nav-title">Announcements</div>
-          <div class="admin-nav-sub">Post announcements</div>
+          <div class="admin-nav-sub">Broadcast notices</div>
         </div>
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
     </div>
 
-    <!-- 12. Student Messages -->
+    <!-- 14. Student Messages -->
     <div class="col">
       <button type="button" class="admin-nav-card w-100 position-relative" id="tab-btn-messages" data-bs-toggle="pill" data-bs-target="#tab-content-messages" role="tab" aria-selected="false">
         <div class="admin-nav-icon" style="background: #7C3AED;">
           <i class="bi bi-envelope-fill text-white"></i>
         </div>
         <div class="admin-nav-info">
-          <div class="admin-nav-title">Student Messages</div>
-          <div class="admin-nav-sub">View student messages</div>
+          <div class="admin-nav-title">Messages</div>
+          <div class="admin-nav-sub">Student inbox</div>
         </div>
         {% if unread_msg_count > 0 %}
           <span class="badge bg-warning text-dark rounded-pill position-absolute top-0 end-0 m-1" style="font-size: 9px;">{{ unread_msg_count }}</span>
@@ -814,18 +842,18 @@
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div class="input-group input-group-sm flex-grow-1" style="max-width: 380px;">
               <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control bg-light border-start-0" placeholder="Search student name, roll number, course..." oninput="document.getElementById('adminStudentSearch').value=this.value; applyAdminFilters();" style="font-size: 12px;">
+              <input type="text" id="adminStudentSearch2" class="form-control bg-light border-start-0" placeholder="Search student name, roll number, course..." oninput="document.getElementById('adminStudentSearch').value=this.value; applyAdminFilters();" style="font-size: 12px;">
             </div>
             <div class="d-flex align-items-center gap-2">
               <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="btn btn-primary active rounded-start-3" style="font-size: 11px;"><i class="bi bi-list-ul me-1"></i>List View</button>
-                <button type="button" class="btn btn-outline-secondary rounded-end-3" style="font-size: 11px;"><i class="bi bi-grid-fill me-1"></i>Card View</button>
+                <button type="button" class="btn btn-primary active rounded-start-3" id="adminViewListBtn" onclick="setStudentView('list')" style="font-size: 11px;"><i class="bi bi-list-ul me-1"></i>List View</button>
+                <button type="button" class="btn btn-outline-secondary rounded-end-3" id="adminViewCardBtn" onclick="setStudentView('card')" style="font-size: 11px;"><i class="bi bi-grid-fill me-1"></i>Card View</button>
               </div>
-              <select class="form-select form-select-sm rounded-3" style="width: auto; font-size: 11px;">
+              <select class="form-select form-select-sm rounded-3" id="adminRowsPerPage" style="width: auto; font-size: 11px;" onchange="applyAdminFilters()">
                 <option value="10">Rows: 10</option>
                 <option value="25">Rows: 25</option>
                 <option value="50">Rows: 50</option>
-                <option value="all">Rows: All</option>
+                <option value="9999">Rows: All</option>
               </select>
               <button type="button" class="btn btn-sm btn-outline-success rounded-3 fw-semibold d-flex align-items-center gap-1" style="font-size: 11px;" onclick="exportTableToCSV('asdi_students.csv')">
                 <i class="bi bi-file-earmark-excel-fill text-success"></i>Excel
@@ -836,46 +864,22 @@
             </div>
           </div>
         </div>
-        <div class="table-responsive">
-
-          <table class="table table-hover align-middle mb-0 admin-student-table" style="min-width: 1150px; font-size: 13px;">
-
+        <!-- 1. List View: Streamlined Full-Width Table (No horizontal scroll needed) -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden mb-4" id="adminStudentTableContainer">
+          <table class="table table-hover align-middle mb-0" style="width: 100%; font-size: 13px;">
             <thead class="table-light">
-
               <tr class="text-secondary fw-semibold">
-
-                <th>Photo</th>
-
-                <th>Admission ID / Roll #</th>
-
-                <th>Student Name & Father</th>
-
-                <th>Course / Batch</th>
-
-                <th>Contact Phone</th>
-
-                <th>Registered Email</th>
-
-                <th>Total Fee</th>
-
-                <th>Paid</th>
-
-                <th>Pending Balance</th>
-
-                <th>Status</th>
-
-                <th class="text-end">Actions</th>
-
+                <th style="width: 28%;">Student Details</th>
+                <th style="width: 16%;">Course & Batch</th>
+                <th style="width: 18%;">Contact Info</th>
+                <th style="width: 18%;">Fee Status</th>
+                <th style="width: 8%;">Status</th>
+                <th style="width: 12%;" class="text-end">Actions</th>
               </tr>
-
             </thead>
-
             <tbody id="adminStudentTableBody">
-
               {% for item in students %}
-
               {% set s = item.student %}
-
               <tr class="admin-student-row"
                   data-course="{{ (s.course or '')|lower|trim }}"
                   data-batch="{{ (s.batch or '')|lower|trim }}"
@@ -889,124 +893,145 @@
                   data-search="{{ ((s.name or '') ~ ' ' ~ (s.father_name or '') ~ ' ' ~ (s.admission_no or '') ~ ' ' ~ (s.roll_no or '') ~ ' ' ~ (s.phone or '') ~ ' ' ~ (s.email or '') ~ ' ' ~ (s.course or '') ~ ' ' ~ (s.batch or ''))|lower|trim }}"
                   style="cursor: pointer;"
                   onclick="if(!event.target.closest('.no-row-click')){ bootstrap.Modal.getOrCreateInstance(document.getElementById('viewStudentProfileModal{{ s.id }}')).show(); }"
-                  title="Student Profile dekhne ke liye click karein">
-
+                  title="Click to view full student profile">
                 <td>
-
-                  {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
-
-                    <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
-                         alt=""
-                         class="rounded-circle shadow-sm flex-shrink-0"
-                         style="width:42px;height:42px;min-width:42px;max-width:42px;min-height:42px;max-height:42px;aspect-ratio:1/1;object-fit:cover;border:2px solid var(--navy);display:inline-block;"
-                         title="{{ s.name }}"
-                         data-bs-toggle="tooltip"
-                         onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
-
-                  {% else %}
-
-                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm mx-auto"
-
-                         style="width:42px;height:42px;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:16px;">
-
-                      {{ s.name[0] | upper }}
-
+                  <div class="d-flex align-items-center gap-2.5">
+                    {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
+                      <img src="{{ url_for('uploaded_profile', filename=s.photo) }}"
+                           alt=""
+                           class="rounded-circle shadow-xs flex-shrink-0"
+                           style="width:38px;height:38px;aspect-ratio:1/1;object-fit:cover;border:2px solid var(--navy);"
+                           onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
+                    {% else %}
+                      <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-xs flex-shrink-0 text-white"
+                           style="width:38px;height:38px;background:linear-gradient(135deg,var(--navy-light),var(--navy));font-size:15px;">
+                        {{ s.name[0] | upper }}
+                      </div>
+                    {% endif %}
+                    <div class="min-w-0">
+                      <div class="fw-bold text-dark text-truncate">{{ s.name }}</div>
+                      <div class="text-muted small text-truncate" style="font-size: 11px;">S/O: {{ s.father_name or 'N/A' }}</div>
+                      <div class="d-flex align-items-center gap-1 mt-0.5">
+                        <span class="badge bg-light text-secondary border font-monospace" style="font-size: 9.5px;">Roll: {{ s.roll_no or '--' }}</span>
+                        <span class="badge bg-light text-muted border font-monospace" style="font-size: 9.5px;">{{ s.admission_no }}</span>
+                      </div>
                     </div>
-
-                  {% endif %}
-
+                  </div>
                 </td>
-
-                <td class="font-monospace fw-bold text-dark">
-
-                  <div>{{ s.admission_no }}</div>
-
-                  <span class="badge bg-light text-secondary border" style="font-size: 10px;">Roll #{{ s.roll_no or '--' }}</span>
-
-                </td>
-
                 <td>
-
-                  <div class="fw-bold text-dark">{{ s.name }}</div>
-
-                  <div class="text-muted small" style="font-size: 11px;">S/D of: {{ s.father_name or 'N/A' }}</div>
-
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle text-truncate d-inline-block" style="max-width: 160px;">{{ s.course or 'DIT' }}</span>
+                  <div class="text-muted small mt-0.5" style="font-size: 10.5px;">Batch: {{ s.batch or 'Regular' }}</div>
                 </td>
-
                 <td>
-
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ s.course or 'DIT' }}</span>
-
-                  {% if s.batch %}<div class="text-muted small mt-0.5" style="font-size: 10.5px;">{{ s.batch }}</div>{% endif %}
-
+                  <div class="d-flex align-items-center gap-1.5 font-monospace small">
+                    <a href="https://wa.me/92{{ s.phone[1:] if s.phone and s.phone.startswith('0') else s.phone }}" target="_blank" class="text-success text-decoration-none no-row-click" title="WhatsApp Message">
+                      <i class="bi bi-whatsapp"></i>
+                    </a>
+                    <span>{{ s.phone or '--' }}</span>
+                  </div>
+                  <div class="text-muted small font-monospace text-truncate mt-0.5" style="font-size: 10.5px; max-width: 160px;">{{ s.email or 'No Email' }}</div>
                 </td>
-
-                <td class="font-monospace">{{ s.phone or '--' }}</td>
-
                 <td>
-
-                  {% if s.email %}
-
-                    <span class="text-primary font-monospace small"><i class="bi bi-check2 text-success me-1"></i>{{ s.email }}</span>
-
-                  {% else %}
-
-                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle" style="font-size: 10px;">Pending Activation</span>
-
-                  {% endif %}
-
+                  <div class="small">
+                    <span class="text-muted">Total: Rs. {{ "{:,}".format(item.net_fee) }}</span>
+                    <span class="ms-1 text-success fw-bold">Paid: {{ "{:,}".format(item.paid) }}</span>
+                  </div>
+                  <div class="mt-0.5">
+                    {% if item.balance <= 0 %}
+                      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5" style="font-size: 10px;">Cleared</span>
+                    {% else %}
+                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-0.5" style="font-size: 10px;">Due: Rs. {{ "{:,}".format(item.balance) }}</span>
+                    {% endif %}
+                  </div>
                 </td>
-
-                <td class="fw-semibold">Rs. {{ "{:,}".format(item.net_fee) }}</td>
-
-                <td class="text-success fw-bold">Rs. {{ "{:,}".format(item.paid) }}</td>
-
                 <td>
-
-                  {% if item.balance <= 0 %}
-
-                    <span class="badge bg-success text-white rounded-pill px-2 py-1">Cleared</span>
-
-                  {% else %}
-
-                    <span class="badge bg-danger text-white rounded-pill px-2 py-1">Rs. {{ "{:,}".format(item.balance) }}</span>
-
-                  {% endif %}
-
-                </td>
-
-                <td>
-
-                  <span class="badge bg-{{ 'success' if (s.status or 'Active').lower() == 'active' else 'secondary' }}-subtle text-{{ 'success' if (s.status or 'Active').lower() == 'active' else 'secondary' }} rounded-pill">
-
+                  <span class="badge bg-{{ 'success' if (s.status or 'active').lower() == 'active' else 'secondary' }} rounded-pill px-2.5 py-1" style="font-size: 10.5px;">
                     {{ s.status or 'Active' }}
-
                   </span>
-
                 </td>
-
-                <td class="text-end">
-
-                  <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 me-1 no-row-click" style="font-size: 11.5px;" data-bs-toggle="modal" data-bs-target="#viewStudentProfileModal{{ s.id }}" title="Student Profile Dekhein">
-                    <i class="bi bi-person-badge me-1"></i>Profile
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 no-row-click" style="font-size: 11.5px;" data-bs-toggle="modal" data-bs-target="#editStudentModal{{ s.id }}" title="Edit Details">
-                    <i class="bi bi-pencil-square me-1"></i>Edit
-                  </button>
-
+                <td class="text-end no-row-click">
+                  <div class="d-inline-flex align-items-center gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fw-semibold" style="font-size: 11px;"
+                            data-bs-toggle="modal" data-bs-target="#viewStudentProfileModal{{ s.id }}">
+                      <i class="bi bi-eye me-1"></i>View
+                    </button>
+                    {% if item.balance > 0 %}
+                    <button type="button" class="btn btn-sm btn-success rounded-pill px-2 py-1 fw-bold collect-fee-btn shadow-xs" style="font-size: 11px;"
+                            data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#recordPaymentModal"
+                            data-student-id="{{ s.id }}" data-student-name="{{ s.name }}" title="Collect Fee">
+                      <i class="bi bi-cash"></i>
+                    </button>
+                    {% endif %}
+                  </div>
                 </td>
-
               </tr>
-
               {% endfor %}
-
             </tbody>
-
           </table>
-
         </div>
 
-      </div>
+        <!-- 2. Card View Grid (Toggled via Card View button) -->
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-3 mb-4 d-none" id="adminStudentCardContainer">
+          {% for item in students %}
+          {% set s = item.student %}
+          <div class="col admin-student-card-item"
+               data-course="{{ (s.course or '')|lower|trim }}"
+               data-batch="{{ (s.batch or '')|lower|trim }}"
+               data-teacher-id="{{ s.teacher_id or '' }}"
+               data-teacher-name="{{ (item.teacher_name or '')|lower|trim }}"
+               data-status="{{ (s.status or 'Active')|lower|trim }}"
+               data-date="{{ (s.admission_date or s.created_at or '')|trim }}"
+               data-fee="{{ item.net_fee or 0 }}"
+               data-paid="{{ item.paid or 0 }}"
+               data-balance="{{ item.balance or 0 }}"
+               data-search="{{ ((s.name or '') ~ ' ' ~ (s.father_name or '') ~ ' ' ~ (s.admission_no or '') ~ ' ' ~ (s.roll_no or '') ~ ' ' ~ (s.phone or '') ~ ' ' ~ (s.email or '') ~ ' ' ~ (s.course or '') ~ ' ' ~ (s.batch or ''))|lower|trim }}">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 position-relative">
+              <div class="d-flex align-items-center gap-2.5 mb-2.5">
+                {% if s.photo and s.photo != '' and not s.photo.startswith('/') and not s.photo.startswith('C:') %}
+                  <img src="{{ url_for('uploaded_profile', filename=s.photo) }}" alt="" class="rounded-circle shadow-xs flex-shrink-0" style="width:44px;height:44px;aspect-ratio:1/1;object-fit:cover;border:2px solid var(--navy);" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%230D186E\'/><circle cx=\'50\' cy=\'38\' r=\'18\' fill=\'%23ffffff\' opacity=\'0.85\'/><path d=\'M 22 84 A 30 30 0 0 1 78 84 Z\' fill=\'%23ffffff\' opacity=\'0.85\'/></svg>';">
+                {% else %}
+                  <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-xs flex-shrink-0 text-white" style="width:44px;height:44px;background:linear-gradient(135deg,var(--navy-light),var(--navy));font-size:16px;">
+                    {{ s.name[0] | upper }}
+                  </div>
+                {% endif %}
+                <div class="flex-grow-1 min-w-0">
+                  <h6 class="fw-bold mb-0 text-dark text-truncate" style="font-size: 13.5px;">{{ s.name }}</h6>
+                  <div class="text-muted small text-truncate" style="font-size: 11px;">Roll #{{ s.roll_no or '--' }} • {{ s.admission_no }}</div>
+                </div>
+                <span class="badge bg-{{ 'success' if (s.status or 'active').lower() == 'active' else 'secondary' }} rounded-pill" style="font-size: 10px;">{{ s.status or 'Active' }}</span>
+              </div>
+
+              <div class="py-1 px-2 rounded-3 bg-light mb-2 d-flex justify-content-between align-items-center" style="font-size: 11px;">
+                <span class="text-muted"><i class="bi bi-mortarboard me-1 text-primary"></i>Course:</span>
+                <span class="fw-bold text-dark text-truncate" style="max-width: 140px;">{{ s.course or 'DIT' }}</span>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mb-1 text-muted small" style="font-size: 11px;">
+                <span><i class="bi bi-telephone text-success me-1"></i>{{ s.phone or '--' }}</span>
+                <span>Batch: {{ s.batch or 'Regular' }}</span>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center py-1.5 px-2 rounded-3 bg-light mt-2" style="font-size: 11px;">
+                <div>Paid: <strong class="text-success">Rs. {{ "{:,}".format(item.paid) }}</strong></div>
+                <div>Due: <strong class="{% if item.balance > 0 %}text-danger{% else %}text-muted{% endif %}">Rs. {{ "{:,}".format(item.balance) }}</strong></div>
+              </div>
+
+              <div class="mt-3 pt-2 border-top d-flex gap-1.5">
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill w-100 fw-semibold" style="font-size: 11px;"
+                        data-bs-toggle="modal" data-bs-target="#viewStudentProfileModal{{ s.id }}">
+                  <i class="bi bi-person-badge me-1"></i>View Profile
+                </button>
+                {% if item.balance > 0 %}
+                <button type="button" class="btn btn-sm btn-success rounded-pill px-2.5 collect-fee-btn shadow-xs" style="font-size: 11px;"
+                        data-bs-toggle="modal" data-bs-target="#recordPaymentModal" data-student-id="{{ s.id }}" data-student-name="{{ s.name }}" title="Collect Fee">
+                  <i class="bi bi-cash"></i>
+                </button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div></div>
 
       <!-- ============================================================== -->
 
@@ -1607,6 +1632,57 @@
       <!-- ============================================================== -->
       <div class="tab-pane fade" id="tab-content-attendance" role="tabpanel">
         
+        <!-- Attendance Filters (Course, Teacher, Status & Student Search) -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-2.5">
+            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 13.5px;">
+              <i class="bi bi-funnel-fill text-primary me-2"></i>Hazri & Attendance Filters
+            </h6>
+            <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 fw-semibold text-primary" style="font-size: 11px;" onclick="resetAttendanceFilters()">Clear Filters</button>
+          </div>
+          <div class="row g-2">
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label small text-muted mb-1" style="font-size: 11px;">Filter by Course</label>
+              <select id="attCourseFilter" class="form-select form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAttendanceFilters()">
+                <option value="">All Courses</option>
+                {% set seen_courses = [] %}
+                {% for item in students %}
+                  {% if item.student.course and item.student.course.strip() and item.student.course.strip() not in seen_courses %}
+                    {% set _ = seen_courses.append(item.student.course.strip()) %}
+                    <option value="{{ item.student.course.strip() }}">{{ item.student.course.strip() }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label small text-muted mb-1" style="font-size: 11px;">Filter by Teacher</label>
+              <select id="attTeacherFilter" class="form-select form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAttendanceFilters()">
+                <option value="">All Teachers</option>
+                {% for st in all_staff %}
+                  <option value="{{ st.id }}">{{ st.name }} ({{ st.role or 'Faculty' }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label small text-muted mb-1" style="font-size: 11px;">Status</label>
+              <select id="attStatusFilter" class="form-select form-select-sm rounded-3" style="font-size: 11px;" onchange="applyAttendanceFilters()">
+                <option value="">All Statuses</option>
+                <option value="present">Present (Hazir)</option>
+                <option value="absent">Absent (Ghair Hazir)</option>
+                <option value="leave">Leave (Chutti)</option>
+                <option value="pending">Pending Verification</option>
+              </select>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <label class="form-label small text-muted mb-1" style="font-size: 11px;">Search Student</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light border-end-0 text-muted" style="font-size: 11px;"><i class="bi bi-search"></i></span>
+                <input type="text" id="attSearchInput" class="form-control bg-light border-start-0 rounded-end-3" placeholder="Search by name, roll no..." style="font-size: 11px;" oninput="applyAttendanceFilters()">
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Attendance Stats Header Cards -->
         <div class="row g-3 mb-4">
           <div class="col-6 col-md-3">
@@ -1685,7 +1761,7 @@
               </thead>
               <tbody>
                 {% for r in pending_reqs %}
-                <tr>
+                <tr class="att-row" data-course="{{ (r.course or "")|lower|trim }}" data-status="{{ (r.status or "pending")|lower|trim }}" data-search="{{ ((r.student_name or "") ~ " " ~ (r.roll_no or "") ~ " " ~ (r.admission_no or "") ~ " " ~ (r.course or ""))|lower|trim }}">
                   <td>
                     <div class="d-flex align-items-center gap-2">
                       {% if r.photo and r.photo != '' and not r.photo.startswith('/') and not r.photo.startswith('C:') %}
@@ -1790,7 +1866,7 @@
                   </thead>
                   <tbody>
                     {% for a in today_attendance %}
-                    <tr>
+                    <tr class="att-row" data-course="{{ (a.course or "")|lower|trim }}" data-status="{{ (a.status or "")|lower|trim }}" data-search="{{ ((a.student_name or "") ~ " " ~ (a.roll_no or "") ~ " " ~ (a.admission_no or "") ~ " " ~ (a.course or ""))|lower|trim }}">
                       <td class="fw-semibold">{{ a.student_name }}</td>
                       <td class="font-monospace text-muted">{{ a.roll_no or a.admission_no }}</td>
                       <td>{{ a.course }}</td>
@@ -2392,9 +2468,258 @@
           {% endif %}
         </div>
       </div>
-  </div><!-- /adminMainTabContent -->
+        <!-- ============================================================== -->
+      <!-- TAB 13: CERTIFICATION & DIPLOMA VERIFICATION                   -->
+      <!-- ============================================================== -->
+      <div class="tab-pane fade" id="tab-content-certifications" role="tabpanel">
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5 text-center mb-4">
+          <div class="mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 82px; height: 82px; background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); color: #D97706;">
+            <i class="bi bi-award-fill" style="font-size: 40px;"></i>
+          </div>
+          <span class="badge rounded-pill px-3 py-1.5 fw-bold mb-2 mx-auto" style="background: #FFFBEB; color: #B45309; border: 1px solid #FCD34D; font-size: 12px;">
+            <i class="bi bi-gear-wide-connected me-1.5"></i>Feature In Development
+          </span>
+          <h4 class="fw-bold text-dark mt-2 mb-2">Automated Student Certification & Diploma Verification System</h4>
+          <p class="text-muted mx-auto mb-4" style="max-width: 600px; font-size: 14.5px;">
+            <strong class="text-primary fs-6 d-block mb-1">Working on it! Will be available soon.</strong>
+            Hamara automated certification module tayar ho raha hai jahan se students ke verified certificates aur diplomas 1-click par generate aur digital verification ke sath download ho sakenge.
+          </p>
+
+          <div class="row g-3 justify-content-center text-start mx-auto mb-4" style="max-width: 820px;">
+            <div class="col-12 col-md-4">
+              <div class="p-3.5 rounded-4 bg-light border h-100">
+                <div class="fw-bold text-dark mb-1" style="font-size: 13.5px;"><i class="bi bi-qr-code text-primary me-2"></i>QR Code Verification</div>
+                <div class="text-muted" style="font-size: 12px;">Har certificate par unique verifiable QR code hoga jis se koi bhi employer foran tasdeeq kar sakega.</div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="p-3.5 rounded-4 bg-light border h-100">
+                <div class="fw-bold text-dark mb-1" style="font-size: 13.5px;"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Official PDF Diplomas</div>
+                <div class="text-muted" style="font-size: 12px;">Institute seal aur principal signature ke sath high-resolution printable diploma tayar hoga.</div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="p-3.5 rounded-4 bg-light border h-100">
+                <div class="fw-bold text-dark mb-1" style="font-size: 13.5px;"><i class="bi bi-check-circle-fill text-success me-2"></i>Eligibility Check</div>
+                <div class="text-muted" style="font-size: 12px;">Fee clearance aur attendance criteria poora hone par system auto-issue activate karega.</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <button type="button" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold" onclick="switchAdminTab('students')" style="font-size: 12px;">
+              <i class="bi bi-arrow-left me-1"></i>Back to Students Directory
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- TAB 14: TEACHER PAYOUTS & FACULTY SALARY LEDGER                -->
+      <!-- ============================================================== -->
+      <div class="tab-pane fade" id="tab-content-teacher-payouts" role="tabpanel">
+        <!-- Payout Top Metrics -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="admin-kpi-card h-100">
+              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px;">Total Faculty</span>
+              <div class="fs-3 fw-bolder mt-1 text-dark">{{ all_staff | length }}</div>
+              <div class="small text-muted mt-0.5" style="font-size: 11.5px;">Active Instructors</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="admin-kpi-card h-100">
+              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px;">Assigned Students</span>
+              <div class="fs-3 fw-bolder mt-1 text-primary">
+                {% set total_assigned = staff_overview | map(attribute='students_count') | sum %}
+                {{ total_assigned }}
+              </div>
+              <div class="small text-muted mt-0.5" style="font-size: 11.5px;">Under Faculty Training</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="admin-kpi-card h-100">
+              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px;">Faculty Student Fees</span>
+              <div class="fs-3 fw-bolder mt-1 text-success">
+                {% set total_st_fee = staff_overview | map(attribute='fee_collected') | sum %}
+                Rs. {{ "{:,}".format(total_st_fee) }}
+              </div>
+              <div class="small text-muted mt-0.5" style="font-size: 11.5px;">Total Fees Collected</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="admin-kpi-card h-100">
+              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px;">Calculated Payouts</span>
+              <div class="fs-3 fw-bolder mt-1 text-danger">
+                {% set total_share_amt = staff_overview | map(attribute='share_amount') | sum %}
+                Rs. {{ "{:,}".format(total_share_amt) }}
+              </div>
+              <div class="small text-muted mt-0.5" style="font-size: 11.5px;">Revenue Share Commissions</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Faculty Payout Table Card -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+              <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 14px;">
+                <i class="bi bi-cash-stack text-success me-2"></i>Faculty Payout & Compensation Management
+              </h6>
+              <p class="text-muted small mb-0" style="font-size: 11px;">Har teacher ko fixed salary ya revenue share ke hisaab se payment record karein</p>
+            </div>
+            <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#recordTeacherPayoutModal">
+              <i class="bi bi-plus-circle me-1"></i>Record New Payout
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size: 13px; width: 100%;">
+              <thead class="table-light">
+                <tr class="text-secondary fw-semibold">
+                  <th>Teacher / Instructor</th>
+                  <th>Designation & Contact</th>
+                  <th>Assigned Students</th>
+                  <th>Total Fee Collected</th>
+                  <th>Compensation Model</th>
+                  <th>Calculated Payable</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in staff_overview %}
+                {% set st = item.staff %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2.5">
+                      <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-xs text-white" style="width: 38px; height: 38px; background: linear-gradient(135deg, #4F46E5, #3730A3); font-size: 14px;">
+                        {{ st.name[0] | upper }}
+                      </div>
+                      <div>
+                        <div class="fw-bold text-dark">{{ st.name }}</div>
+                        <div class="text-muted small" style="font-size: 10.5px;">Teacher ID #{{ st.id }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">{{ st.role or 'Faculty' }}</span>
+                    <div class="text-muted small font-monospace mt-0.5" style="font-size: 11px;">{{ st.phone or '--' }}</div>
+                  </td>
+                  <td>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                      <i class="bi bi-people me-1"></i>{{ item.students_count }} Students
+                    </span>
+                  </td>
+                  <td class="fw-bold text-success">Rs. {{ "{:,}".format(item.fee_collected) }}</td>
+                  <td>
+                    {% if item.share_pct > 0 %}
+                      <span class="badge bg-success-subtle text-success border border-success-subtle">{{ item.share_pct }}% Share</span>
+                    {% elif st.salary > 0 %}
+                      <span class="badge bg-info-subtle text-info border border-info-subtle">Fixed Salary</span>
+                    {% else %}
+                      <span class="badge bg-secondary-subtle text-muted border">Honorary / Unassigned</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if item.share_pct > 0 %}
+                      <strong class="text-primary">Rs. {{ "{:,}".format(item.share_amount) }}</strong>
+                      <small class="text-muted d-block" style="font-size: 10px;">({{ item.share_pct }}% of fee)</small>
+                    {% elif st.salary > 0 %}
+                      <strong class="text-dark">Rs. {{ "{:,}".format(st.salary) }}</strong>
+                      <small class="text-muted d-block" style="font-size: 10px;">Monthly Fixed</small>
+                    {% else %}
+                      <span class="text-muted">--</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold pay-teacher-btn"
+                            data-bs-toggle="modal" data-bs-target="#recordTeacherPayoutModal"
+                            data-teacher-id="{{ st.id }}" data-teacher-name="{{ st.name }}"
+                            data-suggested-amount="{% if item.share_pct > 0 %}{{ item.share_amount }}{% elif st.salary > 0 %}{{ st.salary }}{% else %}0{% endif %}">
+                      <i class="bi bi-cash-coin me-1"></i>Pay Teacher
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+</div><!-- /adminMainTabContent -->
 
 <!-- ============================================================== -->
+
+<!-- ============================================================== -->
+<!-- MODAL: RECORD TEACHER PAYOUT                                   -->
+<!-- ============================================================== -->
+<div class="modal fade" id="recordTeacherPayoutModal" tabindex="-1" aria-labelledby="recordTeacherPayoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #065F46, #059669); color: white;">
+        <h6 class="modal-title fw-bold" id="recordTeacherPayoutModalLabel">
+          <i class="bi bi-cash-coin me-2"></i>Record Teacher Payout / Salary
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin_teacher_payout') }}">
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Select Teacher *</label>
+            <select name="teacher_id" id="payoutTeacherSelect" class="form-select" required>
+              <option value="">-- Choose Faculty Teacher --</option>
+              {% for st in all_staff %}
+                <option value="{{ st.id }}">{{ st.name }} ({{ st.role or 'Faculty' }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Payout Type</label>
+              <select name="payout_type" class="form-select">
+                <option value="Salary">Monthly Salary</option>
+                <option value="Revenue Share">Revenue Share Commission</option>
+                <option value="Bonus / Advance">Bonus / Advance</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Amount (Rs.) *</label>
+              <input type="number" step="100" name="amount" id="payoutAmountInput" class="form-control font-monospace" placeholder="e.g. 25000" required>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Payment Method</label>
+              <select name="method" class="form-select">
+                <option value="Cash">Cash</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="EasyPaisa">EasyPaisa</option>
+                <option value="JazzCash">JazzCash</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small fw-bold text-secondary mb-1">Payment Date</label>
+              <input type="date" name="pay_date" class="form-control" value="{{ today_str }}">
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-secondary mb-1">Note / Month / Description</label>
+            <input type="text" name="note" class="form-control" placeholder="e.g. October 2026 Salary / Share">
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2.5">
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-sm">
+            <i class="bi bi-check-circle me-1"></i>Save & Record Payout
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL: ADMIN CREDENTIALS & SECURITY UPDATE                     -->
 
@@ -3558,7 +3883,36 @@
     let totalBalanceSum = 0;
 
     const rows = document.querySelectorAll('.admin-student-row');
-    rows.forEach(row => {
+    
+    const cardItems = document.querySelectorAll('.admin-student-card-item');
+    let cardVisibleCount = 0;
+    cardItems.forEach(card => {
+      const text = (card.dataset.search || card.textContent).toLowerCase();
+      const rowCourse = (card.dataset.course || '').toLowerCase().trim();
+      const rowBatch = (card.dataset.batch || '').toLowerCase().trim();
+      const rowStatus = (card.dataset.status || 'active').toLowerCase().trim();
+      const rowDate = (card.dataset.date || '').trim();
+      const rowTeacherId = (card.dataset.teacherId || '').trim();
+      const rowTeacherName = (card.dataset.teacherName || '').toLowerCase().trim();
+
+      const matchSearch = (q === '' || text.includes(q));
+      const matchCourse = (selCourse === '' || rowCourse === selCourse || rowCourse.includes(selCourse));
+      const matchBatch = (selBatch === '' || rowBatch === selBatch || rowBatch.includes(selBatch));
+      const matchStatus = (selStatus === '' || rowStatus === selStatus);
+      const matchDate = (selDate === '' || rowDate.includes(selDate));
+      const matchTeacher = (selTeacher === '' || rowTeacherId === selTeacher);
+      const matchTeacherQ = (selTeacherQ === '' || rowTeacherName.includes(selTeacherQ));
+
+      if (matchSearch && matchCourse && matchBatch && matchStatus && matchDate && matchTeacher && matchTeacherQ) {
+        cardVisibleCount++;
+        if (cardVisibleCount <= rowsLimit) card.style.display = '';
+        else card.style.display = 'none';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+rows.forEach(row => {
       const text = (row.dataset.search || row.textContent).toLowerCase();
       const rowCourse = (row.dataset.course || '').toLowerCase().trim();
       const rowBatch = (row.dataset.batch || '').toLowerCase().trim();
@@ -3658,6 +4012,7 @@
     if (rowsPerPageSelect) rowsPerPageSelect.value = '10';
 
     const rows = document.querySelectorAll('.admin-student-row');
+    document.querySelectorAll('.admin-student-card-item').forEach(c => c.style.display = '');
     rows.forEach(r => r.style.display = '');
 
     window.resetAdminKPIsToOverall();
@@ -3691,6 +4046,83 @@
     const elNetSub = document.getElementById('kpiNetProfitSub');
     if (elNetSub && overallKPIs.netSub) elNetSub.textContent = overallKPIs.netSub;
   };
+
+// Toggle between List View and Card View
+window.setStudentView = function(viewType) {
+  const tableContainer = document.getElementById('adminStudentTableContainer');
+  const cardContainer = document.getElementById('adminStudentCardContainer');
+  const listBtn = document.getElementById('adminViewListBtn');
+  const cardBtn = document.getElementById('adminViewCardBtn');
+
+  if (viewType === 'card') {
+    if (tableContainer) tableContainer.classList.add('d-none');
+    if (cardContainer) cardContainer.classList.remove('d-none');
+    if (listBtn) { listBtn.classList.remove('btn-primary', 'active'); listBtn.classList.add('btn-outline-secondary'); }
+    if (cardBtn) { cardBtn.classList.remove('btn-outline-secondary'); cardBtn.classList.add('btn-primary', 'active'); }
+  } else {
+    if (tableContainer) tableContainer.classList.remove('d-none');
+    if (cardContainer) cardContainer.classList.add('d-none');
+    if (listBtn) { listBtn.classList.remove('btn-outline-secondary'); listBtn.classList.add('btn-primary', 'active'); }
+    if (cardBtn) { cardBtn.classList.remove('btn-primary', 'active'); cardBtn.classList.add('btn-outline-secondary'); }
+  }
+};
+
+// Attendance Tab Filters
+window.applyAttendanceFilters = function() {
+  const course = (document.getElementById('attCourseFilter')?.value || '').toLowerCase().trim();
+  const teacher = (document.getElementById('attTeacherFilter')?.value || '').trim();
+  const status = (document.getElementById('attStatusFilter')?.value || '').toLowerCase().trim();
+  const q = (document.getElementById('attSearchInput')?.value || '').toLowerCase().trim();
+
+  const rows = document.querySelectorAll('#tab-content-attendance tbody tr.att-row');
+  rows.forEach(r => {
+    const rCourse = (r.dataset.course || '').toLowerCase().trim();
+    const rTeacher = (r.dataset.teacherId || '').trim();
+    const rStatus = (r.dataset.status || '').toLowerCase().trim();
+    const rSearch = (r.dataset.search || r.textContent).toLowerCase().trim();
+
+    const mCourse = (!course || rCourse.includes(course));
+    const mTeacher = (!teacher || rTeacher === teacher);
+    const mStatus = (!status || rStatus.includes(status));
+    const mSearch = (!q || rSearch.includes(q));
+
+    if (mCourse && mTeacher && mStatus && mSearch) {
+      r.style.display = '';
+    } else {
+      r.style.display = 'none';
+    }
+  });
+};
+
+window.resetAttendanceFilters = function() {
+  ['attCourseFilter', 'attTeacherFilter', 'attStatusFilter', 'attSearchInput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  window.applyAttendanceFilters();
+};
+
+// Pre-fill Teacher Payout Modal
+document.addEventListener('DOMContentLoaded', function() {
+  const payoutModal = document.getElementById('recordTeacherPayoutModal');
+  if (payoutModal) {
+    payoutModal.addEventListener('show.bs.modal', function(event) {
+      const trigger = event.relatedTarget;
+      if (!trigger) return;
+      const teacherId = trigger.getAttribute('data-teacher-id');
+      const suggestedAmount = trigger.getAttribute('data-suggested-amount');
+      if (teacherId) {
+        const select = document.getElementById('payoutTeacherSelect');
+        if (select) select.value = teacherId;
+      }
+      if (suggestedAmount && parseFloat(suggestedAmount) > 0) {
+        const amtInput = document.getElementById('payoutAmountInput');
+        if (amtInput) amtInput.value = Math.round(parseFloat(suggestedAmount));
+      }
+    });
+  }
+});
+
 })();
 </script>
 
