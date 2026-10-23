@@ -3005,10 +3005,10 @@ def student_send_message():
 
     # Check limit: 10 messages per day
     _cc_row = conn.execute(
-        "SELECT COUNT(*) FROM student_messages WHERE student_id = ? AND (DATE(created_at) = CURRENT_DATE OR DATE(created_at) = ?)",
+        "SELECT COUNT(*) as cnt FROM student_messages WHERE student_id = ? AND (DATE(created_at) = CURRENT_DATE OR DATE(created_at) = ?)",
         (student_id, today_str)
     ).fetchone()
-    current_count = (_cc_row[0] if _cc_row else 0) if _cc_row else 0
+    current_count = (int(_cc_row["cnt"] or 0) if isinstance(_cc_row, dict) else int(_cc_row[0] or 0)) if _cc_row else 0
 
     if current_count >= 10:
         conn.close()
@@ -3973,10 +3973,10 @@ def staff_message_student():
     # Check daily limit: max 3 messages PER DAY (total across all students)
     today_str = datetime.now().strftime("%Y-%m-%d")
     _t4_row = conn.execute("""
-        SELECT COUNT(*) FROM teacher_student_messages
+        SELECT COUNT(*) as cnt FROM teacher_student_messages
         WHERE staff_id = ? AND (DATE(created_at) = CURRENT_DATE OR DATE(created_at) = ?)
     """, (staff_id, today_str)).fetchone()
-    today_count = (_t4_row[0] if _t4_row else 0) if _t4_row else 0
+    today_count = (int(_t4_row["cnt"] or 0) if isinstance(_t4_row, dict) else int(_t4_row[0] or 0)) if _t4_row else 0
 
     if today_count >= 3:
         conn.close()
@@ -4016,10 +4016,10 @@ def staff_get_sent_messages():
     """, (staff_id,)).fetchall()
     today_str = datetime.now().strftime("%Y-%m-%d")
     _t4_row = conn.execute("""
-        SELECT COUNT(*) FROM teacher_student_messages
+        SELECT COUNT(*) as cnt FROM teacher_student_messages
         WHERE staff_id = ? AND (DATE(created_at) = CURRENT_DATE OR DATE(created_at) = ?)
     """, (staff_id, today_str)).fetchone()
-    today_count = (_t4_row[0] if _t4_row else 0) if _t4_row else 0
+    today_count = (int(_t4_row["cnt"] or 0) if isinstance(_t4_row, dict) else int(_t4_row[0] or 0)) if _t4_row else 0
     conn.close()
 
     messages = []
