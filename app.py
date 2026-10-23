@@ -832,7 +832,7 @@ def login():
                         return redirect(url_for("dashboard"))
 
         # -------------------------------------------------------------
-        # 2. TEACHER / STAFF LOGIN (Seamless ID/Phone/Name + Password Auth)
+        # 2. TEACHER / STAFF LOGIN (Strict 3-Way Security: Phone/Number + Registered Email + PIN/Password)
         # -------------------------------------------------------------
         elif login_type == "staff":
             staff_input = request.form.get("staff_input", "").strip()
@@ -840,23 +840,24 @@ def login():
             staff_password = request.form.get("staff_password", "").strip()
 
             cleaned_phone = clean_phone(staff_input)
-            staff_name_input = staff_input.upper().replace("SIR ", "").replace("MAM ", "").replace("MR ", "").replace("MS ", "").strip()
 
             if not staff_input:
-                error = "Teacher ID, Mobile Number ya Name darj karna lazmi hai."
+                error = "Teacher Contact / Mobile Number darj karna lazmi hai."
+            elif not staff_email:
+                error = "Teacher Registered Official Email darj karna lazmi hai."
+            elif "@" not in staff_email or "." not in staff_email:
+                error = "Durust Teacher Email address darj karein."
             elif not staff_password:
-                error = "Teacher Password darj karna lazmi hai (Default: 1234)."
+                error = "Teacher Security PIN / Password darj karna lazmi hai."
             else:
                 staff_members = conn.execute("SELECT * FROM staff").fetchall()
                 matched_staff = None
 
+                # Search strictly by Phone / Number or ID
                 for st in staff_members:
                     st_phone = clean_phone(st["phone"])
                     st_wa = clean_phone(st["whatsapp"])
-                    st_name = (st["name"] or "").strip().upper()
-                    st_name_clean = st_name.replace("SIR ", "").replace("MAM ", "").replace("MR ", "").replace("MS ", "").strip()
                     st_id = str(st["id"]).strip()
-                    st_em = str(st["email"] or "").strip().lower()
 
                     # Match ID
                     if staff_input == f"TCH-{st_id.zfill(3)}" or staff_input == st_id or staff_input.upper() == f"TCH-{st_id}":
@@ -868,72 +869,58 @@ def login():
                         matched_staff = st
                         break
 
-                    # Match Email
-                    if "@" in staff_input and st_em and staff_input.lower() == st_em:
-                        matched_staff = st
-                        break
-
-                    # Match Name
-                    if staff_name_input and (staff_name_input in st_name_clean or st_name_clean in staff_name_input or staff_input.upper() in st_name):
-                        matched_staff = st
-                        break
-
-                # If not matched by input, check staff_email field
-                if not matched_staff and staff_email and "@" in staff_email:
+                # Fallback: match by teacher name if provided as staff_input
+                if not matched_staff:
+                    staff_name_input = staff_input.upper().replace("SIR ", "").replace("MAM ", "").replace("MR ", "").replace("MS ", "").strip()
                     for st in staff_members:
-                        st_em = str(st["email"] or "").strip().lower()
-                        if staff_email == st_em:
+                        st_name = (st["name"] or "").strip().upper()
+                        st_name_clean = st_name.replace("SIR ", "").replace("MAM ", "").replace("MR ", "").replace("MS ", "").strip()
+                        if staff_name_input and (staff_name_input == st_name_clean or staff_name_input in st_name_clean):
                             matched_staff = st
                             break
 
                 if not matched_staff:
-                    error = f"Staff / Teacher '{staff_input}' ka koi record nahi mila. Barah-e-karam apna Teacher ID, Name ya Mobile check karein."
+                    error = f"Teacher record '{staff_input}' nahi mila. Barah-e-karam apna durust Mobile Number ya Teacher ID darj karein."
                 else:
                     st_email = str(matched_staff["email"] or "").strip().lower()
-                    st_phone = clean_phone(matched_staff["phone"])
                     stored_pin = str(matched_staff["pin"] if "pin" in matched_staff.keys() else "").strip()
                     stored_hash = str(matched_staff["password_hash"] if "password_hash" in matched_staff.keys() else "").strip()
                     effective_hash = stored_hash or stored_pin
 
-                    # If teacher didn't have an email in DB and provided one, auto-link it
-                    if not st_email and staff_email and "@" in staff_email:
+                    # Strict Security Step 1: Verify Email matches registered teacher email
+                    if not st_email:
+                        # Auto-link if first time setting up
                         st_email = staff_email
+                        conn.execute("UPDATE staff SET email = ? WHERE id = ?", (st_email, matched_staff["id"]))
+                        conn.commit()
+                    elif st_email != staff_email:
+                        error = f"Security Check Failed: Email '{staff_email}' is teacher record ke sath match nahi karta."
+                        conn.close()
+                        return render_template("login.html", error=error, active_tab=active_tab, form_roll=form_roll, form_email=form_email)
 
-                    default_staff_pins = [
-                        "1234", "123456", "teacher123", "asdi123", "Teacher@2026", "Admin@2026",
-                        str(settings.get("admin_pin", "1234")).strip(),
-                        str(settings.get("principal_pin", "9999")).strip(),
-                        str(matched_staff["id"]),
-                        st_phone,
-                        st_phone[-4:] if len(st_phone) >= 4 else ""
-                    ]
-                    default_staff_pins = [p for p in default_staff_pins if p]
-
+                    # Strict Security Step 2: Verify PIN/Password strictly (NO DEFAULT FALLBACKS)
                     is_valid = False
                     if effective_hash and verify_student_password(effective_hash, staff_password):
                         is_valid = True
-                    elif staff_password in default_staff_pins:
-                        is_valid = True
-                    elif not effective_hash:
-                        # First time logging in with entered password
+                    elif stored_pin and stored_pin == staff_password:
                         is_valid = True
 
                     if not is_valid:
-                        error = "Ghalat Teacher Password! Barah-e-karam apna durust password darj karein (Default: 1234) ya 'Forgot Password' se reset karein."
+                        error = "Ghalat Teacher PIN / Password! Barah-e-karam apna durust private password darj karein ya Admin se reset karwayen."
                     else:
-                        # Save/upgrade hash
-                        if not effective_hash or not effective_hash.startswith(('scrypt:', 'pbkdf2:', 'argon2:')) or staff_password in default_staff_pins:
-                            sync_staff_security(matched_staff["id"], st_email or staff_email, staff_password)
+                        # Ensure hash is upgraded if needed
+                        if not effective_hash or not effective_hash.startswith(('scrypt:', 'pbkdf2:', 'argon2:')):
+                            sync_staff_security(matched_staff["id"], st_email, staff_password)
 
                         session.clear()
                         session["role"] = "staff"
                         session["staff_id"] = matched_staff["id"]
                         session["user_name"] = matched_staff["name"]
                         session["staff_role"] = matched_staff["role"]
-                        session["email"] = st_email or staff_email or f"staff{matched_staff['id']}@asdi.edu"
+                        session["email"] = st_email
                         conn.close()
 
-                        flash(f"Khush Aamdeed, {matched_staff['name']}! Faculty Portal session kamyabi se shuru ho gaya.", "success")
+                        flash(f"Khush Aamdeed, {matched_staff['name']}! Secure Faculty Portal session shuru ho gaya.", "success")
                         return redirect(url_for("staff_dashboard"))
 
 

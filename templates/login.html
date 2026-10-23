@@ -187,46 +187,46 @@
       </div>
 
       <!-- ============================================================== -->
-      <!-- 2. TEACHER / STAFF LOGIN FORM (Strict 3-Way: ID/Phone + Email + Password) -->
+      <!-- 2. TEACHER / STAFF LOGIN FORM (Strict 3-Way: Phone/No + Email + PIN) -->
       <!-- ============================================================== -->
       <div class="tab-pane fade {% if active_tab == 'staff' %}show active{% endif %}" id="tab-staff" role="tabpanel">
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-          <span class="small fw-bold text-dark"><i class="bi bi-person-workspace text-primary me-1"></i>Faculty & Staff Login</span>
-          <span class="badge bg-primary-subtle text-primary" style="font-size: 11px;">Faculty Portal</span>
+          <span class="small fw-bold text-dark"><i class="bi bi-person-workspace text-primary me-1"></i>Faculty & Teacher Login</span>
+          <span class="badge bg-primary text-white" style="font-size: 11px;">Strict 3-Way Auth</span>
         </div>
         <form method="POST" action="{{ url_for('login') }}" id="staffLoginForm">
           <input type="hidden" name="login_type" value="staff">
 
-          <!-- Teacher Identifier / Phone / Name -->
+          <!-- Teacher Phone / Mobile Number -->
           <div class="mb-3">
             <label for="staff_input" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
-              <span><i class="bi bi-person-badge text-primary me-1"></i>Teacher ID, Mobile or Name</span>
-              <span class="text-muted" style="font-size: 10.5px;">Required</span>
+              <span><i class="bi bi-telephone text-primary me-1"></i>Teacher Mobile / Contact Number</span>
+              <span class="text-danger fw-bold" style="font-size: 10.5px;">Required</span>
             </label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
-                <i class="bi bi-telephone"></i>
+                <i class="bi bi-phone"></i>
               </span>
               <input 
                 type="text" 
                 class="form-control bg-light border-start-0 py-2 font-monospace" 
                 id="staff_input" 
                 name="staff_input" 
-                placeholder="e.g. Sir Kamran, 0300-1234567 or ID" 
+                placeholder="e.g. 0332-9854273 or Teacher ID" 
                 required 
                 style="border-radius: 0 12px 12px 0; font-size: 14px;"
               >
             </div>
             <div class="form-text text-muted" style="font-size: 11px;">
-              Teacher ID, Name ya Mobile Number darj karein.
+              Registered Teacher Contact Number darj karein.
             </div>
           </div>
 
-          <!-- Teacher Email (OPTIONAL) -->
+          <!-- Teacher Email (MANDATORY) -->
           <div class="mb-3">
             <label for="staff_email" class="form-label small fw-bold text-secondary mb-1 d-flex justify-content-between">
-              <span><i class="bi bi-envelope-at text-primary me-1"></i>Registered Faculty Email</span>
-              <span class="text-muted" style="font-size: 10.5px;">Optional</span>
+              <span><i class="bi bi-envelope-at text-primary me-1"></i>Teacher Official Email Address</span>
+              <span class="text-danger fw-bold" style="font-size: 10.5px;">Required</span>
             </label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
@@ -237,23 +237,24 @@
                 class="form-control bg-light border-start-0 py-2" 
                 id="staff_email" 
                 name="staff_email" 
-                placeholder="e.g. teacher@gmail.com (Optional)" 
+                placeholder="e.g. tayyba@asdi.edu" 
+                required
                 style="border-radius: 0 12px 12px 0; font-size: 14px;"
               >
             </div>
             <div class="form-text text-muted" style="font-size: 11px;">
-              Optional: Agar email yaad na ho to sirf Name/ID aur Password se login karein.
+              Teacher ki registered institutional/personal email darj karein.
             </div>
           </div>
 
-          <!-- Teacher Password -->
+          <!-- Teacher PIN / Password -->
           <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <label for="staff_password" class="form-label small fw-bold text-secondary mb-0">
-                <i class="bi bi-shield-lock text-primary me-1"></i>Teacher Security Password
+                <i class="bi bi-shield-lock text-primary me-1"></i>Teacher Security PIN / Password
               </label>
               <a href="#" class="text-decoration-none small text-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#forgotStaffModal" style="font-size: 11.5px;">
-                Forgot Password?
+                Forgot PIN?
               </a>
             </div>
             <div class="input-group">
@@ -265,7 +266,7 @@
                 class="form-control bg-light border-start-0 border-end-0 py-2 font-monospace" 
                 id="staff_password" 
                 name="staff_password" 
-                placeholder="Enter teacher password (default: 1234)" 
+                placeholder="Enter private teacher security PIN / password" 
                 required 
                 style="font-size: 14px;"
               >
@@ -279,11 +280,14 @@
                 <i class="bi bi-eye" id="staffPasswordToggleIcon"></i>
               </button>
             </div>
+            <div class="form-text text-muted" style="font-size: 11px;">
+              Khas teacher security PIN / password lazmi hai.
+            </div>
           </div>
 
           <button type="submit" class="btn btn-asdi w-100 py-2.5 mt-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm rounded-3">
-            <i class="bi bi-box-arrow-in-right"></i>
-            <span>Teacher Portal Login</span>
+            <i class="bi bi-shield-check"></i>
+            <span>Verify & Login to Teacher Portal</span>
           </button>
         </form>
 
