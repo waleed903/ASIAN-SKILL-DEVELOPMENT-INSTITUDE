@@ -15,14 +15,117 @@
     background: #ffffff;
     border: 1px solid #E2E8F0;
     border-radius: 18px;
-    padding: 18px 20px;
+    padding: 16px 18px;
     transition: all 0.25s ease;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
   .admin-kpi-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 18px -4px rgba(0,0,0,0.08);
     border-color: #CBD5E1;
+  }
+  .admin-kpi-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+    min-width: 0;
+  }
+  .admin-kpi-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: #64748B;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .admin-kpi-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .admin-kpi-value {
+    font-size: clamp(1.15rem, 3.8vw, 1.75rem);
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    margin: 2px 0 4px 0;
+  }
+  .admin-kpi-sub {
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .admin-kpi-sub .text-truncate {
+    min-width: 0;
+  }
+
+  @media (max-width: 767.98px) {
+    .admin-kpi-card {
+      padding: 12px 12px;
+      border-radius: 14px;
+    }
+    .admin-kpi-header {
+      margin-bottom: 4px;
+      gap: 6px;
+    }
+    .admin-kpi-title {
+      font-size: 9.5px;
+      letter-spacing: 0.2px;
+    }
+    .admin-kpi-icon {
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+    }
+    .admin-kpi-value {
+      font-size: clamp(1rem, 4.2vw, 1.3rem);
+      margin: 1px 0 3px 0;
+    }
+    .admin-kpi-sub {
+      font-size: 10px;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .admin-kpi-card {
+      padding: 10px 8px;
+    }
+    .admin-kpi-title {
+      font-size: 8.5px;
+    }
+    .admin-kpi-value {
+      font-size: 0.95rem;
+    }
+    .admin-kpi-icon {
+      width: 24px;
+      height: 24px;
+      font-size: 11px;
+    }
   }
   .admin-nav-card {
     background: #ffffff;
@@ -309,21 +412,16 @@
     <!-- Total Enrolled Students -->
     <div class="col-6 col-lg-3">
       <div class="admin-kpi-card h-100 position-relative">
-        <div class="d-flex justify-content-between align-items-start">
-          <div class="d-flex align-items-center gap-3">
-            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 46px; height: 46px; background: #EFF6FF; color: #2563EB;">
-              <i class="bi bi-people-fill fs-4"></i>
-            </div>
-            <div>
-              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px; letter-spacing: 0.5px;">ENROLLED STUDENTS</span>
-              <div class="fs-3 fw-bolder mt-0.5 text-dark" id="kpiTotalStudents">{{ total_students }}</div>
-              <div class="small fw-semibold mt-1 d-flex align-items-center text-success" id="kpiActiveStudents" style="font-size: 12px;">
-                <span class="badge bg-success rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-plus"></i></span>
-                {{ active_students }} Active Students
-              </div>
-            </div>
+        <div class="admin-kpi-header">
+          <span class="admin-kpi-title text-uppercase fw-bold text-muted" id="kpiStudentsTitle">ENROLLED STUDENTS</span>
+          <div class="admin-kpi-icon rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="background: #EFF6FF; color: #2563EB;">
+            <i class="bi bi-people-fill"></i>
           </div>
-          <i class="bi bi-chevron-right text-muted opacity-50" style="font-size: 13px;"></i>
+        </div>
+        <div class="admin-kpi-value text-dark" id="kpiTotalStudents">{{ total_students }}</div>
+        <div class="admin-kpi-sub text-success" id="kpiActiveStudents">
+          <span class="badge bg-success rounded-circle p-1 me-1 flex-shrink-0" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-plus"></i></span>
+          <span class="text-truncate">{{ active_students }} Active Students</span>
         </div>
       </div>
     </div>
@@ -331,21 +429,16 @@
     <!-- Total Fee Revenue Collected -->
     <div class="col-6 col-lg-3">
       <div class="admin-kpi-card h-100 position-relative">
-        <div class="d-flex justify-content-between align-items-start">
-          <div class="d-flex align-items-center gap-3">
-            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 46px; height: 46px; background: #ECFDF5; color: #059669;">
-              <i class="bi bi-cash-stack fs-4"></i>
-            </div>
-            <div>
-              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px; letter-spacing: 0.5px;" id="kpiRevenueTitle">TOTAL COLLECTION</span>
-              <div class="fs-3 fw-bolder mt-0.5 text-success" id="kpiTotalRevenue">Rs. {{ "{:,}".format(total_revenue) }}</div>
-              <div class="small fw-semibold mt-1 d-flex align-items-center text-success" id="kpiRevenueSub" style="font-size: 12px;">
-                <span class="badge bg-success rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-plus"></i></span>
-                {{ payments | length }} Verified Receipts
-              </div>
-            </div>
+        <div class="admin-kpi-header">
+          <span class="admin-kpi-title text-uppercase fw-bold text-muted" id="kpiRevenueTitle">TOTAL COLLECTION</span>
+          <div class="admin-kpi-icon rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="background: #ECFDF5; color: #059669;">
+            <i class="bi bi-cash-stack"></i>
           </div>
-          <i class="bi bi-chevron-right text-muted opacity-50" style="font-size: 13px;"></i>
+        </div>
+        <div class="admin-kpi-value text-success" id="kpiTotalRevenue">Rs. {{ "{:,}".format((total_revenue or 0)|int) }}</div>
+        <div class="admin-kpi-sub text-success" id="kpiRevenueSub">
+          <span class="badge bg-success rounded-circle p-1 me-1 flex-shrink-0" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-plus"></i></span>
+          <span class="text-truncate">{{ payments | length }} Verified Receipts</span>
         </div>
       </div>
     </div>
@@ -353,21 +446,16 @@
     <!-- Outstanding Receivables -->
     <div class="col-6 col-lg-3">
       <div class="admin-kpi-card h-100 position-relative">
-        <div class="d-flex justify-content-between align-items-start">
-          <div class="d-flex align-items-center gap-3">
-            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 46px; height: 46px; background: #FEF2F2; color: #DC2626;">
-              <i class="bi bi-credit-card-2-front fs-4"></i>
-            </div>
-            <div>
-              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px; letter-spacing: 0.5px;" id="kpiPendingTitle">PENDING BALANCE</span>
-              <div class="fs-3 fw-bolder mt-0.5 text-danger" id="kpiPendingBalance">Rs. {{ "{:,}".format(total_pending_receivables) }}</div>
-              <div class="small fw-semibold mt-1 d-flex align-items-center text-danger" id="kpiPendingSub" style="font-size: 12px;">
-                <span class="badge bg-danger rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-dash"></i></span>
-                Receivable from Students
-              </div>
-            </div>
+        <div class="admin-kpi-header">
+          <span class="admin-kpi-title text-uppercase fw-bold text-muted" id="kpiPendingTitle">PENDING BALANCE</span>
+          <div class="admin-kpi-icon rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="background: #FEF2F2; color: #DC2626;">
+            <i class="bi bi-credit-card-2-front"></i>
           </div>
-          <i class="bi bi-chevron-right text-muted opacity-50" style="font-size: 13px;"></i>
+        </div>
+        <div class="admin-kpi-value text-danger" id="kpiPendingBalance">Rs. {{ "{:,}".format((total_pending_receivables or 0)|int) }}</div>
+        <div class="admin-kpi-sub text-danger" id="kpiPendingSub">
+          <span class="badge bg-danger rounded-circle p-1 me-1 flex-shrink-0" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-dash"></i></span>
+          <span class="text-truncate">Receivable from Students</span>
         </div>
       </div>
     </div>
@@ -375,20 +463,16 @@
     <!-- Net Cash Balance -->
     <div class="col-6 col-lg-3">
       <div class="admin-kpi-card h-100 position-relative">
-        <div class="d-flex justify-content-between align-items-start">
-          <div class="d-flex align-items-center gap-3">
-            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 46px; height: 46px; background: #EFF6FF; color: #1D4ED8;">
-              <i class="bi bi-wallet2 fs-4"></i>
-            </div>
-            <div>
-              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px; letter-spacing: 0.5px;" id="kpiNetProfitTitle">NET CASH BALANCE</span>
-              <div class="fs-3 fw-bolder mt-0.5 text-primary" id="kpiNetProfit">Rs. {{ "{:,}".format(net_profit) }}</div>
-              <div class="small fw-semibold mt-1 d-flex align-items-center text-muted" id="kpiNetProfitSub" style="font-size: 12px;">
-                <i class="bi bi-receipt me-1 text-secondary"></i>Expenses: Rs. {{ "{:,}".format(total_expenses) }}
-              </div>
-            </div>
+        <div class="admin-kpi-header">
+          <span class="admin-kpi-title text-uppercase fw-bold text-muted" id="kpiNetProfitTitle">NET CASH BALANCE</span>
+          <div class="admin-kpi-icon rounded-circle d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="background: #EFF6FF; color: #1D4ED8;">
+            <i class="bi bi-wallet2"></i>
           </div>
-          <i class="bi bi-chevron-right text-muted opacity-50" style="font-size: 13px;"></i>
+        </div>
+        <div class="admin-kpi-value text-primary" id="kpiNetProfit">Rs. {{ "{:,}".format((net_profit or 0)|int) }}</div>
+        <div class="admin-kpi-sub text-muted" id="kpiNetProfitSub">
+          <i class="bi bi-receipt me-1 text-secondary flex-shrink-0"></i>
+          <span class="text-truncate">Expenses: Rs. {{ "{:,}".format((total_expenses or 0)|int) }}</span>
         </div>
       </div>
     </div>
@@ -702,6 +786,21 @@
         <i class="bi bi-chevron-right admin-nav-arrow"></i>
       </button>
     </div>
+
+    <!-- DIT Fee Report Card -->
+    <div class="col">
+      <button type="button" class="admin-nav-card w-100" id="tab-btn-dit-report" data-bs-toggle="pill" data-bs-target="#tab-content-dit-report" role="tab"
+        style="border-left: 4px solid #7C3AED;">
+        <div class="admin-nav-icon" style="background: #F5F3FF; color: #7C3AED;">
+          <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <div class="admin-nav-info">
+          <div class="admin-nav-title">DIT Fee Report</div>
+          <div class="admin-nav-sub">Date-range analysis</div>
+        </div>
+        <i class="bi bi-chevron-right admin-nav-arrow"></i>
+      </button>
+    </div>
   </div>
 
   <!-- Tab Contents (Full 100% Width) -->
@@ -911,9 +1010,14 @@
                     <div class="min-w-0">
                       <div class="fw-bold text-dark text-truncate">{{ s.name }}</div>
                       <div class="text-muted small text-truncate" style="font-size: 11px;">S/O: {{ s.father_name or 'N/A' }}</div>
-                      <div class="d-flex align-items-center gap-1 mt-0.5">
+                      <div class="d-flex align-items-center gap-1 mt-0.5 flex-wrap">
                         <span class="badge bg-light text-secondary border font-monospace" style="font-size: 9.5px;">Roll: {{ s.roll_no or '--' }}</span>
                         <span class="badge bg-light text-muted border font-monospace" style="font-size: 9.5px;">{{ s.admission_no }}</span>
+                        {% if item.absence_alert %}
+                          <span class="badge bg-{{ item.absence_alert.type }} rounded-pill" style="font-size: 8.5px;" title="{{ item.absence_alert.text }}">
+                            <i class="bi {{ item.absence_alert.icon }} me-0.5"></i>{{ item.absence_alert.text }}
+                          </span>
+                        {% endif %}
                       </div>
                     </div>
                   </div>
@@ -1168,7 +1272,7 @@
 
           <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-text text-success me-1.5"></i>Official Receipts Ledger</h6>
 
-          <span class="badge bg-success-subtle text-success border border-success-subtle">Total Collections: Rs. {{ "{:,}".format(total_revenue) }}</span>
+          <span class="badge bg-success-subtle text-success border border-success-subtle">Total Collections: Rs. {{ "{:,}".format((total_revenue or 0)|int) }}</span>
 
         </div>
 
@@ -1492,7 +1596,7 @@
 
           <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-cart-x text-danger me-1.5"></i>Institute Expense Records</h6>
 
-          <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Total Expenditure: Rs. {{ "{:,}".format(total_expenses) }}</span>
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Total Expenditure: Rs. {{ "{:,}".format((total_expenses or 0)|int) }}</span>
 
         </div>
 
@@ -2519,42 +2623,42 @@
       <!-- ============================================================== -->
       <div class="tab-pane fade" id="tab-content-teacher-payouts" role="tabpanel">
         <!-- Payout Top Metrics -->
-        <div class="row g-3 mb-4">
+        <div class="row g-2 g-md-3 mb-4">
           <div class="col-6 col-md-3">
             <div class="admin-kpi-card h-100">
-              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px;">Total Faculty</span>
-              <div class="fs-3 fw-bolder mt-1 text-dark">{{ all_staff | length }}</div>
-              <div class="small text-muted mt-0.5" style="font-size: 11.5px;">Active Instructors</div>
+              <span class="admin-kpi-title text-uppercase fw-bold text-muted">Total Faculty</span>
+              <div class="admin-kpi-value text-dark">{{ all_staff | length }}</div>
+              <div class="admin-kpi-sub text-muted"><span class="text-truncate">Active Instructors</span></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="admin-kpi-card h-100">
-              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px;">Assigned Students</span>
-              <div class="fs-3 fw-bolder mt-1 text-primary">
+              <span class="admin-kpi-title text-uppercase fw-bold text-muted">Assigned Students</span>
+              <div class="admin-kpi-value text-primary">
                 {% set total_assigned = staff_overview | map(attribute='students_count') | sum %}
                 {{ total_assigned }}
               </div>
-              <div class="small text-muted mt-0.5" style="font-size: 11.5px;">Under Faculty Training</div>
+              <div class="admin-kpi-sub text-muted"><span class="text-truncate">Under Faculty Training</span></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="admin-kpi-card h-100">
-              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px;">Faculty Student Fees</span>
-              <div class="fs-3 fw-bolder mt-1 text-success">
+              <span class="admin-kpi-title text-uppercase fw-bold text-muted">Faculty Student Fees</span>
+              <div class="admin-kpi-value text-success">
                 {% set total_st_fee = staff_overview | map(attribute='fee_collected') | sum %}
                 Rs. {{ "{:,}".format(total_st_fee) }}
               </div>
-              <div class="small text-muted mt-0.5" style="font-size: 11.5px;">Total Fees Collected</div>
+              <div class="admin-kpi-sub text-muted"><span class="text-truncate">Total Fees Collected</span></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="admin-kpi-card h-100">
-              <span class="text-uppercase fw-bold text-muted" style="font-size: 11px;">Calculated Payouts</span>
-              <div class="fs-3 fw-bolder mt-1 text-danger">
+              <span class="admin-kpi-title text-uppercase fw-bold text-muted">Calculated Payouts</span>
+              <div class="admin-kpi-value text-danger">
                 {% set total_share_amt = staff_overview | map(attribute='share_amount') | sum %}
                 Rs. {{ "{:,}".format(total_share_amt) }}
               </div>
-              <div class="small text-muted mt-0.5" style="font-size: 11.5px;">Revenue Share Commissions</div>
+              <div class="admin-kpi-sub text-muted"><span class="text-truncate">Revenue Share Commissions</span></div>
             </div>
           </div>
         </div>
@@ -2646,6 +2750,162 @@
           </div>
         </div>
       </div>
+
+      <!-- ============================================================== -->
+      <!-- TAB: DIT FEE REPORT (Date-Range Analysis)                      -->
+      <!-- ============================================================== -->
+      <div class="tab-pane fade" id="tab-content-dit-report" role="tabpanel">
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-3">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px;height:38px;background:#F5F3FF;color:#7C3AED;font-size:18px;flex-shrink:0;">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0" style="color:#1A1F3C;">DIT Fee Report — Date Range Analysis</h6>
+              <div class="text-muted small">Kitni fee banti thi, kitni aayi, kitna baqi raha</div>
+            </div>
+          </div>
+          <!-- FILTER ROW -->
+          <div class="row g-2 align-items-end">
+            <div class="col-6 col-md-2">
+              <label class="form-label fw-semibold mb-1" style="font-size:11px;text-transform:uppercase;color:#64748B;">Start Date</label>
+              <input type="date" id="ditStartDate" class="form-control form-control-sm rounded-3">
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label fw-semibold mb-1" style="font-size:11px;text-transform:uppercase;color:#64748B;">End Date</label>
+              <input type="date" id="ditEndDate" class="form-control form-control-sm rounded-3">
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label fw-semibold mb-1" style="font-size:11px;text-transform:uppercase;color:#64748B;">Level</label>
+              <select id="ditLevelFilter" class="form-select form-select-sm rounded-3">
+                <option value="">All Levels</option>
+                <option value="1ST">DIT 1st Semester</option>
+                <option value="2ND">DIT 2nd Semester</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label fw-semibold mb-1" style="font-size:11px;text-transform:uppercase;color:#64748B;">Batch</label>
+              <select id="ditBatchFilter" class="form-select form-select-sm rounded-3">
+                <option value="">All Batches</option>
+                {% set dit_batches = [] %}
+                {% for item in students %}{% if item.student.course == 'DIT' and item.student.batch %}{% if item.student.batch not in dit_batches %}{% if dit_batches.append(item.student.batch) %}{% endif %}<option value="{{ item.student.batch }}">{{ item.student.batch }}</option>{% endif %}{% endif %}{% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label fw-semibold mb-1" style="font-size:11px;text-transform:uppercase;color:#64748B;">Fee Category</label>
+              <select id="ditCatFilter" class="form-select form-select-sm rounded-3">
+                <option value="">All Categories</option>
+                <option value="ADM / Admission Fee">Admission</option>
+                <option value="DMC Fee">DMC</option>
+                <option value="Registration Fee">Registration</option>
+                <option value="Monthly Fee">Monthly Fee</option>
+                <option value="Examination Fee">Exam Fee</option>
+                <option value="Hall Fee">Hall Fee</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <button type="button" class="btn btn-sm fw-bold rounded-3 w-100" onclick="loadDITReport()" style="background:#7C3AED;color:white;font-size:12px;">
+                <i class="bi bi-search me-1"></i>Generate Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUMMARY KPI CARDS (shown right after filters, before table) -->
+        <div id="ditSummaryCards" class="row g-2 mb-3" style="display:none;">
+          <div class="col-6 col-md-3">
+            <div class="admin-kpi-card h-100" style="border-left:4px solid #2563EB;">
+              <div class="admin-kpi-header">
+                <span class="admin-kpi-title">Total Fee Due</span>
+                <div class="admin-kpi-icon" style="background:#EFF6FF;color:#2563EB;"><i class="bi bi-receipt-cutoff"></i></div>
+              </div>
+              <div class="admin-kpi-value text-primary" id="ditTotalDue">Rs. 0</div>
+              <div class="admin-kpi-sub text-muted"><span class="text-truncate">Payable in period</span></div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="admin-kpi-card h-100" style="border-left:4px solid #059669;">
+              <div class="admin-kpi-header">
+                <span class="admin-kpi-title">Actual Collected</span>
+                <div class="admin-kpi-icon" style="background:#ECFDF5;color:#059669;"><i class="bi bi-cash-stack"></i></div>
+              </div>
+              <div class="admin-kpi-value text-success" id="ditTotalCollected">Rs. 0</div>
+              <div class="admin-kpi-sub text-success"><span class="text-truncate" id="ditCollectedSub">Received payments</span></div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="admin-kpi-card h-100" style="border-left:4px solid #DC2626;">
+              <div class="admin-kpi-header">
+                <span class="admin-kpi-title">Outstanding Balance</span>
+                <div class="admin-kpi-icon" style="background:#FEF2F2;color:#DC2626;"><i class="bi bi-hourglass-split"></i></div>
+              </div>
+              <div class="admin-kpi-value text-danger" id="ditOutstanding">Rs. 0</div>
+              <div class="admin-kpi-sub text-danger"><span class="text-truncate">As of End Date</span></div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="admin-kpi-card h-100" style="border-left:4px solid #D97706;">
+              <div class="admin-kpi-header">
+                <span class="admin-kpi-title">Recovery %</span>
+                <div class="admin-kpi-icon" style="background:#FFFBEB;color:#D97706;"><i class="bi bi-pie-chart-fill"></i></div>
+              </div>
+              <div class="admin-kpi-value" style="color:#D97706;" id="ditRecoveryPct">0%</div>
+              <div class="admin-kpi-sub text-muted"><span class="text-truncate">Collection rate</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATEGORY BREAKDOWN TABLE -->
+        <div id="ditCatBreakdownCard" class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-3" style="display:none;">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-tags-fill" style="color:#7C3AED;"></i>
+            <h6 class="fw-bold mb-0" style="font-size:13px;color:#1A1F3C;">Category-wise Collection Breakdown</h6>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered mb-0" style="font-size:12px;">
+              <thead class="table-light">
+                <tr>
+                  <th>Fee Category</th>
+                  <th class="text-end">Collected (Period)</th>
+                  <th class="text-end">No. of Payments</th>
+                </tr>
+              </thead>
+              <tbody id="ditCatBreakdownBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- STUDENT-WISE DETAIL TABLE -->
+        <div id="ditStudentTableCard" class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-3" style="display:none;">
+          <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+            <h6 class="fw-bold mb-0" style="font-size:13px;color:#1A1F3C;"><i class="bi bi-table me-1 text-primary"></i>Student-wise Fee Detail</h6>
+            <button class="btn btn-sm btn-outline-secondary rounded-3" onclick="printDITReport()" style="font-size:11px;">
+              <i class="bi bi-printer me-1"></i>Print Summary
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0" style="font-size:12px;" id="ditDetailTable">
+              <thead style="background:#F1F5F9;">
+                <tr>
+                  <th>#</th>
+                  <th>Student Name</th>
+                  <th>Batch</th>
+                  <th class="text-end">Total Net Fee</th>
+                  <th class="text-end">Paid (in Period)</th>
+                  <th class="text-end">Total Paid</th>
+                  <th class="text-end">Balance</th>
+                  <th class="text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody id="ditDetailBody"></tbody>
+              <tfoot id="ditDetailFoot" style="font-weight:700;background:#EFF6FF;"></tfoot>
+            </table>
+          </div>
+          <div id="ditNoData" class="text-center text-muted py-4" style="display:none;">
+            <i class="bi bi-inbox fs-3 d-block mb-2"></i>Koi record nahi mila. Filters change karke dobara try karein.
+          </div>
+        </div>
+      </div><!-- end DIT report tab pane -->
 </div><!-- /adminMainTabContent -->
 
 <!-- ============================================================== -->
@@ -2867,6 +3127,40 @@
 
             </select>
 
+          </div>
+
+          <!-- Fee Category -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary mb-1">Fee Category *</label>
+            <select name="fee_category" id="feeCategorySelect" class="form-select" required onchange="onFeeCategoryChange(this.value)">
+              <option value="">-- Select Category --</option>
+              <option value="ADM / Admission Fee">ADM / Admission Fee</option>
+              <option value="DMC Fee">DMC Fee</option>
+              <option value="Registration Fee">Registration Fee</option>
+              <option value="Monthly Fee">Monthly Fee</option>
+              <option value="Examination Fee">Examination Fee</option>
+              <option value="Hall Fee">Hall Fee</option>
+            </select>
+          </div>
+
+          <!-- Monthly Fee: Month Selector (shown only when Monthly Fee is selected) -->
+          <div class="mb-3" id="feeMonthRow" style="display:none;">
+            <label class="form-label small fw-bold text-secondary mb-1">Select Month *</label>
+            <select name="fee_month" id="feeMonthSelect" class="form-select">
+              <option value="">-- Select Month --</option>
+              <option value="JULY">July</option>
+              <option value="AUGUST">August</option>
+              <option value="SEPTEMBER">September</option>
+              <option value="OCTOBER">October</option>
+              <option value="NOVEMBER">November</option>
+              <option value="DECEMBER">December</option>
+              <option value="JANUARY">January</option>
+              <option value="FEBRUARY">February</option>
+              <option value="MARCH">March</option>
+              <option value="APRIL">April</option>
+              <option value="MAY">May</option>
+              <option value="JUNE">June</option>
+            </select>
           </div>
 
           <div class="row g-2 mb-3">
@@ -3482,6 +3776,87 @@
               </div>
             </div>
           </div>
+
+          {% if item.absence_alert %}
+          <div class="col-12">
+            <div class="alert alert-{{ item.absence_alert.type }} d-flex align-items-center gap-2 py-2 px-3 mb-0 rounded-3" style="font-size: 12.5px;">
+              <i class="bi {{ item.absence_alert.icon }} fs-6 flex-shrink-0"></i>
+              <div>
+                <strong>Attendance Alert:</strong> {{ item.absence_alert.text }}.
+                <div class="small text-muted">Consecutive Absences: <strong>{{ item.consecutive_absent }}</strong> &bull; Total Cumulative: <strong>{{ item.cumulative_absent }}</strong></div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if item.dit_ledger %}
+          <!-- DIT 15-COLUMN FIXED FEE LEDGER (MASTER SPEC PART 3.2) -->
+          <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+              <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle p-2 d-flex align-items-center justify-content-center text-white" style="background:#7C3AED;width:32px;height:32px;font-size:14px;">
+                    <i class="bi bi-journal-text"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold text-navy mb-0" style="font-size: 14px;">DIT Official Fee Ledger</h6>
+                    <span class="text-muted small" style="font-size: 11px;">15-Column Record &bull; Admission to Completion</span>
+                  </div>
+                </div>
+                <span class="badge rounded-pill px-2.5 py-1" style="background:#EDE9FE;color:#7C3AED;font-size:11px;">
+                  <i class="bi bi-shield-check me-1"></i>Verified DIT Ledger
+                </span>
+              </div>
+
+              <div class="table-responsive rounded-3 border">
+                <table class="table table-sm table-bordered text-center align-middle mb-0 font-monospace" style="font-size: 11px;">
+                  <thead class="table-light text-uppercase fw-bold" style="background:#F8FAFC;color:#334155;">
+                    <tr>
+                      <th style="min-width: 90px; background:#EEF2F6;">Total Fee</th>
+                      <th style="min-width: 65px;">ADM</th>
+                      <th style="min-width: 65px;">DMC</th>
+                      <th style="min-width: 65px;">Reg</th>
+                      <th style="min-width: 60px;">JULY</th>
+                      <th style="min-width: 60px;">AUG</th>
+                      <th style="min-width: 60px;">SEP</th>
+                      <th style="min-width: 60px;">OCT</th>
+                      <th style="min-width: 60px;">NOV</th>
+                      <th style="min-width: 60px;">DEC</th>
+                      <th style="min-width: 60px;">JAN</th>
+                      <th style="min-width: 60px;">FEB</th>
+                      <th style="min-width: 65px;">Exam</th>
+                      <th style="min-width: 95px; background:#ECFDF5; color:#065F46;">Total Paid</th>
+                      <th style="min-width: 95px; background:#FEF2F2; color:#991B1B;">Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="fw-semibold">
+                      <td class="bg-light fw-bold text-navy">Rs. {{ "{:,}".format(item.dit_ledger.net_fee) }}</td>
+                      <td>{% if item.dit_ledger.adm %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.adm) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.dmc %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.dmc) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.reg %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.reg) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.months.JULY %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.months.JULY) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.months.AUG %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.months.AUG) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.months.SEP %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.months.SEP) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.months.OCT %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.months.OCT) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.months.NOV %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.months.NOV) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.months.DEC %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.months.DEC) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.months.JAN %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.months.JAN) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.months.FEB %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.months.FEB) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td>{% if item.dit_ledger.exam %}<span class="text-success">{{ "{:,.0f}".format(item.dit_ledger.exam) }}</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                      <td class="bg-success-subtle fw-bold text-success">Rs. {{ "{:,.0f}".format(item.dit_ledger.total_paid) }}</td>
+                      <td class="{% if item.dit_ledger.balance <= 0 %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %} fw-bold">Rs. {{ "{:,.0f}".format(item.dit_ledger.balance) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-2 text-muted small d-flex justify-content-between align-items-center flex-wrap" style="font-size: 10.5px;">
+                <span><i class="bi bi-info-circle me-1"></i>Derived from verified admission records and fee collection receipts.</span>
+                <span class="text-success fw-semibold"><i class="bi bi-check-circle me-1"></i>15-Column Specification Preserved</span>
+              </div>
+            </div>
+          </div>
+          {% endif %}
         </div>
       </div>
 
@@ -3817,11 +4192,11 @@
     if (elTotal) overallKPIs.total = elTotal.textContent.trim();
     if (elActive) overallKPIs.active = elActive.innerHTML.trim();
     if (elRev) overallKPIs.revenue = elRev.textContent.trim();
-    if (elRevSub) overallKPIs.revenueSub = elRevSub.textContent.trim();
+    if (elRevSub) overallKPIs.revenueSub = elRevSub.innerHTML.trim();
     if (elPending) overallKPIs.pending = elPending.textContent.trim();
-    if (elPendingSub) overallKPIs.pendingSub = elPendingSub.textContent.trim();
+    if (elPendingSub) overallKPIs.pendingSub = elPendingSub.innerHTML.trim();
     if (elNet) overallKPIs.net = elNet.textContent.trim();
-    if (elNetSub) overallKPIs.netSub = elNetSub.textContent.trim();
+    if (elNetSub) overallKPIs.netSub = elNetSub.innerHTML.trim();
 
     // Bind real-time input & change events on all filter elements
     const filterInputIds = [
@@ -3972,19 +4347,19 @@ rows.forEach(row => {
       if (elTotal) elTotal.textContent = visibleCount.toLocaleString();
 
       const elActive = document.getElementById('kpiActiveStudents');
-      if (elActive) elActive.innerHTML = `<span class="badge bg-success rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-funnel-fill"></i></span>${activeCount} Active (Filtered)`;
+      if (elActive) elActive.innerHTML = `<span class="badge bg-success rounded-circle p-1 me-1 flex-shrink-0" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-funnel-fill"></i></span><span class="text-truncate">${activeCount} Active (Filtered)</span>`;
 
       const elRev = document.getElementById('kpiTotalRevenue');
       if (elRev) elRev.textContent = `Rs. ${Math.round(totalPaidSum).toLocaleString()}`;
 
       const elRevSub = document.getElementById('kpiRevenueSub');
-      if (elRevSub) elRevSub.innerHTML = `<span class="badge bg-success rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-plus"></i></span>Collected from ${visibleCount} Students`;
+      if (elRevSub) elRevSub.innerHTML = `<span class="badge bg-success rounded-circle p-1 me-1 flex-shrink-0" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-plus"></i></span><span class="text-truncate">From ${visibleCount} Students</span>`;
 
       const elPending = document.getElementById('kpiPendingBalance');
       if (elPending) elPending.textContent = `Rs. ${Math.round(totalBalanceSum).toLocaleString()}`;
 
       const elPendingSub = document.getElementById('kpiPendingSub');
-      if (elPendingSub) elPendingSub.innerHTML = `<span class="badge bg-danger rounded-circle p-1 me-1.5" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-dash"></i></span>Due from ${visibleCount} Students`;
+      if (elPendingSub) elPendingSub.innerHTML = `<span class="badge bg-danger rounded-circle p-1 me-1 flex-shrink-0" style="width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px;"><i class="bi bi-dash"></i></span><span class="text-truncate">Due from ${visibleCount} Students</span>`;
 
       const elNet = document.getElementById('kpiNetProfit');
       if (elNet) elNet.textContent = `Rs. ${Math.round(totalPaidSum).toLocaleString()}`;
@@ -5349,6 +5724,138 @@ function exportTableToCSV(filename) {
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
+}
+
+// ═══════════════════════════════════════════════
+// DIT FEE REPORT FUNCTIONS
+// ═══════════════════════════════════════════════
+function onFeeCategoryChange(val) {
+  var row = document.getElementById('feeMonthRow');
+  if (row) row.style.display = (val === 'Monthly Fee') ? 'block' : 'none';
+  var sel = document.getElementById('feeMonthSelect');
+  if (sel && val !== 'Monthly Fee') sel.value = '';
+}
+
+function loadDITReport() {
+  var s = document.getElementById('ditStartDate').value;
+  var e = document.getElementById('ditEndDate').value;
+  var l = document.getElementById('ditLevelFilter') ? document.getElementById('ditLevelFilter').value : '';
+  var b = document.getElementById('ditBatchFilter') ? document.getElementById('ditBatchFilter').value : '';
+  var c = document.getElementById('ditCatFilter')   ? document.getElementById('ditCatFilter').value   : '';
+
+  var btn = document.getElementById('ditLoadBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Loading...'; }
+
+  var params = new URLSearchParams({start_date: s, end_date: e, level: l, batch: b, category: c});
+
+  fetch('/admin/dit-fee-report?' + params)
+    .then(function(r) { return r.json(); })
+    .then(function(data) { renderDITReport(data); })
+    .catch(function(err) { console.error('DIT report error:', err); })
+    .finally(function() {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-search me-1"></i>Generate Report'; }
+    });
+}
+
+function renderDITReport(data) {
+  var sum = data.summary || {};
+
+  // Summary cards
+  var sc = document.getElementById('ditSummaryCards');
+  if (sc) sc.style.display = '';
+
+  var elMap = {
+    'ditTotalDue':       'Rs. ' + ((sum.total_fee_due || 0)).toLocaleString(),
+    'ditTotalCollected': 'Rs. ' + ((sum.total_collected_period || 0)).toLocaleString(),
+    'ditOutstanding':    'Rs. ' + ((sum.total_outstanding || 0)).toLocaleString(),
+    'ditRecoveryPct':    (sum.recovery_pct || 0) + '%',
+    'ditCollectedSub':   (sum.period_payment_count || 0) + ' payments received',
+  };
+  Object.keys(elMap).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = elMap[id];
+  });
+
+  // Category breakdown
+  var catCard = document.getElementById('ditCatBreakdownCard');
+  var catBody = document.getElementById('ditCatBreakdownBody');
+  if (catBody) {
+    catBody.innerHTML = '';
+    if (data.categories && data.categories.length) {
+      if (catCard) catCard.style.display = '';
+      data.categories.forEach(function(c) {
+        catBody.innerHTML += '<tr><td>' + (c.category || 'Uncategorized') + '</td>' +
+          '<td class="text-end fw-bold text-success">Rs. ' + (c.collected || 0).toLocaleString() + '</td>' +
+          '<td class="text-end">' + (c.count || 0) + '</td></tr>';
+      });
+    }
+  }
+
+  // Student detail table
+  var tableCard = document.getElementById('ditStudentTableCard');
+  var body      = document.getElementById('ditDetailBody');
+  var foot      = document.getElementById('ditDetailFoot');
+  var noData    = document.getElementById('ditNoData');
+
+  if (body) {
+    body.innerHTML = '';
+    if (foot) foot.innerHTML = '';
+
+    if (data.students && data.students.length) {
+      if (tableCard) tableCard.style.display = '';
+      if (noData)    noData.style.display    = 'none';
+
+      var totFee = 0, totPeriod = 0, totTotal = 0, totBal = 0;
+      data.students.forEach(function(s, i) {
+        var badgeClass = s.status === 'Cleared' ? 'bg-success' :
+                         s.status === 'Partial'  ? 'bg-warning text-dark' : 'bg-danger';
+        body.innerHTML += '<tr>' +
+          '<td class="text-center">' + (i + 1) + '</td>' +
+          '<td class="fw-semibold">' + s.name + '</td>' +
+          '<td><span class="badge bg-light text-dark border">' + (s.batch || '-') + '</span></td>' +
+          '<td class="text-end font-monospace">Rs. ' + (s.net_fee || 0).toLocaleString() + '</td>' +
+          '<td class="text-end font-monospace text-success fw-bold">Rs. ' + (s.paid_in_period || 0).toLocaleString() + '</td>' +
+          '<td class="text-end font-monospace">Rs. ' + (s.paid_total || 0).toLocaleString() + '</td>' +
+          '<td class="text-end font-monospace text-danger">Rs. ' + (s.balance || 0).toLocaleString() + '</td>' +
+          '<td class="text-center"><span class="badge ' + badgeClass + ' rounded-pill">' + s.status + '</span></td>' +
+          '</tr>';
+        totFee    += s.net_fee        || 0;
+        totPeriod += s.paid_in_period || 0;
+        totTotal  += s.paid_total     || 0;
+        totBal    += s.balance        || 0;
+      });
+
+      if (foot) {
+        foot.innerHTML = '<tr class="table-dark fw-bold">' +
+          '<td colspan="3" class="text-end">TOTAL (' + data.students.length + ' students)</td>' +
+          '<td class="text-end">Rs. ' + totFee.toLocaleString()    + '</td>' +
+          '<td class="text-end text-success">Rs. ' + totPeriod.toLocaleString() + '</td>' +
+          '<td class="text-end">Rs. ' + totTotal.toLocaleString()  + '</td>' +
+          '<td class="text-end text-warning">Rs. ' + totBal.toLocaleString()    + '</td>' +
+          '<td></td></tr>';
+      }
+    } else {
+      if (tableCard) tableCard.style.display = '';
+      if (noData)    noData.style.display    = '';
+    }
+  }
+
+  // Scroll to summary cards
+  if (sc) sc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function printDITReport() {
+  var tbl = document.getElementById('ditDetailTable');
+  if (!tbl) return;
+  var w = window.open('', '_blank');
+  w.document.write(
+    '<html><head><title>DIT Fee Report — Asian Academy</title>' +
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">' +
+    '</head><body class="p-4"><h4 class="mb-3">DIT Fee Report — Asian Academy Abbottabad</h4>' +
+    tbl.outerHTML + '</body></html>'
+  );
+  w.document.close();
+  w.print();
 }
 </script>
 

@@ -10,3 +10,7 @@ Ya
 run_portal.bat
 static/uploads/*
 !static/uploads/.gitkeep
+
+# Temporary scratch scripts and backups
+scratch/
+backups/

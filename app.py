@@ -2019,12 +2019,23 @@ def staff_dashboard():
             s_paid = sum(p["amount"] or 0 for p in payments if p["student_id"] == s["id"])
             s_net_fee = (s["total_fee"] or 0) - (s["discount_amount"] or 0)
             s_bal = max(0, s_net_fee - s_paid)
+            s_streaks = calculate_student_absence_streaks(s["id"], conn)
+            s_today_att = conn.execute(
+                "SELECT status FROM attendance WHERE student_id = ? AND att_date = ?",
+                (s["id"], today_str)
+            ).fetchone()
+            s_today_status = s_today_att["status"] if s_today_att else None
+
             students_with_metrics.append({
                 "student": s,
                 "net_fee": s_net_fee,
                 "paid": s_paid,
                 "balance": s_bal,
-                "is_cleared": s_bal <= 0
+                "is_cleared": s_bal <= 0,
+                "today_status": s_today_status,
+                "consecutive_absent": s_streaks["consecutive"],
+                "cumulative_absent": s_streaks["cumulative"],
+                "absence_alert": s_streaks["alert"]
             })
 
         # Staff's own attendance
@@ -2097,7 +2108,8 @@ def staff_dashboard():
             total_fee_collected=total_fee_collected,
             total_pending_balance=total_pending_balance,
             share_earning=share_earning,
-            share_pct=share_pct
+            share_pct=share_pct,
+            today_str=today_str
         )
 
     except Exception as _dash_err:
@@ -2113,9 +2125,153 @@ def staff_dashboard():
 
 # ---------------------------------------------------------------------------
 
+# ══════════════════════════════════════════════════════════════════
+# DIT LEDGER & ATTENDANCE ALERTS ENGINE
+# ══════════════════════════════════════════════════════════════════
+_DIT_EXCEL_MAP_CACHE = None
+
+def get_dit_excel_data():
+    """Reads verified DIT Excel database once and caches it."""
+    global _DIT_EXCEL_MAP_CACHE
+    if _DIT_EXCEL_MAP_CACHE is not None:
+        return _DIT_EXCEL_MAP_CACHE
+
+    excel_map = {}
+    try:
+        import openpyxl, os
+        excel_path = os.path.join(os.path.dirname(__file__), 'excel_sources', 'DIT_1st_2027.xlsx')
+        if os.path.exists(excel_path):
+            wb = openpyxl.load_workbook(excel_path, data_only=True)
+            sheet = wb['Database']
+            rows = list(sheet.iter_rows(values_only=True))
+            if len(rows) > 2:
+                headers = [str(h).strip() if h is not None else '' for h in rows[2]]
+                for r in rows[3:]:
+                    if r[1] is not None:
+                        name = str(r[1]).strip().upper()
+                        excel_map[name] = {headers[i]: r[i] for i in range(len(headers)) if i < len(r)}
+    except Exception as e:
+        print("[WARN] Error loading DIT Excel source:", e)
+
+    _DIT_EXCEL_MAP_CACHE = excel_map
+    return excel_map
+
+def calculate_student_absence_streaks(student_id, conn):
+    """
+    Calculates consecutive absences and cumulative absences.
+    Rules:
+    - Consecutive: continuous absent sessions backwards from latest. Reset on Present or Leave.
+    - Cumulative: total absent count across all sessions.
+    - Pending is NOT absent.
+    """
+    rows = conn.execute(
+        "SELECT status, att_date FROM attendance WHERE student_id = ? ORDER BY att_date DESC",
+        (student_id,)
+    ).fetchall()
+
+    consecutive = 0
+    consecutive_done = False
+    cumulative = 0
+
+    for r in rows:
+        st = (r["status"] or "").strip().lower()
+        if st == "absent":
+            cumulative += 1
+            if not consecutive_done:
+                consecutive += 1
+        elif st in ("present", "leave"):
+            consecutive_done = True
+
+    # Alert levels
+    # 3: First notification, 5: Alert, 7+: Flag for Strike-Off Review
+    alert_badge = None
+    if consecutive >= 7:
+        alert_badge = {"type": "danger", "text": "Strike-Off Review (7+ Consec. Absences)", "icon": "bi-exclamation-octagon-fill"}
+    elif consecutive >= 5:
+        alert_badge = {"type": "danger", "text": f"High Alert ({consecutive} Consec. Absences)", "icon": "bi-exclamation-triangle-fill"}
+    elif consecutive >= 3:
+        alert_badge = {"type": "warning text-dark", "text": f"Warning ({consecutive} Consec. Absences)", "icon": "bi-bell-fill"}
+    elif cumulative >= 7:
+        alert_badge = {"type": "info text-dark", "text": f"Cumulative Absences ({cumulative})", "icon": "bi-info-circle-fill"}
+
+    return {
+        "consecutive": consecutive,
+        "cumulative": cumulative,
+        "alert": alert_badge
+    }
+
+def compute_dit_ledger(s, payments_history):
+    """
+    Computes exact 15-column DIT Fee Ledger for a student:
+    Columns: Total Fee | ADM | DMC | Reg | JULY | AUG | SEP | OCT | NOV | DEC | JAN | FEB | Exam | Total Paid | Balance
+    """
+    MONTHS = ['JULY', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB']
+    net_fee = (s["total_fee"] or 0) - (s["discount_amount"] or 0)
+    name_clean = (s["name"] or "").strip().upper()
+
+    excel_data = get_dit_excel_data()
+    name_aliases = {'NOMAN': 'NOUMAN', 'NOMAN TARIQ': 'NOUMAN', 'SHAFAQ YASIR': 'SHAFAQ'}
+    ex_name = name_aliases.get(name_clean, name_clean)
+    ex = excel_data.get(ex_name)
+    if not ex:
+        for k, v in excel_data.items():
+            if k in name_clean or name_clean in k:
+                ex = v
+                break
+
+    def pval(v):
+        try:
+            if v is None: return 0
+            val_str = str(v).strip()
+            return float(val_str) if val_str else 0
+        except:
+            return 0
+
+    adm = pval(ex.get('ADM')) if ex else (s["adm_fee"] or 0)
+    dmc = pval(ex.get('DMC')) if ex else (s["dmc_fee"] or 0)
+    reg = pval(ex.get('Reg')) if ex else (s["reg_fee"] or 0)
+    exam = pval(ex.get('Exam')) if ex else (s["exam_fee"] or 0)
+    months = {m: pval(ex.get(m)) if ex else 0 for m in MONTHS}
+
+    # Add recorded DB payments that have fee_category/fee_month
+    for p in payments_history:
+        fcat = (p["fee_category"] or "").strip().lower()
+        fmonth = (p["fee_month"] or "").strip().upper()
+        amt = p["amount"] or 0
+        if not fcat and not fmonth:
+            continue
+        if 'admission' in fcat: adm += amt
+        elif 'dmc' in fcat: dmc += amt
+        elif 'reg' in fcat: reg += amt
+        elif 'exam' in fcat: exam += amt
+        elif 'month' in fcat or fmonth:
+            for m in MONTHS:
+                if m in fmonth:
+                    months[m] += amt
+                    break
+
+    tot_paid_db = sum(p["amount"] or 0 for p in payments_history)
+    col_sum = adm + dmc + reg + exam + sum(months.values())
+    total_paid = max(tot_paid_db, col_sum)
+    balance = net_fee - total_paid
+
+    return {
+        "net_fee": net_fee,
+        "adm": adm,
+        "dmc": dmc,
+        "reg": reg,
+        "months": months,
+        "exam": exam,
+        "total_paid": total_paid,
+        "balance": balance
+    }
+
+
 @app.route("/admin/dashboard")
 
 @admin_required
+
+
 
 def admin_dashboard():
 
@@ -2249,6 +2405,11 @@ def admin_dashboard():
         s_abs_att = stat["absent_att"] if stat else 0
         s_pct_att = round((s_pres_att / s_tot_att * 100), 1) if s_tot_att > 0 else 0
 
+        s_pmts = student_payment_history.get(s["id"], [])
+        is_dit = (s["course"] or "").strip().upper() == "DIT"
+        dit_ledg = compute_dit_ledger(s, s_pmts) if is_dit else None
+        att_streaks = calculate_student_absence_streaks(s["id"], conn)
+
         students_with_metrics.append({
             "student": s,
             "net_fee": s_net,
@@ -2262,7 +2423,11 @@ def admin_dashboard():
             "today_att": today_att_map.get(s["id"]),
             "pending_today_req": pending_req_map.get(s["id"]),
             "teacher_name": staff_map.get(s["teacher_id"], "Not Assigned"),
-            "payments_history": student_payment_history.get(s["id"], [])
+            "payments_history": s_pmts,
+            "dit_ledger": dit_ledg,
+            "consecutive_absent": att_streaks["consecutive"],
+            "cumulative_absent": att_streaks["cumulative"],
+            "absence_alert": att_streaks["alert"]
         })
 
     inquiries = conn.execute("SELECT * FROM inquiries ORDER BY id DESC").fetchall()
@@ -3268,13 +3433,16 @@ def admin_add_payment():
 
     receipt_no = f"REC-{(max_rec + 1):04d}"
 
+    fee_category = request.form.get("fee_category", "").strip()
+    fee_month    = request.form.get("fee_month", "").strip()
+
     cur.execute("""
 
-        INSERT INTO payments (student_id, amount, pay_date, method, receipt_no, note)
+        INSERT INTO payments (student_id, amount, pay_date, method, receipt_no, note, fee_category, fee_month)
 
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 
-    """, (student_id, amount, pay_date, method, receipt_no, note))
+    """, (student_id, amount, pay_date, method, receipt_no, note, fee_category, fee_month))
 
     conn.commit()
 
@@ -3283,6 +3451,140 @@ def admin_add_payment():
     flash(f"Fee Payment of Rs. {amount:,.0f} recorded! Receipt: {receipt_no}", "success")
 
     return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/dit-fee-report")
+@admin_required
+def admin_dit_fee_report():
+    """JSON API: DIT fee report with date range + filters."""
+    from datetime import datetime as _dt
+    conn = get_db_connection()
+    cur  = conn.cursor()
+
+    start_date = request.args.get("start_date", "")
+    end_date   = request.args.get("end_date",   "")
+    level_f    = request.args.get("level",    "").strip()
+    batch_f    = request.args.get("batch",    "").strip()
+    category_f = request.args.get("category", "").strip()
+
+    # All DIT students
+    students = cur.execute("""
+        SELECT id, name, batch, semester, total_fee, discount_amount,
+               adm_fee, dmc_fee, reg_fee, exam_fee
+        FROM students
+        WHERE UPPER(course) = 'DIT' AND status != 'Deleted'
+        ORDER BY name
+    """).fetchall()
+
+    # Payments in period (all time if no dates given)
+    params_period = []
+    period_filter = ""
+    if start_date and end_date:
+        period_filter = "AND p.pay_date BETWEEN ? AND ?"
+        params_period = [start_date, end_date]
+
+    cat_filter = ""
+    if category_f:
+        cat_filter = "AND p.fee_category = ?"
+        params_period.append(category_f)
+
+    # Category-wise breakdown for selected period
+    cat_rows = cur.execute(f"""
+        SELECT p.fee_category as category,
+               SUM(p.amount)  as collected,
+               COUNT(p.id)    as count
+        FROM payments p
+        JOIN students s ON s.id = p.student_id
+        WHERE UPPER(s.course) = 'DIT'
+          AND s.status != 'Deleted'
+          {period_filter}
+          {cat_filter}
+        GROUP BY p.fee_category
+        ORDER BY collected DESC
+    """, params_period).fetchall()
+
+    # Per-student totals
+    result_students = []
+    total_fee_due   = 0
+    total_collected_period = 0
+    total_outstanding = 0
+
+    for s in students:
+        sid = s["id"]
+        sname = s["name"]
+        sbatch = s["batch"] or ""
+        net_fee = (s["total_fee"] or 0) - (s["discount_amount"] or 0)
+
+        # Paid all-time
+        row_all = cur.execute(
+            "SELECT COALESCE(SUM(amount),0) as t FROM payments WHERE student_id=?", (sid,)
+        ).fetchone()
+        paid_total = (row_all["t"] if isinstance(row_all, dict) else row_all[0]) or 0
+
+        # Paid in period
+        pp = [sid] + (params_period[:])  # copy list
+        pf = period_filter.replace("p.pay_date", "pay_date")
+        cf = cat_filter.replace("p.fee_category", "fee_category")
+        row_p = cur.execute(
+            f"SELECT COALESCE(SUM(amount),0) as t FROM payments WHERE student_id=? {pf} {cf}", pp
+        ).fetchone()
+        paid_in_period = (row_p["t"] if isinstance(row_p, dict) else row_p[0]) or 0
+
+        balance = net_fee - paid_total
+        if balance <= 0:
+            status_str = "Cleared"
+        elif paid_total > 0:
+            status_str = "Partial"
+        else:
+            status_str = "Pending"
+
+        total_fee_due          += net_fee
+        total_collected_period += paid_in_period
+        total_outstanding      += max(balance, 0)
+
+        result_students.append({
+            "id":            sid,
+            "name":          sname,
+            "batch":         sbatch or "",
+            "net_fee":       net_fee,
+            "paid_in_period": paid_in_period,
+            "paid_total":    paid_total,
+            "balance":       balance,
+            "status":        status_str,
+        })
+
+    # Total payments count in period (for subtitle)
+    pp2 = list(params_period)
+    pf2 = period_filter.replace("p.pay_date", "pay_date")
+    cf2 = cat_filter.replace("p.fee_category", "fee_category")
+    row_cnt = cur.execute(
+        f"SELECT COUNT(*) as c FROM payments p JOIN students s ON s.id=p.student_id WHERE UPPER(s.course)='DIT' AND s.status!='Deleted' {pf2} {cf2}",
+        pp2
+    ).fetchone()
+    period_count = (row_cnt["c"] if isinstance(row_cnt, dict) else row_cnt[0]) or 0
+
+    recovery_pct = round((total_collected_period / total_fee_due * 100), 1) if total_fee_due else 0
+
+    conn.close()
+
+    return jsonify({
+        "summary": {
+            "total_fee_due":          total_fee_due,
+            "total_collected_period": total_collected_period,
+            "total_outstanding":      total_outstanding,
+            "recovery_pct":           recovery_pct,
+            "period_payment_count":   period_count,
+        },
+        "categories": [
+            {
+                "category":  (r["category"] if isinstance(r, dict) else r[0]) or "Uncategorized",
+                "collected": (r["collected"] if isinstance(r, dict) else r[1]) or 0,
+                "count":     (r["count"]     if isinstance(r, dict) else r[2]) or 0,
+            }
+            for r in cat_rows
+        ],
+        "students": result_students,
+    })
 
 @app.route("/admin/staff/add", methods=["POST"])
 
@@ -4110,6 +4412,47 @@ def admin_upload_dp():
 # STAFF / TEACHER ATTENDANCE (MARK & ADMIN OVERVIEW)
 # ---------------------------------------------------------------------------
 
+@app.route("/staff/mark-student-attendance", methods=["POST"])
+@staff_required
+def staff_mark_student_attendance():
+    """Teacher marks attendance for their assigned students."""
+    teacher_id = session.get("staff_id")
+    att_date   = request.form.get("att_date", "")
+    if not att_date:
+        from datetime import date
+        att_date = date.today().isoformat()
+
+    conn = get_db_connection()
+    cur  = conn.cursor()
+
+    # Fetch assigned students
+    assigned = cur.execute(
+        "SELECT id FROM students WHERE teacher_id=? AND status!='Deleted'", (teacher_id,)
+    ).fetchall()
+    assigned_ids = set(
+        (r["id"] if isinstance(r, dict) else r[0]) for r in assigned
+    )
+
+    saved = 0
+    for sid in assigned_ids:
+        status = request.form.get(f"att_{sid}", "")
+        if not status:
+            continue
+        # Upsert: delete existing record for this student+date then insert
+        cur.execute(
+            "DELETE FROM attendance WHERE student_id=? AND att_date=?", (sid, att_date)
+        )
+        cur.execute(
+            "INSERT INTO attendance (student_id, att_date, status) VALUES (?,?,?)",
+            (sid, att_date, status)
+        )
+        saved += 1
+
+    conn.commit()
+    conn.close()
+    flash(f"Attendance saved for {saved} student(s) on {att_date}.", "success")
+    return redirect(url_for("staff_dashboard") + "#tab-attendance")
+
 @app.route("/staff/mark_self_attendance", methods=["POST"])
 @staff_required
 def staff_mark_self_attendance():
@@ -4875,6 +5218,14 @@ def admin_delete_student_timetable(schedule_id):
 
     return redirect(url_for("admin_dashboard"))
 
+
+
+@app.after_request
+def add_cache_control_headers(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 if __name__ == "__main__":
 

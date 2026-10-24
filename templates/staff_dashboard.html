@@ -126,101 +126,53 @@
   <div class="row g-2 mb-3">
 
     <!-- Total Students -->
-
     <div class="col-6">
-
-      <div class="portal-card p-3">
-
-        <div class="text-muted small" style="font-size: 11px;">
-
+      <div class="portal-card p-2.5 p-sm-3 h-100">
+        <div class="text-muted small text-truncate" style="font-size: 11px;">
           <i class="bi bi-people-fill me-1 text-primary"></i>Mere Students
-
         </div>
-
-        <div class="fw-bold fs-4 mt-1" style="color: var(--navy);">
-
+        <div class="fw-bold mt-1 text-truncate" style="color: var(--navy); font-size: clamp(1.1rem, 3.8vw, 1.5rem); line-height: 1.2;">
           {{ total_students }} <span class="fs-6 fw-normal text-muted">Students</span>
-
         </div>
-
       </div>
-
     </div>
-
-
 
     <!-- Total Fee Collected -->
-
     <div class="col-6">
-
-      <div class="portal-card p-3">
-
-        <div class="text-muted small" style="font-size: 11px;">
-
+      <div class="portal-card p-2.5 p-sm-3 h-100">
+        <div class="text-muted small text-truncate" style="font-size: 11px;">
           <i class="bi bi-cash-stack me-1 text-success"></i>Students Fee Paid
-
         </div>
-
-        <div class="fw-bold fs-5 mt-1 text-success">
-
+        <div class="fw-bold mt-1 text-success text-truncate" style="font-size: clamp(1.05rem, 3.6vw, 1.4rem); line-height: 1.2;">
           Rs. {{ "{:,}".format(total_fee_collected) }}
-
         </div>
-
       </div>
-
     </div>
-
-
 
     {% if share_pct > 0 %}
-
     <!-- Teacher Share / Earning -->
-
     <div class="col-6">
-
-      <div class="portal-card p-3 bg-light border-success">
-
-        <div class="text-success small fw-bold" style="font-size: 11px;">
-
+      <div class="portal-card p-2.5 p-sm-3 h-100 bg-light border-success">
+        <div class="text-success small fw-bold text-truncate" style="font-size: 11px;">
           <i class="bi bi-award-fill me-1"></i>Mera Share ({{ share_pct }}%)
-
         </div>
-
-        <div class="fw-bold fs-5 mt-1 text-success">
-
+        <div class="fw-bold mt-1 text-success text-truncate" style="font-size: clamp(1.05rem, 3.6vw, 1.4rem); line-height: 1.2;">
           Rs. {{ "{:,}".format(share_earning | int) }}
-
         </div>
-
       </div>
-
     </div>
-
     {% endif %}
 
-
-
     <!-- Pending Balance -->
-
     <div class="col-{% if share_pct > 0 %}6{% else %}12{% endif %}">
-
-      <div class="portal-card p-3">
-
-        <div class="text-muted small" style="font-size: 11px;">
-
+      <div class="portal-card p-2.5 p-sm-3 h-100">
+        <div class="text-muted small text-truncate" style="font-size: 11px;">
           <i class="bi bi-hourglass-split me-1 text-danger"></i>Baqi Fee (Pending)
-
         </div>
-
-        <div class="fw-bold fs-5 mt-1 text-danger">
-
+        <div class="fw-bold mt-1 text-danger text-truncate" style="font-size: clamp(1.05rem, 3.6vw, 1.4rem); line-height: 1.2;">
           Rs. {{ "{:,}".format(total_pending_balance) }}
-
         </div>
-
       </div>
-
     </div>
 
   </div>
@@ -384,6 +336,124 @@
 
 
     <!-- TAB 2: PAYMENTS RECEIVED -->
+
+        <!-- TAB: STUDENT ATTENDANCE (TEACHER MARKS ATTENDANCE FOR ASSIGNED STUDENTS) -->
+    <div class="tab-pane fade" id="tab-student-attendance" role="tabpanel">
+      <div class="portal-card p-3 mb-3">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-circle p-2 d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #10B981, #059669); width: 38px; height: 38px; font-size: 18px;">
+              <i class="bi bi-calendar2-check-fill"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-navy" style="font-size: 16px;">Students Hazri (Attendance)</h5>
+              <span class="text-muted small" style="font-size: 11.5px;">Mark attendance for your assigned students</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold" onclick="markAllAttendance('Present')">
+              <i class="bi bi-check-all me-1"></i>All Present
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill fw-bold" onclick="markAllAttendance('Absent')">
+              <i class="bi bi-x-circle me-1"></i>All Absent
+            </button>
+          </div>
+        </div>
+
+        <!-- Attendance Form -->
+        <form method="POST" action="{{ url_for('staff_mark_student_attendance') }}">
+          <div class="p-2.5 bg-light rounded-3 border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <label class="small fw-bold text-secondary mb-0"><i class="bi bi-calendar-event me-1"></i>Hazri Ki Tareekh (Date):</label>
+              <input type="date" name="att_date" id="staffAttDate" class="form-control form-control-sm rounded-3 font-monospace fw-bold" value="{{ today_str or '' }}" style="width: auto;" required>
+            </div>
+            <div class="small text-muted">
+              Total Assigned Students: <strong class="text-navy">{{ students|length }}</strong>
+            </div>
+          </div>
+
+          {% if students and students|length > 0 %}
+          <div class="table-responsive rounded-3 border">
+            <table class="table table-hover align-middle mb-0" style="font-size: 12.5px;">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 40px;" class="text-center">#</th>
+                  <th>Student Details</th>
+                  <th>Course / Batch</th>
+                  <th class="text-center" style="min-width: 200px;">Hazri Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in students %}
+                {% set s = item.student %}
+                <tr>
+                  <td class="text-center text-muted fw-bold">{{ loop.index }}</td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-xs flex-shrink-0 text-white"
+                           style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--navy-light), var(--navy)); font-size: 13px;">
+                        {{ s.name[0] | upper }}
+                      </div>
+                      <div>
+                        <div class="fw-bold text-dark">{{ s.name }}</div>
+                        <div class="text-muted small" style="font-size: 10.5px;">
+                          Roll: <span class="font-monospace text-primary">{{ s.roll_no or '--' }}</span> &bull; Adm: <span class="font-monospace">{{ s.admission_no }}</span>
+                        </div>
+                        {% if item.absence_alert %}
+                          <span class="badge bg-{{ item.absence_alert.type }} rounded-pill mt-0.5" style="font-size: 8.5px;">
+                            <i class="bi {{ item.absence_alert.icon }} me-0.5"></i>{{ item.absence_alert.text }}
+                          </span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">{{ s.course or 'Course' }}</span>
+                    {% if s.batch %}
+                      <span class="badge bg-light text-secondary border">{{ s.batch }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Attendance status">
+                      <input type="radio" class="btn-check att-radio-present" name="att_{{ s.id }}" id="att_{{ s.id }}_present" value="Present" autocomplete="off" {% if item.today_status == 'Present' or not item.today_status %}checked{% endif %}>
+                      <label class="btn btn-outline-success px-2.5 py-1 fw-bold" for="att_{{ s.id }}_present">
+                        <i class="bi bi-check-lg me-0.5"></i>P
+                      </label>
+
+                      <input type="radio" class="btn-check att-radio-absent" name="att_{{ s.id }}" id="att_{{ s.id }}_absent" value="Absent" autocomplete="off" {% if item.today_status == 'Absent' %}checked{% endif %}>
+                      <label class="btn btn-outline-danger px-2.5 py-1 fw-bold" for="att_{{ s.id }}_absent">
+                        <i class="bi bi-x-lg me-0.5"></i>A
+                      </label>
+
+                      <input type="radio" class="btn-check att-radio-leave" name="att_{{ s.id }}" id="att_{{ s.id }}_leave" value="Leave" autocomplete="off" {% if item.today_status == 'Leave' %}checked{% endif %}>
+                      <label class="btn btn-outline-warning px-2.5 py-1 fw-bold" for="att_{{ s.id }}_leave">
+                        <i class="bi bi-envelope-open me-0.5"></i>L
+                      </label>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="text-muted small" style="font-size: 11.5px;">
+              <i class="bi bi-shield-check text-success me-1"></i>P = Hazir (Present) &bull; A = Gher-Hazir (Absent) &bull; L = Rukhsat (Leave)
+            </span>
+            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+              <i class="bi bi-save2-fill me-1.5"></i>Hazri Mahfooz Karein (Save)
+            </button>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-people fs-2 d-block mb-1"></i>
+            Aap ke sath filhal koi student assign nahi hai.
+          </div>
+          {% endif %}
+        </form>
+      </div>
+    </div>
 
     <div class="tab-pane fade" id="tab-my-payments" role="tabpanel">
 
@@ -953,7 +1023,11 @@
 
   </button>
 
-  <button type="button" class="nav-item-btn" data-bs-target="#tab-my-payments">
+    <button type="button" class="nav-item-btn" data-bs-target="#tab-student-attendance" data-tab-name="attendance">
+    <i class="bi bi-calendar2-check-fill"></i>
+    <span>Hazri</span>
+  </button>
+<button type="button" class="nav-item-btn" data-bs-target="#tab-my-payments">
 
     <i class="bi bi-receipt-cutoff"></i>
 
@@ -1153,6 +1227,24 @@
     });
 
   });
+
+
+  // Mark All attendance helper
+  function markAllAttendance(status) {
+    if (status === 'Present') {
+      document.querySelectorAll('.att-radio-present').forEach(function(r) { r.checked = true; });
+    } else if (status === 'Absent') {
+      document.querySelectorAll('.att-radio-absent').forEach(function(r) { r.checked = true; });
+    }
+  }
+
+  // Handle URL hash tab activate on load
+  if (window.location.hash) {
+    var targetBtn = document.querySelector('.nav-item-btn[data-bs-target="' + window.location.hash + '"]');
+    if (targetBtn) {
+      targetBtn.click();
+    }
+  }
 
 </script>
 

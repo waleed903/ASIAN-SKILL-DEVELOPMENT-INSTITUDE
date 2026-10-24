@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>{% block title %}ASDI Student Portal{% endblock %}</title>
 
   <!-- PWA Meta Tags -->
@@ -92,6 +95,9 @@
       border: 1px solid rgba(221, 225, 240, 0.8);
       box-shadow: 0 4px 12px rgba(13, 24, 110, 0.04);
       transition: all 0.2s ease;
+      min-width: 0;
+      overflow: hidden;
+      overflow-wrap: break-word;
     }
 
     .btn-asdi {
@@ -367,7 +373,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/static/sw.js')
+        navigator.serviceWorker.register('/static/sw.js?v=2')
           .then(reg => console.log('ASDI PWA Service Worker Registered', reg.scope))
           .catch(err => console.log('Service Worker failed', err));
       });
