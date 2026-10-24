@@ -2032,18 +2032,33 @@ def staff_dashboard():
         share_pct = float(staff["share_pct"] or 0)
         share_earning = round(float(total_fee_collected or 0) * (share_pct / 100.0), 2) if share_pct else 0
 
+        # Batch load attendance for staff students to avoid N+1 queries
+        staff_student_att_map = {}
+        staff_today_att_map = {}
+        if student_ids:
+            from db_adapter import is_postgres as _is_pg
+            _ph = "%s" if _is_pg() else "?"
+            in_clause_att = ",".join([_ph] * len(student_ids))
+            all_st_att = conn.execute(
+                f"SELECT student_id, status, att_date FROM attendance WHERE student_id IN ({in_clause_att}) ORDER BY att_date DESC",
+                student_ids
+            ).fetchall()
+            for ar in all_st_att:
+                sid = ar["student_id"]
+                if sid not in staff_student_att_map:
+                    staff_student_att_map[sid] = []
+                staff_student_att_map[sid].append(ar)
+                if ar["att_date"] == today_str and sid not in staff_today_att_map:
+                    staff_today_att_map[sid] = ar["status"]
+
         # Attach individual paid/balance to each student
         students_with_metrics = []
         for s in students:
             s_paid = sum(p["amount"] or 0 for p in payments if p["student_id"] == s["id"])
             s_net_fee = (s["total_fee"] or 0) - (s["discount_amount"] or 0)
             s_bal = max(0, s_net_fee - s_paid)
-            s_streaks = calculate_student_absence_streaks(s["id"], conn)
-            s_today_att = conn.execute(
-                "SELECT status FROM attendance WHERE student_id = ? AND att_date = ?",
-                (s["id"], today_str)
-            ).fetchone()
-            s_today_status = s_today_att["status"] if s_today_att else None
+            s_streaks = calculate_student_absence_streaks(s["id"], conn, rows=staff_student_att_map.get(s["id"], []))
+            s_today_status = staff_today_att_map.get(s["id"])
 
             students_with_metrics.append({
                 "student": s,
@@ -2436,7 +2451,7 @@ def get_dit_excel_data():
     _DIT_EXCEL_MAP_CACHE = excel_map
     return excel_map
 
-def calculate_student_absence_streaks(student_id, conn):
+def calculate_student_absence_streaks(student_id, conn=None, rows=None):
     """
     Calculates consecutive absences and cumulative absences.
     Rules:
@@ -2444,10 +2459,13 @@ def calculate_student_absence_streaks(student_id, conn):
     - Cumulative: total absent count across all sessions.
     - Pending is NOT absent.
     """
-    rows = conn.execute(
-        "SELECT status, att_date FROM attendance WHERE student_id = ? ORDER BY att_date DESC",
-        (student_id,)
-    ).fetchall()
+    if rows is None and conn is not None:
+        rows = conn.execute(
+            "SELECT status, att_date FROM attendance WHERE student_id = ? ORDER BY att_date DESC",
+            (student_id,)
+        ).fetchall()
+    elif rows is None:
+        rows = []
 
     consecutive = 0
     consecutive_done = False
@@ -2647,7 +2665,7 @@ def admin_dashboard():
             student_payment_history[sid] = []
         student_payment_history[sid].append(p)
 
-    # Pre-calculate attendance stats for each student
+    # Pre-calculate attendance stats for each student (single query)
     att_stats = conn.execute("""
         SELECT student_id,
                COUNT(*) as total_att,
@@ -2657,6 +2675,17 @@ def admin_dashboard():
         GROUP BY student_id
     """).fetchall()
     att_stats_map = {r["student_id"]: r for r in att_stats}
+
+    # Pre-fetch all attendance records for ultra-fast in-memory absence streak calculations (0 N+1 queries)
+    all_att_rows = conn.execute(
+        "SELECT student_id, status, att_date FROM attendance ORDER BY att_date DESC"
+    ).fetchall()
+    student_att_history_map = {}
+    for ar in all_att_rows:
+        sid = ar["student_id"]
+        if sid not in student_att_history_map:
+            student_att_history_map[sid] = []
+        student_att_history_map[sid].append(ar)
 
     # Today's attendance status map
     today_att_records = conn.execute(
@@ -2686,7 +2715,7 @@ def admin_dashboard():
         s_pmts = student_payment_history.get(s["id"], [])
         is_dit = (s["course"] or "").strip().upper() == "DIT"
         dit_ledg = compute_dit_ledger(s, s_pmts) if is_dit else None
-        att_streaks = calculate_student_absence_streaks(s["id"], conn)
+        att_streaks = calculate_student_absence_streaks(s["id"], conn, rows=student_att_history_map.get(s["id"], []))
 
         students_with_metrics.append({
             "student": s,
@@ -3786,26 +3815,43 @@ def admin_dit_fee_report():
     total_collected_period = 0
     total_outstanding = 0
 
+    # Batch load all payments for DIT students (eliminates N+1 loop queries)
+    all_dit_pmts = cur.execute("""
+        SELECT p.student_id, p.amount, p.pay_date, p.fee_category
+        FROM payments p
+        JOIN students s ON s.id = p.student_id
+        WHERE UPPER(s.course) = 'DIT' AND s.status != 'Deleted'
+    """).fetchall()
+
+    pmts_by_sid = {}
+    for p in all_dit_pmts:
+        sid_p = p["student_id"]
+        if sid_p not in pmts_by_sid:
+            pmts_by_sid[sid_p] = []
+        pmts_by_sid[sid_p].append(p)
+
     for s in students:
         sid = s["id"]
         sname = s["name"]
         sbatch = s["batch"] or ""
         net_fee = (s["total_fee"] or 0) - (s["discount_amount"] or 0)
 
-        # Paid all-time
-        row_all = cur.execute(
-            "SELECT COALESCE(SUM(amount),0) as t FROM payments WHERE student_id=?", (sid,)
-        ).fetchone()
-        paid_total = (row_all["t"] if isinstance(row_all, dict) else row_all[0]) or 0
+        student_pmts = pmts_by_sid.get(sid, [])
+        paid_total = sum(p["amount"] or 0 for p in student_pmts)
 
-        # Paid in period
-        pp = [sid] + (params_period[:])  # copy list
-        pf = period_filter.replace("p.pay_date", "pay_date")
-        cf = cat_filter.replace("p.fee_category", "fee_category")
-        row_p = cur.execute(
-            f"SELECT COALESCE(SUM(amount),0) as t FROM payments WHERE student_id=? {pf} {cf}", pp
-        ).fetchone()
-        paid_in_period = (row_p["t"] if isinstance(row_p, dict) else row_p[0]) or 0
+        # In-memory filter for period
+        paid_in_period = 0
+        for p in student_pmts:
+            p_date = p["pay_date"] or ""
+            p_cat = p["fee_category"] or ""
+            date_ok = True
+            if start_date and end_date:
+                date_ok = (start_date <= p_date <= end_date)
+            cat_ok = True
+            if category_f:
+                cat_ok = (p_cat == category_f)
+            if date_ok and cat_ok:
+                paid_in_period += (p["amount"] or 0)
 
         balance = net_fee - paid_total
         if balance <= 0:
