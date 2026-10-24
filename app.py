@@ -2412,11 +2412,9 @@ EMBEDDED_DIT_EXCEL = {
 # DIT LEDGER & ATTENDANCE ALERTS ENGINE
 # ══════════════════════════════════════════════════════════════════
 def safe_row_get(row, key, default=0):
-    """Safely retrieves a key from sqlite3.Row, psycopg2 DictRow, or dict without KeyError."""
+    """Safely retrieves a key from sqlite3.Row, psycopg2 DictRow, or dict without KeyError and guarantees non-None if default is provided."""
     try:
-        if isinstance(row, dict):
-            return row.get(key, default)
-        val = row[key]
+        val = row[key] if not isinstance(row, dict) else row.get(key)
         return val if val is not None else default
     except Exception:
         return default
@@ -2523,11 +2521,11 @@ def compute_dit_ledger(s, payments_history):
         except:
             return 0
 
-    adm = pval(ex.get('ADM')) if ex else safe_row_get(s, "adm_fee", 0)
-    dmc = pval(ex.get('DMC')) if ex else safe_row_get(s, "dmc_fee", 0)
-    reg = pval(ex.get('Reg')) if ex else safe_row_get(s, "reg_fee", 0)
-    exam = pval(ex.get('Exam')) if ex else safe_row_get(s, "exam_fee", 0)
-    months = {m: pval(ex.get(m)) if ex else 0 for m in MONTHS}
+    adm = (pval(ex.get('ADM')) if ex else safe_row_get(s, "adm_fee", 0)) or 0
+    dmc = (pval(ex.get('DMC')) if ex else safe_row_get(s, "dmc_fee", 0)) or 0
+    reg = (pval(ex.get('Reg')) if ex else safe_row_get(s, "reg_fee", 0)) or 0
+    exam = (pval(ex.get('Exam')) if ex else safe_row_get(s, "exam_fee", 0)) or 0
+    months = {m: (pval(ex.get(m)) if ex else 0) or 0 for m in MONTHS}
 
     # Add recorded DB payments that have fee_category/fee_month
     for p in payments_history:
@@ -2547,7 +2545,7 @@ def compute_dit_ledger(s, payments_history):
                     break
 
     tot_paid_db = sum(safe_row_get(p, "amount", 0) or 0 for p in payments_history)
-    col_sum = adm + dmc + reg + exam + sum(months.values())
+    col_sum = (adm or 0) + (dmc or 0) + (reg or 0) + (exam or 0) + sum(v or 0 for v in months.values())
     total_paid = max(tot_paid_db, col_sum)
     balance = net_fee - total_paid
 

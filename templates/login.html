@@ -22,27 +22,71 @@
   <!-- Main Login Card -->
   <div class="portal-card p-4 shadow-sm border rounded-4 bg-white">
 
-    <!-- Role Selection Tabs -->
-    <ul class="nav nav-pills nav-fill mb-4 p-1 rounded-3 bg-light border" id="roleTab" role="tablist">
+    <!-- Role Selection Tabs - Each role has its own color theme -->
+    <ul class="nav nav-fill mb-4 p-1 rounded-3 bg-light border" id="roleTab" role="tablist" style="gap: 3px;">
       <li class="nav-item" role="presentation">
-        <button class="nav-link py-2.5 {% if active_tab == 'student' %}active fw-bold shadow-sm{% endif %}" 
-                id="student-tab" data-bs-toggle="pill" data-bs-target="#tab-student" type="button" role="tab" style="font-size: 13.5px;">
-          <i class="bi bi-mortarboard-fill me-1.5 text-warning"></i>Student
+        <button class="login-role-tab{% if active_tab == 'student' %} active{% endif %}" 
+                id="student-tab" data-bs-toggle="pill" data-bs-target="#tab-student" type="button" role="tab"
+                data-role-color="#1D4ED8" data-role-bg="#EFF6FF" style="--role-color: #1D4ED8; --role-bg: #EFF6FF;">
+          <i class="bi bi-mortarboard-fill me-1"></i>Student
         </button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link py-2.5 {% if active_tab == 'staff' %}active fw-bold shadow-sm{% endif %}" 
-                id="staff-tab" data-bs-toggle="pill" data-bs-target="#tab-staff" type="button" role="tab" style="font-size: 13.5px;">
-          <i class="bi bi-person-workspace me-1.5"></i>Teacher
+        <button class="login-role-tab{% if active_tab == 'staff' %} active{% endif %}" 
+                id="staff-tab" data-bs-toggle="pill" data-bs-target="#tab-staff" type="button" role="tab"
+                data-role-color="#7C3AED" data-role-bg="#F5F3FF" style="--role-color: #7C3AED; --role-bg: #F5F3FF;">
+          <i class="bi bi-person-workspace me-1"></i>Teacher
         </button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link py-2.5 {% if active_tab == 'admin' %}active fw-bold shadow-sm{% endif %}" 
-                id="admin-tab" data-bs-toggle="pill" data-bs-target="#tab-admin" type="button" role="tab" style="font-size: 13.5px;">
-          <i class="bi bi-shield-lock-fill me-1.5"></i>Admin
+        <button class="login-role-tab{% if active_tab == 'admin' %} active{% endif %}" 
+                id="admin-tab" data-bs-toggle="pill" data-bs-target="#tab-admin" type="button" role="tab"
+                data-role-color="#DC2626" data-role-bg="#FEF2F2" style="--role-color: #DC2626; --role-bg: #FEF2F2;">
+          <i class="bi bi-shield-lock-fill me-1"></i>Admin
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="login-role-tab{% if active_tab == 'finance' %} active{% endif %}" 
+                id="finance-tab" data-bs-toggle="pill" data-bs-target="#tab-admin" type="button" role="tab"
+                data-role-color="#D97706" data-role-bg="#FFFBEB" style="--role-color: #D97706; --role-bg: #FFFBEB;">
+          <i class="bi bi-currency-dollar me-1"></i>Finance
         </button>
       </li>
     </ul>
+
+    <!-- Login card body color changes with tab -->
+    <style>
+      .login-role-tab {
+        display: block;
+        width: 100%;
+        padding: 8px 4px;
+        font-size: 12.5px;
+        font-weight: 600;
+        border: 2px solid transparent;
+        border-radius: 10px;
+        background: transparent;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-align: center;
+        line-height: 1.3;
+      }
+      .login-role-tab:hover {
+        background: var(--role-bg);
+        color: var(--role-color);
+        border-color: var(--role-color);
+        opacity: 0.9;
+      }
+      .login-role-tab.active {
+        background: var(--role-color);
+        color: #FFFFFF !important;
+        border-color: var(--role-color);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+        transform: translateY(-1px);
+      }
+      .login-card-body { transition: background-color 0.3s ease; }
+      #loginSignInBtn { transition: background-color 0.25s ease; }
+    </style>
 
     <!-- Flash Notifications -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -658,5 +702,55 @@
       icon.className = "bi bi-eye";
     }
   }
+</script>
+
+<script>
+(function() {
+  var ROLE_COLORS = {
+    'student-tab':  { color: '#1D4ED8', bg: '#EFF6FF', btnGrad: 'linear-gradient(135deg, #1D4ED8, #2563EB)' },
+    'staff-tab':    { color: '#7C3AED', bg: '#F5F3FF', btnGrad: 'linear-gradient(135deg, #7C3AED, #8B5CF6)' },
+    'admin-tab':    { color: '#DC2626', bg: '#FEF2F2', btnGrad: 'linear-gradient(135deg, #DC2626, #EF4444)' },
+    'finance-tab':  { color: '#D97706', bg: '#FFFBEB', btnGrad: 'linear-gradient(135deg, #D97706, #F59E0B)' },
+  };
+
+  function applyRoleColor(tabId) {
+    var cfg = ROLE_COLORS[tabId];
+    if (!cfg) return;
+    // Card border
+    var card = document.querySelector('.portal-card.p-4');
+    if (card) card.style.borderColor = cfg.color;
+    // Primary sign-in button
+    var btns = document.querySelectorAll('.btn-login-primary');
+    btns.forEach(function(b) {
+      b.style.background = cfg.btnGrad;
+      b.style.borderColor = cfg.color;
+    });
+    // Label icons
+    document.querySelectorAll('.login-icon-colored').forEach(function(el) {
+      el.style.color = cfg.color;
+    });
+    // Active badge
+    var badge = document.getElementById('loginRoleBadge');
+    if (badge) {
+      badge.style.background = cfg.bg;
+      badge.style.color = cfg.color;
+    }
+  }
+
+  document.querySelectorAll('.login-role-tab').forEach(function(btn) {
+    btn.addEventListener('shown.bs.tab', function(e) {
+      applyRoleColor(e.target.id);
+    });
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.login-role-tab').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      applyRoleColor(btn.id);
+    });
+  });
+
+  // Apply on page load for default active tab
+  var activeTab = document.querySelector('.login-role-tab.active');
+  if (activeTab) applyRoleColor(activeTab.id);
+})();
 </script>
 {% endblock %}
