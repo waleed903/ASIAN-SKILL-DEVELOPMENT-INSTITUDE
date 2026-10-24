@@ -486,7 +486,26 @@ def init_required_tables():
             c.execute("ALTER TABLE payments ADD COLUMN enrollment_id INTEGER")
             c.commit()
         except Exception:
-            pass  # Column already exists
+            try: c.rollback()
+            except Exception: pass
+
+        # Auto-migrate payments fee_category and fee_month (Postgres & SQLite)
+        for col in ["fee_category", "fee_month"]:
+            try:
+                c.execute(f"ALTER TABLE payments ADD COLUMN {col} TEXT")
+                c.commit()
+            except Exception:
+                try: c.rollback()
+                except Exception: pass
+
+        # Auto-migrate students fee structure columns (Postgres & SQLite)
+        for col in ["adm_fee", "dmc_fee", "reg_fee", "exam_fee"]:
+            try:
+                c.execute(f"ALTER TABLE students ADD COLUMN {col} INTEGER")
+                c.commit()
+            except Exception:
+                try: c.rollback()
+                except Exception: pass
 
         # Seed default settings if empty
         try:
@@ -2125,22 +2144,282 @@ def staff_dashboard():
 
 # ---------------------------------------------------------------------------
 
+EMBEDDED_DIT_EXCEL = {
+    "SHAFAQ": {
+        "S.No": 1.0,
+        "Student Name": "SHAFAQ",
+        "Father Name": "MUHAMMAD YASIR",
+        "ADM": 1000.0,
+        "DMC": 2000.0,
+        "Reg": 4000.0,
+        "JULY": 1000.0,
+        "AUG": 1000.0,
+        "SEP": 1000.0,
+        "OCT": 1000.0,
+        "NOV": 1000.0,
+        "DEC": 1000.0,
+        "JAN": 1000.0,
+        "FEB": 1000.0,
+        "Exam": 3500.0,
+        "Total Paid": 18500.0,
+        "Balance": -18500.0,
+        "DATE OF ADM": "2026-07-01 00:00:00",
+        "Status": "#DIV/0!",
+        "Contact": "0311-8386393"
+    },
+    "MISBAH MAZHAR": {
+        "S.No": 2.0,
+        "Student Name": "MISBAH MAZHAR",
+        "Father Name": "MAZHAR IQBAL",
+        "Total Fee": 19000.0,
+        "ADM": 1000.0,
+        "Reg": 4000.0,
+        "JULY": 1000.0,
+        "AUG": 1000.0,
+        "SEP": 1000.0,
+        "OCT": 1000.0,
+        "Total Paid": 9000.0,
+        "Balance": 10000.0,
+        "DATE OF ADM": "2026-07-15 00:00:00",
+        "Status": "Low Paid",
+        "Contact": "0318-1545175"
+    },
+    "LAIBA WAQAR": {
+        "S.No": 3.0,
+        "Student Name": "LAIBA WAQAR",
+        "Father Name": "WAQAR",
+        "Total Fee": 19000.0,
+        "ADM": 1000.0,
+        "DMC": 2000.0,
+        "JULY": 1000.0,
+        "AUG": 1000.0,
+        "SEP": 1000.0,
+        "OCT": 1000.0,
+        "NOV": 1000.0,
+        "Total Paid": 8000.0,
+        "Balance": 11000.0,
+        "DATE OF ADM": "2026-07-09 00:00:00",
+        "Status": "Low Paid",
+        "Contact": "0301-5294801"
+    },
+    "MARYAM SHAKEEL": {
+        "S.No": 4.0,
+        "Student Name": "MARYAM SHAKEEL",
+        "Father Name": "SHAKEEL AHMED",
+        "Total Fee": 18000.0,
+        "ADM": 1000.0,
+        "DMC": 2000.0,
+        "Reg": 4000.0,
+        "AUG": 1000.0,
+        "SEP": 1000.0,
+        "OCT": 1000.0,
+        "Total Paid": 10000.0,
+        "Balance": 8000.0,
+        "DATE OF ADM": "2026-07-19 00:00:00",
+        "Status": "Partial",
+        "Contact": "0312-1514495"
+    },
+    "AMNA QAMAR": {
+        "S.No": 5.0,
+        "Student Name": "AMNA QAMAR",
+        "Father Name": "QAMAR ZAMAN",
+        "Total Fee": 18000.0,
+        "DMC": 1000.0,
+        "Reg": 4000.0,
+        "JULY": 1000.0,
+        "AUG": 1000.0,
+        "Total Paid": 7000.0,
+        "Balance": 11000.0,
+        "DATE OF ADM": "2026-06-29 00:00:00",
+        "Status": "Low Paid",
+        "Contact": "0371-0546129"
+    },
+    "ABDULLAH": {
+        "S.No": 6.0,
+        "Student Name": "ABDULLAH",
+        "Father Name": "JAHANGIR",
+        "Total Fee": 17500.0,
+        "ADM": 1000.0,
+        "DMC": 1500.0,
+        "Reg": 3500.0,
+        "JULY": "",
+        "AUG": 1000.0,
+        "SEP": 1000.0,
+        "OCT": 1000.0,
+        "NOV": 1000.0,
+        "Total Paid": 10000.0,
+        "Balance": 7500.0,
+        "DATE OF ADM": "2026-07-20 00:00:00",
+        "Status": "Partial",
+        "Contact": "0347-5489951"
+    },
+    "BARKEEL": {
+        "S.No": 7.0,
+        "Student Name": "BARKEEL",
+        "Father Name": "ASHBEEL AHMED",
+        "Total Fee": 17500.0,
+        "AUG": 1200.0,
+        "SEP": 1000.0,
+        "Total Paid": 2200.0,
+        "Balance": 15300.0,
+        "Status": "Low Paid",
+        "Contact": "0314-3215231"
+    },
+    "WAQAS GUL": {
+        "S.No": 8.0,
+        "Student Name": "WAQAS GUL",
+        "Father Name": "GUL FARAZ",
+        "Total Fee": 17500.0,
+        "ADM": 1000.0,
+        "Reg": 3500.0,
+        "SEP": 1000.0,
+        "Total Paid": 5500.0,
+        "Balance": 16000.0,
+        "DATE OF ADM": "2026-08-22 00:00:00",
+        "Status": "Low Paid",
+        "Contact": "0343-8593038"
+    },
+    "NOUMAN": {
+        "S.No": 9.0,
+        "Student Name": "NOUMAN",
+        "Father Name": "MUHAMMAD TARIQ",
+        "Total Fee": 17500.0,
+        "ADM": 1000.0,
+        "Reg": 4000.0,
+        "SEP": 1000.0,
+        "Total Paid": 6000.0,
+        "Balance": 11500.0,
+        "DATE OF ADM": "2026-08-22 00:00:00",
+        "Status": "Low Paid",
+        "Contact": "0318-8104129"
+    },
+    "ABDUL REHMAN": {
+        "S.No": 10.0,
+        "Student Name": "ABDUL REHMAN",
+        "Father Name": "AZHAR MEHMOOD",
+        "Total Fee": 16300.0,
+        "ADM": 1000.0,
+        "SEP": 1000.0,
+        "OCT": 1000.0,
+        "Total Paid": 3000.0,
+        "Balance": 13300.0,
+        "DATE OF ADM": "2026-09-02 00:00:00",
+        "Status": "Low Paid"
+    },
+    "HASEEB KHAN": {
+        "S.No": 11.0,
+        "Student Name": "HASEEB KHAN",
+        "Father Name": "MUHAMMAD KHALID",
+        "Total Fee": 17500.0,
+        "ADM": 1000.0,
+        "DMC": 2000.0,
+        "Reg": 4000.0,
+        "SEP": 1000.0,
+        "OCT": 1000.0,
+        "Total Paid": 9000.0,
+        "Balance": 8500.0,
+        "DATE OF ADM": "2026-09-01 00:00:00",
+        "Status": "Partial"
+    },
+    "SAIF ULLAH": {
+        "S.No": 12.0,
+        "Student Name": "SAIF ULLAH",
+        "Total Fee": 17500.0,
+        "ADM": 1000.0,
+        "DMC": 2000.0,
+        "Reg": 4000.0,
+        "SEP": 1000.0,
+        "Total Paid": 8000.0,
+        "Balance": 9500.0,
+        "Status": "Low Paid"
+    },
+    "SYED FAIZAN SHAH": {
+        "S.No": 13.0,
+        "Student Name": "SYED FAIZAN SHAH",
+        "Father Name": "SYED ARIF SHAH",
+        "Total Fee": 7000.0,
+        "ADM": 700.0,
+        "Total Paid": 700.0,
+        "Balance": 6300.0,
+        "DATE OF ADM": "2026-09-28 00:00:00",
+        "Status": "Low Paid",
+        "Contact": "0319-5970193"
+    },
+    "HAMZA KHAN": {
+        "S.No": 14.0,
+        "Student Name": "HAMZA KHAN",
+        "Total Fee": 17500.0,
+        "ADM": 1500.0,
+        "DMC": 2000.0,
+        "Reg": 4000.0,
+        "OCT": 1000.0,
+        "Total Paid": 8500.0,
+        "Balance": 9000.0,
+        "Status": "Low Paid"
+    },
+    "ABDULLAH ABBASI": {
+        "S.No": 15.0,
+        "Student Name": "ABDULLAH ABBASI",
+        "Total Fee": 17500.0,
+        "ADM": 1500.0,
+        "DMC": 2000.0,
+        "Reg": 4000.0,
+        "OCT": 1000.0,
+        "Total Paid": 8500.0,
+        "Balance": 9000.0,
+        "Status": "Low Paid"
+    },
+    "SUBHAN": {
+        "S.No": 16.0,
+        "Student Name": "SUBHAN",
+        "Total Fee": 18000.0,
+        "ADM": 1500.0,
+        "DMC": 2000.0,
+        "Reg": 4000.0,
+        "OCT": 1000.0,
+        "Total Paid": 8500.0,
+        "Balance": 9500.0,
+        "Status": "Low Paid"
+    },
+    "HAMID ALI": {
+        "Student Name": "HAMID ALI",
+        "Father Name": "IFTAKAHR",
+        "Total Fee": 17500.0,
+        "Total Paid": 0.0,
+        "Balance": 17500.0,
+        "DATE OF ADM": "2026-07-06 00:00:00",
+        "Status": "Unpaid",
+        "Contact": "0307-9110937"
+    }
+}
+
 # ══════════════════════════════════════════════════════════════════
 # DIT LEDGER & ATTENDANCE ALERTS ENGINE
 # ══════════════════════════════════════════════════════════════════
+def safe_row_get(row, key, default=0):
+    """Safely retrieves a key from sqlite3.Row, psycopg2 DictRow, or dict without KeyError."""
+    try:
+        if isinstance(row, dict):
+            return row.get(key, default)
+        val = row[key]
+        return val if val is not None else default
+    except Exception:
+        return default
+
 _DIT_EXCEL_MAP_CACHE = None
 
 def get_dit_excel_data():
-    """Reads verified DIT Excel database once and caches it."""
+    """Returns verified DIT Excel data. Uses embedded data first, then loads file if openpyxl available."""
     global _DIT_EXCEL_MAP_CACHE
     if _DIT_EXCEL_MAP_CACHE is not None:
         return _DIT_EXCEL_MAP_CACHE
 
-    excel_map = {}
+    excel_map = dict(EMBEDDED_DIT_EXCEL)
     try:
-        import openpyxl, os
+        import os
         excel_path = os.path.join(os.path.dirname(__file__), 'excel_sources', 'DIT_1st_2027.xlsx')
         if os.path.exists(excel_path):
+            import openpyxl
             wb = openpyxl.load_workbook(excel_path, data_only=True)
             sheet = wb['Database']
             rows = list(sheet.iter_rows(values_only=True))
@@ -2151,7 +2430,8 @@ def get_dit_excel_data():
                         name = str(r[1]).strip().upper()
                         excel_map[name] = {headers[i]: r[i] for i in range(len(headers)) if i < len(r)}
     except Exception as e:
-        print("[WARN] Error loading DIT Excel source:", e)
+        # Graceful fallback to embedded verified records
+        pass
 
     _DIT_EXCEL_MAP_CACHE = excel_map
     return excel_map
@@ -2174,7 +2454,7 @@ def calculate_student_absence_streaks(student_id, conn):
     cumulative = 0
 
     for r in rows:
-        st = (r["status"] or "").strip().lower()
+        st = (safe_row_get(r, "status", "") or "").strip().lower()
         if st == "absent":
             cumulative += 1
             if not consecutive_done:
@@ -2182,8 +2462,6 @@ def calculate_student_absence_streaks(student_id, conn):
         elif st in ("present", "leave"):
             consecutive_done = True
 
-    # Alert levels
-    # 3: First notification, 5: Alert, 7+: Flag for Strike-Off Review
     alert_badge = None
     if consecutive >= 7:
         alert_badge = {"type": "danger", "text": "Strike-Off Review (7+ Consec. Absences)", "icon": "bi-exclamation-octagon-fill"}
@@ -2206,8 +2484,8 @@ def compute_dit_ledger(s, payments_history):
     Columns: Total Fee | ADM | DMC | Reg | JULY | AUG | SEP | OCT | NOV | DEC | JAN | FEB | Exam | Total Paid | Balance
     """
     MONTHS = ['JULY', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB']
-    net_fee = (s["total_fee"] or 0) - (s["discount_amount"] or 0)
-    name_clean = (s["name"] or "").strip().upper()
+    net_fee = (safe_row_get(s, "total_fee", 0) or 0) - (safe_row_get(s, "discount_amount", 0) or 0)
+    name_clean = (safe_row_get(s, "name", "") or "").strip().upper()
 
     excel_data = get_dit_excel_data()
     name_aliases = {'NOMAN': 'NOUMAN', 'NOMAN TARIQ': 'NOUMAN', 'SHAFAQ YASIR': 'SHAFAQ'}
@@ -2227,17 +2505,17 @@ def compute_dit_ledger(s, payments_history):
         except:
             return 0
 
-    adm = pval(ex.get('ADM')) if ex else (s["adm_fee"] or 0)
-    dmc = pval(ex.get('DMC')) if ex else (s["dmc_fee"] or 0)
-    reg = pval(ex.get('Reg')) if ex else (s["reg_fee"] or 0)
-    exam = pval(ex.get('Exam')) if ex else (s["exam_fee"] or 0)
+    adm = pval(ex.get('ADM')) if ex else safe_row_get(s, "adm_fee", 0)
+    dmc = pval(ex.get('DMC')) if ex else safe_row_get(s, "dmc_fee", 0)
+    reg = pval(ex.get('Reg')) if ex else safe_row_get(s, "reg_fee", 0)
+    exam = pval(ex.get('Exam')) if ex else safe_row_get(s, "exam_fee", 0)
     months = {m: pval(ex.get(m)) if ex else 0 for m in MONTHS}
 
     # Add recorded DB payments that have fee_category/fee_month
     for p in payments_history:
-        fcat = (p["fee_category"] or "").strip().lower()
-        fmonth = (p["fee_month"] or "").strip().upper()
-        amt = p["amount"] or 0
+        fcat = (safe_row_get(p, "fee_category", "") or "").strip().lower()
+        fmonth = (safe_row_get(p, "fee_month", "") or "").strip().upper()
+        amt = safe_row_get(p, "amount", 0) or 0
         if not fcat and not fmonth:
             continue
         if 'admission' in fcat: adm += amt
@@ -2250,7 +2528,7 @@ def compute_dit_ledger(s, payments_history):
                     months[m] += amt
                     break
 
-    tot_paid_db = sum(p["amount"] or 0 for p in payments_history)
+    tot_paid_db = sum(safe_row_get(p, "amount", 0) or 0 for p in payments_history)
     col_sum = adm + dmc + reg + exam + sum(months.values())
     total_paid = max(tot_paid_db, col_sum)
     balance = net_fee - total_paid
@@ -3469,8 +3747,7 @@ def admin_dit_fee_report():
 
     # All DIT students
     students = cur.execute("""
-        SELECT id, name, batch, semester, total_fee, discount_amount,
-               adm_fee, dmc_fee, reg_fee, exam_fee
+        SELECT id, name, batch, semester, total_fee, discount_amount
         FROM students
         WHERE UPPER(course) = 'DIT' AND status != 'Deleted'
         ORDER BY name
